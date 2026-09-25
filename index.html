@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FALTER</title>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===================== CONSENT / INTRO ===================== -->
+    <section id="screen-consent" class="screen active">
+      <div class="panel">
+        <h1 class="glitch-title">FALTER</h1>
+        <p class="tagline">a quiz that watches you answer.</p>
+
+        <div class="consent-copy">
+          <p>This game uses your webcam and microphone to track your face,
+          your room, and background sound while you play. Here's exactly
+          what that means:</p>
+          <ul>
+            <li>Everything is processed <strong>locally, in your browser</strong>,
+              by default. No video, image, or audio ever leaves your machine
+              unless you turn the option below on.</li>
+            <li>Nothing is saved after you close the tab.</li>
+          </ul>
+          <p>It plays best alone, in a dim room, with headphones.</p>
+        </div>
+
+        <label id="ai-optin-row" class="ai-optin-row hidden">
+          <input type="checkbox" id="ai-optin-checkbox" />
+          <span>Let an AI service write some of the game's reactions in real time.</span>
+        </label>
+        <p id="ai-unavailable-note" class="fineprint hidden">
+          (AI reactions unavailable — the backend server isn't running. See the README.)
+        </p>
+
+        <button id="btn-consent" class="btn-primary">i understand — let me in</button>
+        <p class="fineprint">requires camera + microphone permission</p>
+      </div>
+    </section>
+
+    <!-- ===================== CALIBRATION ===================== -->
+    <section id="screen-calibration" class="screen">
+      <div class="panel">
+        <h2>calibrating.</h2>
+        <p id="calibration-instruction">hold still and look at the dot.</p>
+        <div class="calib-stage">
+          <div id="calib-dot"></div>
+          <video id="video-raw" autoplay playsinline muted></video>
+        </div>
+        <div class="progress-track"><div id="calib-progress" class="progress-fill"></div></div>
+      </div>
+    </section>
+
+    <!-- ===================== QUIZ ===================== -->
+    <section id="screen-quiz" class="screen">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="question-index" id="question-index"></div>
+          <h2 id="question-prompt" class="question-prompt"></h2>
+          <div id="answer-options" class="answer-options"></div>
+        </div>
+
+        <div class="feed-frame">
+          <canvas id="feed-canvas" width="240" height="180"></canvas>
+          <div id="feed-status" class="feed-status">● live</div>
+        </div>
+
+        <div id="case-file" class="case-file hidden"></div>
+        
+      </div>
+
+      <div id="director-overlay" class="director-overlay"></div>
+    </section>
+
+    <!-- ===================== ENDING ===================== -->
+    <section id="screen-ending" class="screen">
+      <div class="panel">
+        <h1 id="ending-title" class="glitch-title">that's everything.</h1>
+        <p id="ending-copy" class="tagline"></p>
+        <button id="btn-restart" class="btn-primary hidden">again</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- hidden processing video, not shown to the player -->
+  <video id="video-hidden" autoplay playsinline muted style="display:none"></video>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
