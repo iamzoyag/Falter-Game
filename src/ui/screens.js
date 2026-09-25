@@ -5,9 +5,23 @@ export function showScreen(id) {
   document.getElementById(id).classList.add("active");
 }
 
-export function renderQuestion(question, index, total, onSelect) {
-  $("#question-index").textContent = `${index + 1} / ${total}`;
+// ---------------------------------------------------------------- calibration
+
+export function setCalibInstruction(html) {
+  $("#calibration-instruction").innerHTML = html;
+}
+
+export function showCalibSample(show) {
+  $("#calib-sample").classList.toggle("hidden", !show);
+}
+
+// ---------------------------------------------------------------- quiz
+
+/** Renders a question. Buttons carry data-index (CursorTracker needs it). Returns the options container. */
+export function renderQuestion(question, index, total, stage, onSelect) {
+  $("#question-index").textContent = `${stage ? stage.title.split(".")[0] + " · " : ""}${index + 1} / ${total}`;
   $("#question-prompt").textContent = question.prompt;
+  $("#quiz-question").classList.remove("hidden");
 
   const container = $("#answer-options");
   container.innerHTML = "";
@@ -15,12 +29,14 @@ export function renderQuestion(question, index, total, onSelect) {
     const btn = document.createElement("button");
     btn.className = "answer-btn";
     btn.textContent = opt.text;
+    btn.dataset.index = String(i);
     btn.addEventListener("click", () => {
       container.querySelectorAll("button").forEach((b) => (b.disabled = true));
       onSelect(i);
     });
     container.appendChild(btn);
   });
+  return container;
 }
 
 export function setFeedStatus(text, glitch) {
@@ -29,8 +45,23 @@ export function setFeedStatus(text, glitch) {
   el.classList.toggle("glitch", !!glitch);
 }
 
+/** Stage title card ("II. REFLECTION"). Resolves when it's gone. */
+export function showStageCard(title, subtitle, ms = 3200, imageUrl = null) {
+  const card = $("#stage-card");
+  $("#stage-card-img").style.backgroundImage = imageUrl ? `url("${imageUrl}")` : "none";
+  $("#stage-card-title").textContent = title;
+  $("#stage-card-sub").textContent = subtitle || "";
+  card.classList.add("show");
+  return new Promise((r) => setTimeout(() => {
+    card.classList.remove("show");
+    setTimeout(r, 700);
+  }, ms));
+}
+
+// ---------------------------------------------------------------- fx
+
 let whisperTimeout = null;
-export function showWhisper(text, durationMs = 3200) {
+export function showWhisper(text, durationMs = 3600) {
   if (!text) return;
   const overlay = $("#director-overlay");
   overlay.innerHTML = `<div class="whisper">${escapeHtml(text)}</div>`;
@@ -61,10 +92,125 @@ export function shakeScreen() {
   app.classList.add("shake");
 }
 
+/** Fear has consequences: the whole screen dims while the player reacts or looks away. */
+export function setDarkness(amount) {
+  $("#darkness-overlay").style.opacity = String(Math.min(0.88, amount * 0.88));
+}
+
+export function blackout(ms) {
+  const el = $("#blackout");
+  el.style.transition = "none";
+  el.style.opacity = "1";
+  setTimeout(() => {
+    el.style.transition = "opacity 0.5s ease";
+    el.style.opacity = "0";
+  }, ms);
+}
+
+// ---------------------------------------------------------------- fullscreen feed ("mirror mode")
+
+export function enterMirror(html = "") {
+  document.body.classList.add("mirror-mode");
+  setMirrorText(html);
+}
+
+export function setMirrorText(html) {
+  const el = $("#mirror-text");
+  el.innerHTML = html;
+  el.classList.toggle("show", !!html);
+}
+
+export function exitMirror() {
+  document.body.classList.remove("mirror-mode");
+  setMirrorText("");
+}
+
+export function showInstruction(html) {
+  const el = $("#instruction-overlay");
+  el.innerHTML = html;
+  el.classList.add("show");
+  el.classList.toggle("empty", !html);
+  $("#quiz-question").classList.add("hidden");
+}
+
+export function hideInstruction() {
+  const el = $("#instruction-overlay");
+  el.classList.remove("show");
+  el.innerHTML = "";
+}
+
+// ---------------------------------------------------------------- interrogation
+
+export function showInterrogation(prompt) {
+  $("#quiz-question").classList.add("hidden");
+  $("#interrogation").classList.remove("hidden");
+  $("#interrogation-transcript").textContent = "";
+  setInterrogationPrompt(prompt);
+}
+
+export function setInterrogationPrompt(text) {
+  $("#interrogation-prompt").textContent = text;
+}
+
+export function setInterrogationState(text) {
+  $("#interrogation-state").textContent = text;
+}
+
+export function setMicLevel(v) {
+  $("#mic-level").style.transform = `scaleX(${Math.max(0.02, v)})`;
+}
+
+let typedHandler = null;
+/** Calls `cb(text)` if the player types an answer and presses enter. */
+export function waitForTypedAnswer(cb) {
+  const input = $("#interrogation-input");
+  input.value = "";
+  input.disabled = false;
+  typedHandler = (e) => {
+    if (e.key === "Enter" && input.value.trim()) {
+      const text = input.value.trim();
+      cancelTypedAnswer();
+      cb(text);
+    }
+  };
+  input.addEventListener("keydown", typedHandler);
+}
+
+export function cancelTypedAnswer() {
+  const input = $("#interrogation-input");
+  if (typedHandler) input.removeEventListener("keydown", typedHandler);
+  typedHandler = null;
+  input.disabled = true;
+}
+
+export function showTranscript(text) {
+  $("#interrogation-transcript").textContent = text;
+}
+
+export function hideInterrogation() {
+  $("#interrogation").classList.add("hidden");
+}
+
+// ---------------------------------------------------------------- ending
+
 export function showEndingLoading() {
   $("#ending-title").textContent = "compiling.";
   $("#ending-copy").textContent = "analyzing what your face didn't say…";
   $("#btn-restart").classList.add("hidden");
+}
+
+export function captureEndingStill(sourceCanvas) {
+  const c = $("#ending-still");
+  const ctx = c.getContext("2d");
+  c.width = sourceCanvas.width;
+  c.height = sourceCanvas.height;
+  // the feed canvas is mirrored with CSS; mirror the copy the same way
+  ctx.save();
+  ctx.translate(c.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(sourceCanvas, 0, 0);
+  ctx.restore();
+  c.dataset.captured = "1";
 }
 
 export function updateCaseFile(text) {
@@ -74,28 +220,36 @@ export function updateCaseFile(text) {
   el.classList.remove("hidden");
 }
 
-/** @param {{title: string, body: string}|null} aiReport if present, used verbatim instead of the local summary */
-export function renderEnding(mismatchCount, total, aiReport = null) {
+/**
+ * @param {{mismatchCount:number, flatCount:number, total:number}} summary
+ * @param {{title: string, body: string, focusQuote?: string}|null} aiReport used verbatim if present
+ */
+export function renderEnding(summary, aiReport = null) {
+  const { mismatchCount, flatCount, total } = summary;
   const title = $("#ending-title");
   const copy = $("#ending-copy");
 
   if (aiReport?.title && aiReport?.body) {
     title.textContent = aiReport.title;
     copy.textContent = aiReport.body;
-    if (aiReport.focusQuote) {
-      copy.innerHTML += `<br><br><em>"${escapeHtml(aiReport.focusQuote)}"</em>`;
-    }
-  } else if (mismatchCount === 0) {
-    title.textContent = "you were honest.";
-    copy.textContent = "every answer matched your face. that's rarer than you'd think.";
-  } else if (mismatchCount <= 2) {
-    title.textContent = "close enough.";
-    copy.textContent = `${mismatchCount} of ${total} answers didn't match what your face was doing.`;
+    if (aiReport.focusQuote) copy.innerHTML += `<br><br><em>"${escapeHtml(aiReport.focusQuote)}"</em>`;
   } else {
-    title.textContent = "it noticed.";
-    copy.textContent = `${mismatchCount} of ${total} answers didn't match your expression. it was paying more attention than you were.`;
+    if (mismatchCount === 0) {
+      title.textContent = "you were honest.";
+      copy.textContent = "nothing you did disagreed with what you said. that's rarer than you'd think.";
+    } else if (mismatchCount <= 2) {
+      title.textContent = "close enough.";
+      copy.textContent = `${mismatchCount} of ${total} answers came with something you didn't say out loud.`;
+    } else {
+      title.textContent = "it noticed.";
+      copy.textContent = `${mismatchCount} of ${total} answers came with a tell. it was paying more attention than you were.`;
+    }
+    if (flatCount >= 3) copy.textContent += " and your face barely moved. that takes practice.";
   }
 
+  const still = $("#ending-still");
+  still.classList.toggle("hidden", !still.dataset.captured);
+  $("#ending-still-caption").classList.toggle("hidden", !still.dataset.captured);
   $("#btn-restart").classList.remove("hidden");
 }
 

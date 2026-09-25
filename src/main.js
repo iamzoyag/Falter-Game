@@ -1,42 +1,89 @@
 import "./style.css";
+import { FilesetResolver } from "@mediapipe/tasks-vision";
 import { FaceTracker } from "./vision/FaceTracker.js";
+import { Segmenter } from "./vision/Segmenter.js";
+import { RoomScanner } from "./vision/RoomScanner.js";
+import { FigureLibrary } from "./vision/FigureLibrary.js";
 import { EnvironmentMonitor } from "./vision/EnvironmentMonitor.js";
 import { DelayedFeed } from "./vision/DelayedFeed.js";
 import { AudioSensor } from "./vision/AudioSensor.js";
 import { QuizEngine } from "./quiz/QuizEngine.js";
+import { CursorTracker } from "./quiz/CursorTracker.js";
 import { QUESTIONS } from "./quiz/questions.js";
-import { HorrorDirector } from "./director/HorrorDirector.js";
+import { STAGES } from "./stages.js";
+import { HorrorDirector, PREFETCH_LINES } from "./director/HorrorDirector.js";
 import { AudioEngine } from "./core/AudioEngine.js";
 import { AIClient } from "./core/AIClient.js";
-import { AI_BACKEND_URL } from "./config.js";
+import { VoiceBank } from "./core/VoiceBank.js";
+import { MicRecorder } from "./core/MicRecorder.js";
+import { Transcriber } from "./core/Transcriber.js";
+import { AI_BACKEND_URL, MEDIAPIPE_WASM_URL } from "./config.js";
 import { on } from "./core/EventBus.js";
+import { runMirror } from "./segments/MirrorSegment.js";
+import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
+import { runInterrogation } from "./segments/Interrogator.js";
+import { runEnding } from "./segments/Ending.js";
+import { DebugOverlay } from "./debug/DebugOverlay.js";
+import { ImageFlash } from "./ui/ImageFlash.js";
+import { NoiseOverlay } from "./ui/NoiseOverlay.js";
 import * as ui from "./ui/screens.js";
+
+const QMAP = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
+const TOTAL_QUESTIONS = STAGES.flatMap((s) => s.steps).filter((s) => typeof s === "string").length;
+
+// Lines spoken by segments — synthesized first, before the whisper pools.
+const SEGMENT_LINES = [
+  "Look into your own eyes. Don't look away.",
+  "Don't look away.",
+  "Close your eyes. Keep them closed until you hear the tone.",
+  "Don't make a sound. Not for the next twelve seconds.",
+  "It heard you.",
+  ...STAGES.flatMap((s) => s.steps).filter((s) => s.type === "interrogate").map((s) => s.prompt)
+];
 
 const videoHidden = document.getElementById("video-hidden");
 const videoRaw = document.getElementById("video-raw");
 const feedCanvas = document.getElementById("feed-canvas");
+const scanCanvas = document.getElementById("scan-canvas");
 const calibDot = document.getElementById("calib-dot");
 const calibProgress = document.getElementById("calib-progress");
-const calibInstruction = document.getElementById("calibration-instruction");
 const aiOptinRow = document.getElementById("ai-optin-row");
 const aiOptinCheckbox = document.getElementById("ai-optin-checkbox");
 const aiUnavailableNote = document.getElementById("ai-unavailable-note");
 
 const faceTracker = new FaceTracker();
+const segmenter = new Segmenter();
+const roomScanner = new RoomScanner();
+const figures = new FigureLibrary();
 const envMonitor = new EnvironmentMonitor();
-const delayedFeed = new DelayedFeed(feedCanvas);
-let audioSensor = null;
-const quiz = new QuizEngine(QUESTIONS);
+const cursor = new CursorTracker();
+const quiz = new QuizEngine(faceTracker, cursor);
 const audio = new AudioEngine();
 const aiClient = new AIClient(AI_BACKEND_URL);
+const debug = new DebugOverlay();
+const imageFlash = new ImageFlash(document.getElementById("image-flash"));
+imageFlash.preload();
+new NoiseOverlay(document.getElementById("noise-overlay"));
 
-let director = null; // constructed at consent time, once we know if AI is opted in
+let feed = null;
+let audioSensor = null;
+let recorder = null;
+let voice = null;
+let transcriber = null;
+let director = null;
+let playerVoice = null;
+
 let latestFace = null;
 let latestEnv = null;
 let latestMic = null;
+let latestMask = null;
+let lastEntry = null;
 let currentQuestionIndex = -1;
-let loopStarted = false;
+let currentStage = null;
+let playing = false;
 let aiAvailable = false;
+let aiEnabled = false;
+let lateBaseline = false;
 
 // Silent, non-blocking — just decides whether to show the opt-in checkbox at all.
 aiClient.healthCheck().then((ok) => {
@@ -69,100 +116,177 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
     return;
   }
 
+  // match the feed canvas to the camera's real aspect ratio
+  const vw = videoHidden.videoWidth || 640, vh = videoHidden.videoHeight || 480;
+  feedCanvas.width = 640;
+  feedCanvas.height = Math.round((640 * vh) / vw);
+  feed = new DelayedFeed(feedCanvas);
+
   await audio.init(); // must happen inside a user-gesture handler
   audio.startAmbientDrone();
 
-  audioSensor = new AudioSensor(audio.ctx);
   const micTrack = stream.getAudioTracks()[0];
-  if (micTrack) audioSensor.attach(new MediaStream([micTrack]));
+  audioSensor = new AudioSensor(audio.ctx);
+  if (micTrack) {
+    audioSensor.attach(new MediaStream([micTrack]));
+    recorder = new MicRecorder(audio.ctx, new MediaStream([micTrack]));
+  }
 
-  const aiEnabled = aiAvailable && aiOptinCheckbox.checked;
-  director = new HorrorDirector({ aiClient, aiEnabled });
+  aiEnabled = aiAvailable && aiOptinCheckbox.checked;
+  voice = new VoiceBank(aiClient, audio, aiEnabled);
+  transcriber = new Transcriber({ aiClient, aiEnabled });
+  director = new HorrorDirector({ aiClient, aiEnabled, figures });
 
-  await faceTracker.init();
+  btn.textContent = "loading…";
+  const fileset = await FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_URL);
+  await Promise.all([
+    faceTracker.init(fileset),
+    segmenter.init(fileset),
+    roomScanner.init(fileset),
+    figures.loadImages()
+  ]);
+
+  // background work — none of it blocks the game
+  voice.prefetch([...SEGMENT_LINES, ...PREFETCH_LINES]);
+  transcriber.warmup();
+
   ui.showScreen("screen-calibration");
+  requestAnimationFrame(loop);
   await runCalibration();
 
   ui.showScreen("screen-quiz");
-  quiz.start();
-  if (!loopStarted) {
-    loopStarted = true;
-    requestAnimationFrame(loop);
-  }
+  await runGame();
 });
 
 // ---------------------------------------------------------------- calibration
 async function runCalibration() {
-  const positions = [
-    [50, 50], [20, 25], [80, 25], [80, 75], [20, 75], [50, 50]
-  ];
-  const stepMs = 1100;
+  const progress = (p) => (calibProgress.style.width = `${Math.round(p * 100)}%`);
 
+  // 1. gaze dot
+  ui.setCalibInstruction("hold still and look at the dot.");
+  const positions = [[50, 50], [20, 25], [80, 25], [80, 75], [20, 75], [50, 50]];
   for (let i = 0; i < positions.length; i++) {
-    const [left, top] = positions[i];
-    calibDot.style.left = left + "%";
-    calibDot.style.top = top + "%";
-    calibProgress.style.width = `${((i + 1) / positions.length) * 100}%`;
-    if (i === positions.length - 1) calibInstruction.textContent = "good. hold still.";
-    await sleep(stepMs);
+    calibDot.style.left = positions[i][0] + "%";
+    calibDot.style.top = positions[i][1] + "%";
+    progress(((i + 1) / positions.length) * 0.25);
+    await sleep(1100);
   }
+  calibDot.classList.add("hidden");
 
-  for (let i = 0; i < 15; i++) {
-    envMonitor.update(videoHidden);
-    audioSensor?.update(performance.now());
-    await sleep(30);
-  }
+  // 2. room scan (objects behind them, labels only)
+  ui.setCalibInstruction("scanning the room behind you.");
+  await roomScanner.scan(videoHidden, scanCanvas, () => latestFace, () => latestMask, 4500);
+  director.setRoom(roomScanner);
   envMonitor.resetBaseline();
+  progress(0.4);
 
-  // Per-player neutral-face baseline — corrects for individual resting
-  // expression, so a naturally lower brow or asymmetric mouth doesn't get
-  // read as "frowning"/"smiling" on every single answer.
-  calibInstruction.textContent = "relax your face. hold a neutral expression.";
+  // 3. neutral baseline — while READING, so concentration is part of "normal"
+  ui.setCalibInstruction("read these. don't answer.<br>just relax your face.");
+  ui.showCalibSample(true);
+  await sleep(700);
   faceTracker.beginBaselineCapture();
-  for (let i = 0; i < 40; i++) {
-    faceTracker.update(videoHidden, performance.now());
-    faceTracker.sampleBaseline();
-    await sleep(30);
+  await sleep(4000);
+  if (!faceTracker.finishBaselineCapture()) {
+    // Face wasn't visible (or the machine is slow): take the baseline during
+    // the first intake questions instead — the player is reading there too.
+    console.warn("[calibration] not enough face frames for a baseline — retrying during stage I");
+    lateBaseline = true;
   }
-  faceTracker.finishBaselineCapture();
+  ui.showCalibSample(false);
+  const silhouetteMask = latestMask;
+  progress(0.55);
+
+  // 4. posed expressions: per-player range + clips the game will use later
+  const poses = [
+    ["smile", "smile. a real one."],
+    ["raise", "raise your eyebrows. as high as they go."],
+    ["frown", "now frown."]
+  ];
+  for (let i = 0; i < poses.length; i++) {
+    const [name, text] = poses[i];
+    ui.setCalibInstruction(text);
+    await sleep(900);
+    faceTracker.beginExpressionCapture(name);
+    feed.startClipRecording(name);
+    await sleep(1500);
+    faceTracker.finishExpressionCapture();
+    feed.stopClipRecording();
+    ui.setCalibInstruction("relax.");
+    progress(0.55 + ((i + 1) / poses.length) * 0.25);
+    await sleep(600);
+  }
+
+  // Figure fallback: their own silhouette, if no figure images were provided.
+  if (!figures.figures.length) figures.addSilhouette(silhouetteMask);
+
+  // 5. a line in their own voice
+  if (recorder) {
+    ui.setCalibInstruction(`say this out loud:<br><em>"i'm the only one in this room."</em>`);
+    await sleep(500);
+    const samples = await recorder.recordFor(3500);
+    if (samples.length > audio.ctx.sampleRate * 0.4) {
+      playerVoice = recorder.toAudioBuffer(samples);
+      director.setPlayerVoiceAvailable(true);
+    }
+  }
+  progress(1);
+  ui.setCalibInstruction("good. hold still.");
+  await sleep(1000);
 }
 
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+// ---------------------------------------------------------------- the game
+async function runGame() {
+  playing = true;
+  const ctx = {
+    feed, director, ui, audio, voice, playerVoice, recorder, transcriber, aiClient, aiEnabled, faceTracker, imageFlash,
+    room: roomScanner,
+    getFace: () => latestFace,
+    getMic: () => latestMic
+  };
+
+  let qIndex = 0;
+  if (lateBaseline) faceTracker.beginBaselineCapture();
+  for (const stage of STAGES) {
+    currentStage = stage;
+    director.setStage(stage);
+    director.suspend(true); // nothing fires over the title card
+    await ui.showStageCard(stage.title, stage.subtitle, 3200, stage.id === "intake" ? null : imageFlash.randomUrl());
+    director.suspend(false);
+
+    for (const step of stage.steps) {
+      if (typeof step === "string") {
+        currentQuestionIndex = qIndex;
+        lastEntry = await quiz.ask(QMAP[step], qIndex, TOTAL_QUESTIONS, stage);
+        qIndex++;
+        if (lateBaseline && qIndex === 2) {
+          lateBaseline = false;
+          faceTracker.finishBaselineCapture();
+        }
+        await sleep(350);
+      } else if (step.type === "mirror") {
+        director.suspend(true);
+        await runMirror({ ...ctx, durationMs: step.durationMs });
+        director.suspend(false);
+      } else if (step.type === "task") {
+        if (step.task === "closeEyes") await taskCloseEyes(ctx);
+        else if (step.task === "staySilent") await taskStaySilent(ctx);
+      } else if (step.type === "interrogate") {
+        if (recorder) await runInterrogation({ ...ctx, prompt: step.prompt });
+      }
+    }
+  }
+
+  playing = false;
+  await runEnding(ctx);
 }
 
 // ---------------------------------------------------------------- quiz wiring
 on("question-shown", (e) => {
-  currentQuestionIndex = e.detail.index;
-  ui.renderQuestion(e.detail.question, e.detail.index, e.detail.total, (optionIndex) => {
+  const { question, index, total, stage } = e.detail;
+  const container = ui.renderQuestion(question, index, total, stage, (optionIndex) => {
     quiz.selectAnswer(optionIndex, performance.now());
   });
-});
-
-on("director-summary", async (e) => {
-  const { mismatchCount, total, dossier, aiEnabled } = e.detail;
-
-  if (!aiEnabled) {
-    setTimeout(() => {
-      ui.renderEnding(mismatchCount, total);
-      ui.showScreen("screen-ending");
-    }, 1800);
-    return;
-  }
-
-  setTimeout(async () => {
-    ui.showScreen("screen-ending");
-    ui.showEndingLoading();
-    const compact = dossier.map((d) => ({
-      prompt: d.prompt,
-      chosenText: d.chosenText,
-      claimedFeeling: d.expressionHint,
-      actualExpression: d.measured?.dominant ?? "unknown",
-      mismatch: d.mismatch
-    }));
-    const report = await aiClient.requestEndingReport({ dossier: compact });
-    ui.renderEnding(mismatchCount, total, report);
-  }, 1800);
+  cursor.begin(container);
 });
 
 on("director-casefile", (e) => ui.updateCaseFile(e.detail.text));
@@ -176,29 +300,52 @@ on("director-beat", (e) => {
   if (beat.kind?.includes("shake")) ui.shakeScreen();
 });
 
-// An AI-upgraded line for a beat that already fired — swap the visible text
-// in place if the whisper overlay is still showing (or about to).
-on("director-whisper-update", (e) => {
-  ui.showWhisper(e.detail.text);
+// An AI-upgraded line for a beat that already fired — swap the visible text in place.
+on("director-whisper-update", (e) => ui.showWhisper(e.detail.text));
+
+// Spoken whispers (AI mode only). If the upgraded line can't be synthesized in
+// time, fall back to the pre-generated local line.
+on("director-speak", async (e) => {
+  const { text, fallback, position } = e.detail;
+  const played = await voice?.speak(text, { position, dropIfBusy: true, maxWaitMs: 2200 });
+  if (!played && fallback && fallback !== text) voice?.speak(fallback, { position, dropIfBusy: true, maxWaitMs: 300 });
 });
 
+on("director-prefetch-voice", (e) => voice?.get(e.detail.text));
+
+on("director-player-voice", (e) => {
+  if (playerVoice) audio.playPlayerVoice(playerVoice, e.detail.variant);
+});
+
+on("director-image-flash", (e) => {
+  if (imageFlash.flash(e.detail.ms)) audio.playStinger("static", { x: 0, y: 0, z: -0.3 });
+});
 on("director-intensity", (e) => audio.setDroneIntensity(e.detail.amount));
+on("director-darkness", (e) => ui.setDarkness(e.detail.amount));
 
 document.getElementById("btn-restart").addEventListener("click", () => window.location.reload());
 
 // ---------------------------------------------------------------- main loop
-function loop(nowMs) {
-  latestFace = faceTracker.update(videoHidden, nowMs) || latestFace;
+function loop() {
+  const now = performance.now();
+  latestFace = faceTracker.update(videoHidden, now) || latestFace;
+  latestMask = segmenter.update(videoHidden, now);
   latestEnv = envMonitor.update(videoHidden) || latestEnv;
-  latestMic = audioSensor?.update(nowMs) || latestMic;
-  delayedFeed.update(videoHidden, nowMs, latestEnv?.inMotion);
+  latestMic = audioSensor?.update(now) || latestMic;
+  feed.update(videoHidden, now, { face: latestFace, mask: latestMask, motion: latestEnv?.inMotion, brightness: latestEnv?.brightness });
 
-  ui.setFeedStatus(delayedFeed.isLive() ? "● live" : "● …", !delayedFeed.isLive());
+  const behind = feed.mode === "delayed" || feed.mode === "replay";
+  ui.setFeedStatus(behind ? "● …" : "● live", behind); // frozen/clip modes still claim to be live
 
-  if (currentQuestionIndex >= 0 && director) {
-    quiz.recordFrame(latestFace, nowMs);
-    director.tick({ face: latestFace, env: latestEnv, mic: latestMic, delayedFeed }, nowMs, currentQuestionIndex);
+  quiz.recordFrame(latestFace, now);
+  if (playing && director) {
+    director.tick({ face: latestFace, env: latestEnv, mic: latestMic, feed }, now, currentQuestionIndex);
+    if (currentStage?.features.room) roomScanner.passive(videoHidden, now, latestFace, latestMask);
   }
-
+  debug.update({ face: latestFace, faceTracker, director, lastEntry, feed });
   requestAnimationFrame(loop);
+}
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
 }

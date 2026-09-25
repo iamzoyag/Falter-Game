@@ -100,7 +100,6 @@ export class AudioEngine {
     const now = ctx.currentTime;
 
     if (type === "heartbeat") {
-      gain.gain.setValueAtTime(0, now);
       [0, 0.28].forEach((offset) => {
         const osc = ctx.createOscillator();
         osc.type = "sine";
@@ -144,6 +143,70 @@ export class AudioEngine {
       return;
     }
 
+    if (type === "jumpscare") {
+      const dur = 1.4;
+      const noise = this._noiseSource(dur);
+      const nf = ctx.createBiquadFilter();
+      nf.type = "bandpass";
+      nf.frequency.setValueAtTime(2600, now);
+      nf.frequency.exponentialRampToValueAtTime(500, now + dur);
+      nf.Q.value = 0.7;
+      noise.connect(nf);
+      nf.connect(gain);
+      const shaper = ctx.createWaveShaper();
+      shaper.curve = distortionCurve(80);
+      shaper.connect(gain);
+      [0, 6, 13, -11].forEach((semi) => {
+        const osc = ctx.createOscillator();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(190 * Math.pow(2, semi / 12), now);
+        osc.frequency.exponentialRampToValueAtTime(45, now + dur);
+        osc.connect(shaper);
+        osc.start(now);
+        osc.stop(now + dur);
+      });
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(1.0, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      noise.start(now);
+      noise.stop(now + dur);
+      return;
+    }
+
+    if (type === "tone") {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.35, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+      osc.connect(panner);
+      osc.start(now);
+      osc.stop(now + 0.95);
+      return;
+    }
+
+    if (type === "footstep") {
+      const noise = this._noiseSource(0.25);
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 380;
+      const thump = ctx.createOscillator();
+      thump.frequency.setValueAtTime(90, now);
+      thump.frequency.exponentialRampToValueAtTime(40, now + 0.12);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.8, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      noise.connect(lp);
+      lp.connect(panner);
+      thump.connect(panner);
+      noise.start(now);
+      noise.stop(now + 0.25);
+      thump.start(now);
+      thump.stop(now + 0.2);
+      return;
+    }
+
     // default: a sharp short click/tick, like a footstep or a knock
     const osc = ctx.createOscillator();
     osc.type = "square";
@@ -154,6 +217,109 @@ export class AudioEngine {
     osc.connect(panner);
     osc.start(now);
     osc.stop(now + 0.15);
+  }
+
+  _panner(position) {
+    const p = this.ctx.createPanner();
+    p.panningModel = "HRTF";
+    p.distanceModel = "inverse";
+    p.positionX.value = position.x ?? 0;
+    p.positionY.value = position.y ?? 0;
+    p.positionZ.value = position.z ?? 0;
+    return p;
+  }
+
+  /**
+   * Play a spoken line (AudioBuffer) as if someone is in the room. Default
+   * position is just behind the listener (+z is behind in Web Audio).
+   * Resolves when playback ends.
+   */
+  playVoice(buffer, position = { x: 0.25, y: 0.1, z: 0.6 }, { gain = 1, rate = 1 } = {}) {
+    if (!buffer || !this.ctx) return Promise.resolve();
+    const ctx = this.ctx;
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.playbackRate.value = rate;
+
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 160;
+    const g = ctx.createGain();
+    g.gain.value = gain;
+    const panner = this._panner(position);
+    src.connect(hp);
+    hp.connect(g);
+    g.connect(panner);
+    panner.connect(this.master);
+
+    // faint slap-back so it sounds like it's in a room, not inside your head
+    const delay = ctx.createDelay(0.5);
+    delay.delayTime.value = 0.11;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 1800;
+    const dg = ctx.createGain();
+    dg.gain.value = 0.18;
+    g.connect(delay);
+    delay.connect(lp);
+    lp.connect(dg);
+    dg.connect(panner);
+
+    this.duckDrone(buffer.duration / rate + 0.4);
+    return new Promise((resolve) => {
+      src.onended = resolve;
+      src.start();
+    });
+  }
+
+  /**
+   * The player's own recorded voice, played back wrong.
+   * @param {"reverse"|"slow"|"whisper"} variant
+   */
+  playPlayerVoice(buffer, variant = "reverse", position = null) {
+    if (!buffer) return Promise.resolve();
+    let buf = buffer;
+    if (variant === "reverse") {
+      buf = this.ctx.createBuffer(1, buffer.length, buffer.sampleRate);
+      const src = buffer.getChannelData(0), dst = buf.getChannelData(0);
+      for (let i = 0; i < src.length; i++) dst[i] = src[src.length - 1 - i];
+    }
+    const pos = position || { x: Math.random() < 0.5 ? -0.5 : 0.5, y: 0, z: 0.7 };
+    const rate = variant === "slow" ? 0.78 : variant === "whisper" ? 0.92 : 1;
+    const gain = variant === "whisper" ? 0.35 : 0.6;
+    return this.playVoice(buf, pos, { gain, rate });
+  }
+
+  /** Dip the drone under a voice line so it's intelligible. */
+  duckDrone(seconds) {
+    if (!this.droneGain) return;
+    const g = this.droneGain.gain, t = this.ctx.currentTime;
+    const current = g.value;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(current, t);
+    g.linearRampToValueAtTime(current * 0.45, t + 0.2);
+    g.linearRampToValueAtTime(current, t + seconds);
+  }
+
+  /** Silence the drone completely (for "stay silent") and bring it back after `ms`. */
+  muteDrone(ms) {
+    if (!this.droneGain) return;
+    const g = this.droneGain.gain, t = this.ctx.currentTime;
+    const current = Math.max(g.value, 0.2);
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(0, t + 0.6);
+    g.setValueAtTime(0, t + ms / 1000);
+    g.linearRampToValueAtTime(current, t + ms / 1000 + 0.2);
+  }
+
+  /** Bring the drone back immediately (e.g. the silence was broken). */
+  restoreDrone(level = 0.4) {
+    if (!this.droneGain) return;
+    const g = this.droneGain.gain, t = this.ctx.currentTime;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(level, t + 0.15);
   }
 
   _noiseSource(durationSec) {
@@ -189,4 +355,13 @@ export class AudioEngine {
     panner.connect(this.master);
     src.start();
   }
+}
+
+function distortionCurve(amount) {
+  const n = 1024, curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = ((3 + amount) * x * 20 * (Math.PI / 180)) / (Math.PI + amount * Math.abs(x));
+  }
+  return curve;
 }

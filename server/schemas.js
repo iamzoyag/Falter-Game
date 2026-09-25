@@ -50,3 +50,28 @@ export const PacingHintGeminiSchema = {
   },
   required: ["intensityBias", "cooldownMultiplier"]
 };
+
+
+export const TranscriptZod = z.object({
+  text: z.string().max(4000) // may be empty: nothing intelligible was said
+});
+export const TranscriptGeminiSchema = {
+  type: Type.OBJECT,
+  properties: { text: { type: Type.STRING } },
+  required: ["text"]
+};
+
+export const InterrogationZod = z.object({
+  question: z.string().max(300).nullable().optional(),
+  done: z.boolean().optional(),
+  observation: z.string().max(200).nullable().optional()
+});
+export const InterrogationGeminiSchema = {
+  type: Type.OBJECT,
+  properties: {
+    question: { type: Type.STRING, nullable: true },
+    done: { type: Type.BOOLEAN },
+    observation: { type: Type.STRING, nullable: true }
+  },
+  required: ["done"]
+};

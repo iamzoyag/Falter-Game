@@ -1,4 +1,4 @@
-// Thin fetch wrapper around the backend (see /server). Every call is
+// Thin fetch wrapper around the backend. Every call is
 // timeout-bounded and swallows its own errors, returning null instead of
 // throwing — the game must stay fully playable with zero network access,
 // so nothing downstream should ever have to special-case "the AI failed."
@@ -45,22 +45,34 @@ export class AIClient {
    * firing. Called AFTER the local fallback text has already been shown —
    * this is purely "can we do better within ~1s," never a blocker.
    */
-  async requestBeatCopy({ signalType, localFallbackText, dossier, questionIndex }, timeoutMs = 1000) {
+  async requestBeatCopy({ signalType, localFallbackText, dossier, questionIndex, roomObjects }, timeoutMs = 1000) {
     return postJson(`${this.baseUrl}/api/beat`, {
-      signalType,
-      localFallbackText,
-      dossier,
-      questionIndex
+      signalType, localFallbackText, dossier, questionIndex, roomObjects
     }, timeoutMs);
   }
 
   /** One-time, at quiz end — can afford to wait longer since the ending screen shows a loading beat regardless. */
-  async requestEndingReport({ dossier }, timeoutMs = 7000) {
-    return postJson(`${this.baseUrl}/api/ending`, { dossier }, timeoutMs);
+  async requestEndingReport({ dossier, interrogations, stats }, timeoutMs = 9000) {
+    return postJson(`${this.baseUrl}/api/ending`, { dossier, interrogations, stats }, timeoutMs);
   }
 
   /** Periodic, slow-moving — nudges pacing, never makes a hard real-time decision. */
   async requestPacingHint({ dossier, recentSignals }, timeoutMs = 2500) {
     return postJson(`${this.baseUrl}/api/pacing`, { dossier, recentSignals }, timeoutMs);
+  }
+
+  /** Text -> speech. Returns { audio: base64 16-bit PCM, sampleRate }. */
+  async requestSpeech({ text }, timeoutMs = 9000) {
+    return postJson(`${this.baseUrl}/api/tts`, { text }, timeoutMs);
+  }
+
+  /** Spoken answer -> text. `audio` is base64 WAV. */
+  async requestTranscription({ audio, mimeType }, timeoutMs = 15000) {
+    return postJson(`${this.baseUrl}/api/transcribe`, { audio, mimeType }, timeoutMs);
+  }
+
+  /** The interrogator's next follow-up question. */
+  async requestInterrogation({ turns, dossier, roomObjects }, timeoutMs = 7000) {
+    return postJson(`${this.baseUrl}/api/interrogate`, { turns, dossier, roomObjects }, timeoutMs);
   }
 }

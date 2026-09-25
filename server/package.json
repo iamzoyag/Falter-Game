@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Backend proxy that holds the Anthropic API key and writes the game's AI-driven horror copy. Never expose this key to the browser — that's the entire reason this server exists.",
+  "description": "Backend proxy that holds the Gemini API key and writes (and speaks) the game's AI-driven horror copy. Never expose this key to the browser — that's the entire reason this server exists.",
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js"

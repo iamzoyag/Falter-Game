@@ -1,0 +1,23 @@
+Credits for the images in public/figures and public/flashes.
+Put these in the game's credits screen (required by the CC BY / CC BY-SA licenses).
+
+[figures]
+figure1.png: "Vintage Halloween costume snapshot" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+figure2.png: "Creepy long-haired girl" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+figure3.png: "Man wearing a 'tramp' Halloween costume" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+figure4.png: "Creepy woman climbs the stairs" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+figure5.png: "Giant creepy baby" by Carlos ZGZ is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+
+[flashes]
+flash01.png: "SMILE at night" by Sukanto Debnath is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash02.png: "If You Disappear, I Will Sacrifice Myself To An Exoskeleton and Be Devoured By The Remaining Light" by DerrickT is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash03.png: "He Don't Play That" by Randy Heinitz is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash04.png: "Halloween (2 be or Not 2 be)" by Erwss, peace&love is licensed under CC BY-SA 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-sa/2.0/.
+flash05.png: "Vintage Halloween costume snapshot" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash06.png: "Masks" by exfordy is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash07.png: "Creepy long-haired girl" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash08.png: "Rather Scary Dude" by Rebecca L. Daily is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash09.png: "Frankenstein's Monster Experiment II, stitches and coloring" by DerrickT is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash10.png: "Devil" by ste3ve is licensed under CC BY-SA 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-sa/2.0/.
+flash11.png: "Creepy woman climbs the stairs" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+flash12.png: "creepy mask" by jelene is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.

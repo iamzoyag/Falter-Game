@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=VT323&display=swap');
 
 :root {
   --bg: #050506;
@@ -267,3 +267,288 @@ html, body {
   border: 1px solid #1c1c1f;
   background: var(--bg-panel);
 }
+
+
+/* ======================================================================
+   additions: stages, fullscreen feed, darkness, interrogation, debug
+   ====================================================================== */
+
+/* calibration: keep the video at the camera's 4:3 so the scan boxes line up */
+.calib-stage {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  max-width: 480px;
+  margin: 20px auto;
+}
+#video-raw { object-fit: fill; opacity: 0.45; }
+#scan-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.calib-sample { margin: 0 auto 18px; max-width: 480px; text-align: left; }
+.calib-sample .question-prompt.small { font-size: 1rem; min-height: 0; margin-bottom: 12px; }
+.answer-btn.fake { cursor: default; }
+
+/* quiz: the feed column */
+.feed-column { width: 240px; flex-shrink: 0; }
+.feed-frame { width: 100%; }
+#feed-canvas { width: 100%; height: auto; aspect-ratio: 4 / 3; }
+
+/* fullscreen feed ("mirror mode") */
+body.mirror-mode .quiz-main,
+body.mirror-mode .case-file { visibility: hidden; }
+body.mirror-mode .feed-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: none;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+body.mirror-mode #feed-canvas {
+  width: auto;
+  height: 100vh;
+  max-width: 100vw;
+  object-fit: contain;
+}
+body.mirror-mode .feed-status { display: none; }
+
+.mirror-text {
+  position: fixed;
+  left: 0; right: 0; bottom: 12vh;
+  z-index: 70;
+  text-align: center;
+  font-family: 'Special Elite', monospace;
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  color: var(--accent-glow);
+  text-shadow: 0 0 14px rgba(0,0,0,0.9);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.mirror-text.show { opacity: 1; }
+
+/* fear consequence: the lights go down */
+#darkness-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 45;
+  transition: opacity 0.25s linear;
+}
+
+.instruction-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Special Elite', monospace;
+  font-size: clamp(1.3rem, 3.4vw, 2rem);
+  line-height: 1.5;
+  color: var(--fg);
+  background: rgba(0,0,0,0.75);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.instruction-overlay.show { opacity: 1; }
+.instruction-overlay.empty { background: rgba(0,0,0,0.9); }
+
+.stage-card {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
+}
+.stage-card.show { opacity: 1; }
+.stage-card-title {
+  font-family: 'Special Elite', monospace;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  letter-spacing: 0.2em;
+  color: var(--fg);
+  text-shadow: 0 0 18px rgba(194,59,59,0.35);
+}
+.stage-card-sub { margin-top: 14px; color: var(--fg-dim); font-style: italic; }
+
+#blackout {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 90;
+}
+
+/* interrogation */
+.interrogation .question-prompt { min-height: 3em; }
+.mic-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.mic-track { flex: 1; height: 4px; background: #1c1c1f; overflow: hidden; }
+.mic-level {
+  height: 100%;
+  width: 100%;
+  background: var(--accent-glow);
+  transform-origin: left center;
+  transform: scaleX(0.02);
+  transition: transform 0.08s linear;
+}
+.interrogation-state { font-size: 0.8rem; color: var(--fg-dim); min-width: 80px; }
+.interrogation-transcript { font-style: italic; color: var(--fg-dim); min-height: 1.5em; }
+.interrogation-input {
+  width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid #1c1c1f;
+  color: var(--fg);
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+.interrogation-input:disabled { opacity: 0.4; }
+
+/* ending */
+.ending-still {
+  width: 280px;
+  max-width: 80vw;
+  display: block;
+  margin: 0 auto 6px;
+  border: 1px solid #1c1c1f;
+}
+
+/* debug overlay (press D) */
+#debug-canvas {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 200;
+  pointer-events: none;
+  border: 1px solid #333;
+}
+
+
+
+/* ======================================================================
+   1-bit theme: pure black and white, pixel font, hard edges, noise
+   (overrides the rules above — delete this block to go back)
+   ====================================================================== */
+:root {
+  --bg: #000;
+  --bg-panel: #000;
+  --fg: #f2f2f2;
+  --fg-dim: #8c8c8c;
+  --accent: #f2f2f2;
+  --accent-glow: #ffffff;
+}
+
+html, body { font-family: 'VT323', monospace; font-size: 20px; }
+
+.glitch-title, .stage-card-title, #ending-title {
+  font-family: 'VT323', monospace;
+  letter-spacing: 0.25em;
+  text-shadow: 2px 0 0 #000, -2px 0 0 #fff;
+  animation: jitter 2.4s steps(1) infinite;
+}
+.question-prompt { font-size: 1.7rem; line-height: 1.25; }
+.question-index, .fineprint, .tagline, .case-file { font-size: 1rem; }
+.consent-copy { font-size: 1.05rem; line-height: 1.35; border: 2px solid #fff; }
+.ai-optin-row { border: 1px dashed #fff; }
+
+/* buttons: square, 2px white border, invert on hover */
+.btn-primary, .answer-btn {
+  font-family: 'VT323', monospace;
+  font-size: 1.25rem;
+  border-radius: 0;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+}
+.btn-primary:hover, .answer-btn:hover { background: #fff; color: #000; border-color: #fff; }
+.answer-btn:disabled { opacity: 0.25; }
+
+/* canvases keep hard pixel edges when scaled */
+#feed-canvas, #ending-still, #scan-canvas, .stage-card-img, .image-flash { image-rendering: pixelated; }
+.feed-frame, .case-file { border: 2px solid #fff; }
+.feed-status { color: #fff; font-size: 0.9rem; }
+.feed-status.glitch { color: #000; background: #fff; }
+#video-raw { filter: grayscale(1) contrast(2.2) brightness(0.9); opacity: 0.6; }
+#calib-dot { background: #fff; box-shadow: 0 0 0 3px #000, 0 0 0 5px #fff; border-radius: 0; }
+.progress-track { background: #222; height: 6px; }
+.progress-fill { background: #fff; }
+.mic-level { background: #fff; }
+.interrogation-input { font-family: 'VT323', monospace; font-size: 1.2rem; border: 2px solid #fff; }
+
+/* whispers: white, hard-edged, twitching */
+.director-overlay .whisper, .mirror-text {
+  font-family: 'VT323', monospace;
+  font-size: 1.8rem;
+  color: #fff;
+  text-shadow: 3px 0 0 #000, -1px 0 0 #fff;
+  animation: jitter 0.9s steps(1) infinite;
+}
+.instruction-overlay { font-family: 'VT323', monospace; font-size: clamp(1.8rem, 4vw, 2.8rem); }
+
+@keyframes jitter {
+  0%, 100% { transform: translate(0, 0); }
+  12% { transform: translate(-2px, 1px); }
+  13% { transform: translate(0, 0); }
+  61% { transform: translate(2px, -1px); }
+  62% { transform: translate(0, 0); }
+}
+
+/* a dim 1-bit image behind each stage title */
+.stage-card-img {
+  position: absolute;
+  inset: 0;
+  background: center / contain no-repeat;
+  opacity: 0.16;
+}
+.stage-card-title, .stage-card-sub { position: relative; }
+
+/* subliminal full-screen flashes */
+.image-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: #000 center / contain no-repeat;
+  display: none;
+  pointer-events: none;
+}
+.image-flash.show { display: block; }
+.image-flash.invert { filter: invert(1); }
+
+/* noise + scanlines over everything */
+#noise-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 150;
+  pointer-events: none;
+  opacity: 0.09;
+  image-rendering: pixelated;
+}
+#crt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 151;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.28) 0 2px, transparent 2px 4px);
+}
+
+/* taller pixel font: let long screens scroll instead of clipping the top */
+.screen { justify-content: safe center; overflow-y: auto; }
