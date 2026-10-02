@@ -53,9 +53,9 @@ export class DelayedFeed {
    * @param {number} nowMs
    * @param {{ face?: object, mask?: Uint8Array, motion?: boolean }} extras
    */
-  update(videoEl, nowMs, { face = null, mask = null, motion = false, brightness = null } = {}) {
+  update(videoEl, nowMs, { face = null, mask = null, motion = false, levels = null } = {}) {
     if (videoEl.readyState < 2) return;
-    if (brightness != null) this.renderer.sceneBrightness = brightness / 255;
+    if (levels) this.renderer.levels = levels;
     this._live = { image: videoEl, keypoints: face?.keypoints || null, mask, maskSize: MASK_SIZE };
 
     if (nowMs - this.lastSampleMs >= SAMPLE_INTERVAL_MS && !this._capturing) {

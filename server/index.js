@@ -100,8 +100,9 @@ app.post("/api/tts", async (req, res) => {
     const text = String(req.body?.text || "").trim().slice(0, 300);
     if (!text) return res.status(400).json({ error: "text required" });
     const result = await generateSpeech({ text });
-    if (!result?.audio) return res.status(502).json({ error: "no_result" });
-    res.json(result);
+    if (result.status === "pending") return res.status(202).json({ pending: true, queued: result.queued });
+    if (!result.audio) return res.status(502).json({ error: "no_result" });
+    res.json({ audio: result.audio, sampleRate: result.sampleRate });
   } catch (err) {
     console.error("[/api/tts]", err.message);
     res.status(500).json({ error: "internal" });

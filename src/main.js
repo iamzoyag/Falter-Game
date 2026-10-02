@@ -101,9 +101,13 @@ aiClient.healthCheck().then((ok) => {
   else aiUnavailableNote.classList.remove("hidden");
 });
 
+// Belt and braces: any click or keypress wakes the audio back up if the browser suspended it.
+for (const ev of ["pointerdown", "keydown"]) window.addEventListener(ev, () => audio.unlock(), { passive: true });
+
 // ---------------------------------------------------------------- consent
 document.getElementById("btn-consent").addEventListener("click", async () => {
   const btn = document.getElementById("btn-consent");
+  const audioReady = audio.init();
   btn.disabled = true;
   btn.textContent = "asking for camera + mic access…";
 
@@ -357,9 +361,9 @@ function loop() {
   const now = performance.now();
   latestFace = faceTracker.update(videoHidden, now) || latestFace;
   latestMask = segmenter.update(videoHidden, now);
-  latestEnv = envMonitor.update(videoHidden) || latestEnv;
+  latestEnv = envMonitor.update(videoHidden, latestFace?.keypoints) || latestEnv;
   latestMic = audioSensor?.update(now) || latestMic;
-  feed.update(videoHidden, now, { face: latestFace, mask: latestMask, motion: latestEnv?.inMotion, brightness: latestEnv?.brightness });
+  feed.update(videoHidden, now, { face: latestFace, mask: latestMask, motion: latestEnv?.inMotion, levels: latestEnv?.levels });
 
   const behind = feed.mode === "delayed" || feed.mode === "replay";
   ui.setFeedStatus(behind ? "● …" : "● live", behind); // frozen/clip modes still claim to be live
