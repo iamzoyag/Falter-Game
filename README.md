@@ -97,7 +97,7 @@ behaviour mid-act), `pause`, `card: "none"`, `drift: true`.
 - **Injury sounds** are recorded CC0 foley from freesound.org
   (`public/audio/sfx/`, credits in `CREDITS.txt` there), played through
   `src/core/SampleBank.js`; the synthesised versions are the fallback.
-- **The player's face**: in Acts IV and V (and once at the end of the
+- **The player's face**: in Acts V and VI (and once at the end of the
   mirror) their own webcam face flashes up mutilated for a split second
   (`src/ui/FaceGore.js`: wounds painted on the FaceLandmarker landmarks).
 - **The figure behind you** is a jumpscare now: it's there for a fraction
