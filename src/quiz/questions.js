@@ -187,7 +187,7 @@ const BONUS_QUESTIONS = [
     id: "b1",
     callbackId: "last_ate",
     principle: "rapport (bonus round)",
-    prompt: "Bonus round!! What's the last thing you ate?",
+    prompt: "Okay!! What's the last thing you ate?",
     options: [
       { text: "Something healthy.", expressionHint: "any", mochi: "so responsible!! ♡" },
       { text: "Snacks. Lots of snacks.", expressionHint: "smile", mochi: "hehe, mochi won't tell ♡" },
