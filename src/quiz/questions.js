@@ -111,8 +111,86 @@ const MOCHI_QUESTIONS = [
   }
 ];
 
+// Act II "bonus round" (b1..b6). Still pink, still Mochi, still cute on the
+// surface, but each one leans a little further into the player's real life.
+// `special` hooks a reaction that uses something real (the clock, the room
+// scan, their earlier answers) — see specialReaction() in MochiLines.js.
+const BONUS_QUESTIONS = [
+  {
+    id: "b1",
+    callbackId: "last_ate",
+    principle: "rapport (bonus round)",
+    prompt: "Bonus round!! What's the last thing you ate?",
+    options: [
+      { text: "Something healthy.", expressionHint: "any", mochi: "so responsible!! ♡" },
+      { text: "Snacks. Lots of snacks.", expressionHint: "smile", mochi: "hehe, mochi won't tell ♡" },
+      { text: "I don't remember.", expressionHint: "any", mochi: "you should eat something, {name} ♡" }
+    ]
+  },
+  {
+    id: "b2",
+    callbackId: "bedtime",
+    principle: "intrusion: she knows your real time",
+    special: "clock",
+    prompt: "What time do you usually go to bed?",
+    options: [
+      { text: "Before midnight.", expressionHint: "neutral" },
+      { text: "After midnight.", expressionHint: "neutral" },
+      { text: "Whenever I pass out.", expressionHint: "smile" }
+    ]
+  },
+  {
+    id: "b3",
+    callbackId: "live_alone",
+    principle: "isolation",
+    prompt: "Do you live alone?",
+    options: [
+      { text: "Yes.", expressionHint: "neutral", mochi: "then mochi will keep you company ♡ always" },
+      { text: "No.", expressionHint: "neutral", mochi: "do they know you're talking to mochi? ♡" },
+      { text: "Sort of.", expressionHint: "any", mochi: "sort of alone. mochi knows that feeling ♡" }
+    ]
+  },
+  {
+    id: "b4",
+    callbackId: "anyone_in_room",
+    principle: "intrusion: she can see your room",
+    special: "room",
+    prompt: "Is anyone else in the room with you right now?",
+    options: [
+      { text: "No, just me.", expressionHint: "neutral" },
+      { text: "Yes.", expressionHint: "neutral" },
+      { text: "I'm not sure.", expressionHint: "surprise" }
+    ]
+  },
+  {
+    id: "b5",
+    callbackId: "miss_mochi",
+    principle: "attachment, then guilt",
+    special: "miss",
+    prompt: "If mochi went away, would you miss her?",
+    options: [
+      { text: "Of course!", expressionHint: "smile" },
+      { text: "A little.", expressionHint: "neutral" },
+      { text: "Probably not.", expressionHint: "neutral" }
+    ]
+  },
+  {
+    id: "b6",
+    callbackId: "been_honest",
+    principle: "the lie detector shows itself",
+    special: "honest",
+    prompt: "Have you been completely honest with mochi?",
+    options: [
+      { text: "Yes, every single answer.", expressionHint: "neutral" },
+      { text: "Mostly.", expressionHint: "smile" },
+      { text: "No.", expressionHint: "neutral" }
+    ]
+  }
+];
+
 export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
+  ...BONUS_QUESTIONS,
   {
     id: "q1",
     callbackId: "afraid_of_dark",

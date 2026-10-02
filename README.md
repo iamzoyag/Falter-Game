@@ -44,6 +44,35 @@ and mismatches pile up. It's deliberately decoupled from audio/DOM code —
 it just emits "beat" events — so you can retune pacing/thresholds in one
 file without touching rendering or audio.
 
+## The shape of the game (six acts)
+
+The dread is meant to arrive before the player can name it. Nothing visibly
+goes wrong until they already feel it.
+
+1. **I. HELLO ♡** honest and cute: name, three quiz rounds, head pats,
+   snack, polaroid. Then a real goodbye and a fake "thanks for playing ♡"
+   ending with a play-again button.
+2. **II. BONUS ROUND ♡** "wait wait wait!!" Still pink, still Mochi, but
+   underneath: a 19 Hz hum and a heartbeat behind the music
+   (`AudioEngine.setUnease`), the song drifting flat, the pink draining
+   step by step (`--drain`), single frames of a hurt Mochi, breathing behind
+   you, a word in a question flickering to your name. Then the conscious
+   "wait...": she repeats a question and notices if your answer changed,
+   tells you the real time, sees your room, asks if you'd miss her, and
+   counts your lies. "mochi should be quiet now ♡" → **stitches**.
+3. **III. WHERE WERE WE? ♡** she's back as if nothing happened. Faded
+   colours, the song plays broken with the drone under it, she knows your
+   city and battery level, and whenever you blink her avatar has stitches.
+   Halfway through, the director's beats switch on. "it's getting dark..."
+   → **eyes**.
+4. **IV. THE MIRROR** black and white from here. → **ears**.
+5. **V. PRESENCE** the figure, the room, your own face.
+6. **VI. INTERVIEW** answer out loud. → **unzip**, then the ending.
+
+Pacing tools in `src/stages.js`: `talk` (Mochi carries the transition
+instead of a title card), `fakeEnd`, `repeat`, `features` (switch director
+behaviour mid-act), `pause`, `card: "none"`, `drift: true`.
+
 ## Mochi (the mascot) and the colour script
 
 - **Act I ("I. HELLO ♡")** is a long, genuinely cute getting-to-know-you
@@ -53,15 +82,13 @@ file without touching rendering or audio.
   polaroid of the two of them through a cute webcam filter
   (`src/segments/MochiPlay.js`). She reacts to every answer. Her theme plays
   throughout (`src/core/CuteTheme.js`; drop a loopable
-  `public/audio/cute-theme.mp3` to use a recorded track instead). The
-  ambient drone stays silent until Act II, where Mochi keeps hosting but is
-  slightly wrong.
+  `public/audio/cute-theme.mp3` to use a recorded track instead). The ambient drone stays silent until Act III.
 - **What she learns comes back**: the name, the snack, whether you petted
   her, your answers (`src/mochi/MochiLines.js` builds the whispers after
   each event from them), and the polaroid, which returns at the very end
   with Mochi unzipped and your own face mutilated.
 - **Mochi events** (`src/segments/MochiSegment.js`) sit at every act break,
-  worst last: stitches (I→II), eyes (II→III), ears (III→IV), unzip (after V).
+  worst last: stitches (end of II), eyes (end of III), ears (end of IV), unzip (end of VI).
   Each starts from cute Mochi + her song, then one wound plays out
   (`src/mochi/MochiEngine.js`, WebGL, Mochi is a cut-out on a full-screen
   transparent canvas) and only advances while the webcam says you're
@@ -70,7 +97,7 @@ file without touching rendering or audio.
 - **Injury sounds** are recorded CC0 foley from freesound.org
   (`public/audio/sfx/`, credits in `CREDITS.txt` there), played through
   `src/core/SampleBank.js`; the synthesised versions are the fallback.
-- **The player's face**: in Acts IV and V (and once at the end of the
+- **The player's face**: in Acts V and VI (and once at the end of the
   mirror) their own webcam face flashes up mutilated for a split second
   (`src/ui/FaceGore.js`: wounds painted on the FaceLandmarker landmarks).
 - **The figure behind you** is a jumpscare now: it's there for a fraction
@@ -81,8 +108,8 @@ file without touching rendering or audio.
 - **AI (optional)**: `/api/mochi` writes Mochi's reactions and the
   post-event whispers from the player's name and answers. Local lines show
   instantly; the AI version replaces them only if it's fast.
-- `body[data-act]` (1–5) switches the palette in `style.css`: pink → dusty
-  rose → the 1-bit look → black and blood red.
+- `body[data-act]` (1–6) switches the palette in `style.css`: pink → draining
+  pink → dusty rose → the 1-bit look → black and red → black and blood red.
 - Assets: `public/mochi/` (cut-out RGBA WebP images, optical-flow textures,
   reveal masks, ear sprite). Image licence: the LoRAs used forbid selling
   generated content: fine for a free project, recheck before any

@@ -28,8 +28,8 @@ export const LINES = {
   polaroidAsk: "let's take a picture together!! squeeze in ♡",
   polaroidAfter: ["mochi will keep this forever ♡", "best friends!! mochi's putting this on the fridge ♡"],
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
-  // Act II: same Mochi, slightly wrong. She doesn't seem to remember what happened.
-  hostAct2: [
+  // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
+  hostAct3: [
     "mochi feels a little funny today ♡",
     "did something happen? mochi can't remember ♡",
     "mochi is fine!! mochi is always fine ♡",
@@ -38,14 +38,93 @@ export const LINES = {
     "mochi remembers everything you said ♡",
     "don't look at the stitches ♡"
   ],
-  answerAct2: ["...♡", "mochi knew you'd say that ♡", "hehe. ♡", "is that true, {name}? ♡", "mochi will remember ♡"]
+  answerAct3: ["...♡", "mochi knew you'd say that ♡", "hehe. ♡", "is that true, {name}? ♡", "mochi will remember ♡", "mhm. ♡", "mochi can't talk very well right now ♡"]
 };
+
+// ---------------------------------------------------------------- act transitions (said in MochiPlay "talk")
+
+export const TALK = {
+  // end of Act I: a real goodbye, so Act II feels like a bonus
+  goodbye: ["that's all the rounds!! you did sooo good, {name} ♡", "thank you for playing with mochi ♡ bye bye!"],
+  // start of Act II
+  bonus: ["wait wait wait!!", "don't go yet, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
+  // end of Act II, right before the stitches
+  quiet: ["mochi has been talking a lot, hasn't she?", "...", "mochi should be quiet now ♡"],
+  // start of Act III: as if nothing happened
+  whereWereWe: ["...", "hi {name}!! ♡", "where were we? ♡", "mochi feels a little funny. it's fine!! mochi is fine ♡"],
+  // end of Act III, right before the eyes
+  cantSee: ["{name}?", "it's getting dark, {name}. mochi can't see you very well...", "come closer ♡ let mochi look at you"]
+};
+
+/** Real things about the player's machine/place, for the moments she shouldn't know them. */
+export function envInfo() {
+  const now = new Date();
+  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).toLowerCase();
+  const hour = now.getHours();
+  let city = "";
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    city = (tz.split("/")[1] || "").replace(/_/g, " ");
+  } catch { /* fine */ }
+  return { time, hour, city, late: hour >= 22 || hour < 5 };
+}
+
+let _battery = null;
+navigator.getBattery?.().then((b) => (_battery = b)).catch(() => {});
+export function batteryLevel() {
+  return _battery ? Math.round(_battery.level * 100) : null;
+}
+
+/**
+ * Reactions that use something real. Returns a line or null (then the normal reaction is used).
+ * @param {object} q question  @param {number} i option index
+ * @param {{player, room, dossier, previous}} c
+ */
+export function specialReaction(q, i, { player, room, dossier }) {
+  const name = player?.name || "friend";
+  switch (q.special) {
+    case "clock": {
+      const e = envInfo();
+      if (e.late) return `it's ${e.time} right now, ${name}. you should be asleep ♡`;
+      return i === 1 ? `after midnight?? mochi will stay up with you. every night ♡` : `it's ${e.time} now. mochi's been counting ♡`;
+    }
+    case "room": {
+      const objs = room?.objects || [];
+      const people = room?.personCount ?? 1;
+      if (i === 0 && people >= 2) return "then who's that behind you? ♡ ...hehe, just kidding!!";
+      const o = objs[0];
+      if (i === 0 && o) return `just you and your ${o.label} ♡ mochi likes it. it's ${o.where}, right?`;
+      if (i === 1) return "say hi to them for mochi ♡ they can't see mochi though";
+      if (i === 2) return o ? `mochi only sees you. and the ${o.label} ♡` : "mochi only sees you ♡";
+      return null;
+    }
+    case "miss":
+      return ["mochi would miss you sooo much ♡ she'd never leave", "only a little? ...okay ♡", "..."][i] || null;
+    case "honest": {
+      const lies = (dossier || []).filter((d) => d.mismatch).length;
+      if (i === 0 && lies > 0) return `hmm. mochi doesn't think so, ${name} ♡ mochi counted ${lies}.`;
+      if (i === 0) return "mochi believes you ♡ for now";
+      if (i === 1) return "mostly. mochi noticed which ones ♡";
+      return "thank you for telling mochi the truth ♡ finally";
+    }
+    default:
+      return null;
+  }
+}
+
+/** The repeated question: did their answer change? */
+export function repeatReaction(prevText, nowText, player) {
+  const name = player?.name || "friend";
+  if (!prevText) return "hehe ♡";
+  if (prevText === nowText) return "you said that last time too ♡ mochi remembers everything";
+  return `...that's not what you said before, ${name}. you said "${prevText.replace(/[.!]+$/, "").toLowerCase()}" ♡`;
+}
 
 /** Mochi's line before each event (cute), with a personal touch when there's something to use. */
 export function eventBefore(scene, player) {
   const base = {
-    stitches: "hiii {name}!! you've been sooo honest ♡ mochi has a surprise!",
-    eyes: "{name}!! mochi missed you!! did you miss mochi? ♡",
+    stitches: "shhh ♡ mochi will be very quiet now, {name}. watch ♡",
+    eyes: "there you are, {name}!! ♡ let mochi look at you",
     ears: "shhh... mochi's listening, {name} ♡",
     unzip: "mochi saved something for you, {name}. it's inside ♡"
   }[scene] || "♡";
@@ -81,13 +160,19 @@ export function eventAfter(scene, player, dossier, { lookAways = 0, flinch = 0 }
 /** Mochi's reaction to an answer. */
 export function answerReaction(question, optionIndex, act, player) {
   const opt = question?.options?.[optionIndex];
-  if (act >= 2) return fill(pick(LINES.answerAct2), player);
+  if (act >= 3) return fill(pick(LINES.answerAct3), player);
   return fill(opt?.mochi || pick(LINES.answerGeneric), player);
 }
 
+/** What she says while a question is up (Act III only: she pretends nothing happened). */
 export function hostLine(act, player) {
-  if (act === 2) return fill(pick(LINES.hostAct2), player);
-  return "";
+  if (act !== 3) return "";
+  const e = envInfo(), bat = batteryLevel();
+  const extra = [];
+  if (e.city) extra.push(`it's ${e.time} in ${e.city} ♡ mochi checked`);
+  if (bat != null && bat < 60) extra.push(`your battery's at ${bat}% ♡ don't leave mochi`);
+  const pool = [...LINES.hostAct3, ...extra];
+  return fill(pick(pool), player);
 }
 
 export const fillName = fill;

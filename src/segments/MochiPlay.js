@@ -17,6 +17,7 @@ const el = () => document.getElementById("mochi-play");
 
 function build() {
   const root = el();
+  root.className = "mochi-play"; // drop the last moment's mode classes (photo, round, talk...)
   root.innerHTML = `
     <div class="mp-bubble mochi-bubble big"></div>
     <div class="mp-mochi-wrap"><img class="mp-mochi" src="${MOCHI_CUTE_URL}" alt="Mochi" draggable="false" /></div>
@@ -73,6 +74,41 @@ function heart(v, x, y, glyph = "♡") {
   setTimeout(() => h.remove(), 1200);
 }
 
+// ---------------------------------------------------------------- talk
+
+/**
+ * Mochi, full screen, saying a few lines in a row. Used for the act
+ * transitions so the game flows through her instead of title cards.
+ * mood: "cute" | "off" (drained, a hurt frame flickers through) | "dark" (dim, she's hard to see)
+ */
+export async function runTalk(ctx, lines, { mood = "cute", flicker = null, perLineMs = 2300 } = {}) {
+  const v = build();
+  v.root.classList.add("talk", `mood-${mood}`);
+  show(v);
+  if (mood === "cute") bounce(v);
+  let flickerTimer = null;
+  if (flicker) {
+    // a single frame of something else, now and then: too fast to be sure you saw it
+    const tick = () => {
+      const img = v.mochi;
+      if (!img.isConnected) return;
+      const src = img.src;
+      img.src = flicker;
+      setTimeout(() => { if (img.isConnected) img.src = src; }, 45);
+      flickerTimer = setTimeout(tick, 1800 + Math.random() * 2600);
+    };
+    flickerTimer = setTimeout(tick, 900 + Math.random() * 900);
+  }
+  for (const raw of lines) {
+    const text = fillName(raw, ctx.player);
+    say(v, text);
+    if (text !== "...") (mood === "cute" ? ctx.sfx?.pop : ctx.sfx?.tick)?.call(ctx.sfx);
+    await sleep(text === "..." ? 1500 : perLineMs + Math.min(1800, text.length * 25));
+  }
+  clearTimeout(flickerTimer);
+  await hide(v);
+}
+
 // ---------------------------------------------------------------- greet
 
 export async function runGreet(ctx) {
@@ -116,15 +152,49 @@ function cleanName(s) {
 
 // ---------------------------------------------------------------- round card
 
-export async function runRoundCard(ctx, title, sub) {
+export async function runRoundCard(ctx, title, sub, { glitch = false, ms = 2400 } = {}) {
   const v = build();
   v.root.classList.add("round");
+  if (glitch) v.root.classList.add("glitch");
   v.controls.innerHTML = `<div class="mp-round"><div class="mp-round-title">${title}</div><div class="mp-round-sub">${sub}</div></div>`;
   say(v, "");
   show(v);
+  if (glitch) {
+    ctx.sfx?.tick();
+    v.mochi.src = "/mochi/stitches.webp"; // for one frame
+    setTimeout(() => { if (v.mochi.isConnected) v.mochi.src = MOCHI_CUTE_URL; }, 60);
+  } else {
+    bounce(v, "wiggle");
+    ctx.sfx?.pop();
+  }
+  await sleep(ms);
+  await hide(v);
+}
+
+/**
+ * The fake ending after Act I: "thanks for playing ♡", the song resolves,
+ * a play-again button that doesn't matter. The player relaxes. Then Mochi
+ * bursts back in (Act II starts with "wait wait wait!!").
+ */
+export async function runFakeEnd(ctx) {
+  const v = build();
+  v.root.classList.add("round", "fake-end");
+  v.controls.innerHTML = `
+    <div class="mp-round">
+      <div class="mp-round-title">thanks for playing ♡</div>
+      <div class="mp-round-sub">mochi had so much fun with you, ${ctx.player.name || "friend"}!</div>
+      <p class="mp-hint">made with love by mochi</p>
+      <button class="btn-primary mp-again">play again ♡</button>
+    </div>`;
+  show(v);
   bounce(v, "wiggle");
+  ctx.sfx?.chirp();
+  const again = v.controls.querySelector(".mp-again");
+  await new Promise((resolve) => {
+    again.addEventListener("click", resolve, { once: true });
+    setTimeout(resolve, 7000);
+  });
   ctx.sfx?.pop();
-  await sleep(2400);
   await hide(v);
 }
 

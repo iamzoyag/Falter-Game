@@ -137,10 +137,13 @@ export async function generateMochiLine({ moment, act, scene, name, snack, quest
       `cute getting-to-know-you quiz (Doki Doki Literature Club style) before it turns into psychological horror. ` +
       `Mochi is a small white bunny: bubbly, affectionate, a little clingy, talks about herself in the third person ` +
       `("mochi"), uses lowercase and the occasional ♡. ${SAFETY_NOTE} ` +
-      (act >= 2
+      (act >= 3
         ? `It is now act ${act}: something has happened to Mochi that she doesn't remember. Stay sweet on the surface ` +
           `but let one detail be slightly wrong, too attentive, or possessive. `
-        : `It is act 1: be genuinely sweet and warm so the player gets attached. Nothing creepy at all. `) +
+        : act === 2
+          ? `It is act 2, a "bonus round" after the game pretended to end: still sweet and bubbly, but now and then ` +
+            `a little too attentive or clingy. Nothing overtly creepy; the player should only half-notice. `
+          : `It is act 1: be genuinely sweet and warm so the player gets attached. Nothing creepy at all. `) +
       `React specifically to what the player just said or did, and use their name sometimes. Under 16 words, one line, ` +
       `never repeat the example verbatim.`;
   const userContent =

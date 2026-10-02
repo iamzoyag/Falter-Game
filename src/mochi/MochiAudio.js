@@ -98,7 +98,7 @@ export class MochiAudio {
 
   /** Per-act damage to the cute track at the START of an event: it's never quite right again. */
   actWarp(act) {
-    const k = Math.max(0, Math.min(1, (act - 1) / 4));
+    const k = Math.max(0, Math.min(1, (act - 1) / 5));
     return { cents: -55 * k, wobble: 0.45 * k, tempo: 1 - 0.1 * k, muffle: 0.15 * k };
   }
 

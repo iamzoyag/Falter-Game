@@ -569,7 +569,7 @@ html, body { font-family: 'VT323', monospace; font-size: 20px; }
   pointer-events: none;
   transition: opacity 0.6s ease;
 }
-body[data-act="1"] .mochi-event { background: radial-gradient(circle at 20% 15%, #fff0f7 0 12%, transparent 13%) 0 0 / 120px 120px, #ffe3ef; }
+body:is([data-act="1"],[data-act="2"]) .mochi-event { background: radial-gradient(circle at 20% 15%, #fff0f7 0 12%, transparent 13%) 0 0 / 120px 120px, #ffe3ef; }
 /* the room goes dark around her as the wound opens (opacity set from JS) */
 .mochi-event-dim {
   position: absolute;
@@ -642,7 +642,7 @@ body.mochi-mode #noise-overlay { opacity: 0.05; }
 .content-warning { font-size: 0.9em; opacity: 0.85; }
 
 /* ---------- ACT I: super bubbly, girly, pink ---------- */
-body[data-act="1"] {
+body:is([data-act="1"],[data-act="2"]) {
   --bg: #ffe3ef;
   --bg-panel: #fff5fa;
   --fg: #6b1d45;
@@ -653,10 +653,10 @@ body[data-act="1"] {
   font-family: 'Fredoka', system-ui, sans-serif;
   font-size: 18px;
 }
-body[data-act="1"] #noise-overlay,
-body[data-act="1"] #crt-overlay { display: none; }
-body[data-act="1"] .glitch-title,
-body[data-act="1"] .stage-card-title {
+body:is([data-act="1"],[data-act="2"]) #noise-overlay,
+body:is([data-act="1"],[data-act="2"]) #crt-overlay { display: none; }
+body:is([data-act="1"],[data-act="2"]) .glitch-title,
+body:is([data-act="1"],[data-act="2"]) .stage-card-title {
   font-family: 'Fredoka', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -664,15 +664,15 @@ body[data-act="1"] .stage-card-title {
   text-shadow: 0 4px 0 #fff, 0 7px 0 #ffb3d6;
   animation: mochi-bob 3s ease-in-out infinite;
 }
-body[data-act="1"] .tagline,
-body[data-act="1"] .fineprint,
-body[data-act="1"] .question-index { color: var(--fg-dim); font-style: normal; }
-body[data-act="1"] .consent-copy,
-body[data-act="1"] .ai-optin-row {
+body:is([data-act="1"],[data-act="2"]) .tagline,
+body:is([data-act="1"],[data-act="2"]) .fineprint,
+body:is([data-act="1"],[data-act="2"]) .question-index { color: var(--fg-dim); font-style: normal; }
+body:is([data-act="1"],[data-act="2"]) .consent-copy,
+body:is([data-act="1"],[data-act="2"]) .ai-optin-row {
   background: #fff; color: var(--fg); border: 3px solid #ffb3d6; border-radius: 20px;
 }
-body[data-act="1"] .btn-primary,
-body[data-act="1"] .answer-btn {
+body:is([data-act="1"],[data-act="2"]) .btn-primary,
+body:is([data-act="1"],[data-act="2"]) .answer-btn {
   font-family: 'Fredoka', system-ui, sans-serif;
   font-weight: 500;
   font-size: 1.05rem;
@@ -683,29 +683,29 @@ body[data-act="1"] .answer-btn {
   box-shadow: 0 4px 0 #ffb3d6;
   transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
 }
-body[data-act="1"] .btn-primary { background: #ff7eb6; color: #fff; border-color: #ff5fa8; box-shadow: 0 4px 0 #e0438d; }
-body[data-act="1"] .btn-primary:hover,
-body[data-act="1"] .answer-btn:hover { background: #ffd1e6; color: var(--fg); transform: translateY(-2px); box-shadow: 0 6px 0 #ffb3d6; }
-body[data-act="1"] .answer-btn:disabled { opacity: 0.45; transform: none; }
-body[data-act="1"] .question-prompt { font-size: 1.45rem; font-weight: 600; line-height: 1.35; }
-body[data-act="1"] .feed-frame,
-body[data-act="1"] .case-file { border: 3px solid #ffb3d6; border-radius: 18px; overflow: hidden; }
-body[data-act="1"] .feed-status { color: #fff; }
-body[data-act="1"] #video-raw { filter: saturate(0.6) sepia(0.25) hue-rotate(290deg); opacity: 0.7; }
-body[data-act="1"] #calib-dot { background: #ff5fa8; box-shadow: 0 0 0 4px #fff, 0 0 18px 6px #ff9cca; border-radius: 50%; }
-body[data-act="1"] .progress-track { background: #ffd1e6; border-radius: 99px; overflow: hidden; }
-body[data-act="1"] .progress-fill { background: #ff7eb6; }
-body[data-act="1"] .stage-card { background: #ffe3ef; }
-body[data-act="1"] .stage-card-sub { color: var(--fg-dim); font-style: normal; }
-body[data-act="1"] .mochi-host { display: flex; }
-body[data-act="1"] .mochi-hello {
+body:is([data-act="1"],[data-act="2"]) .btn-primary { background: #ff7eb6; color: #fff; border-color: #ff5fa8; box-shadow: 0 4px 0 #e0438d; }
+body:is([data-act="1"],[data-act="2"]) .btn-primary:hover,
+body:is([data-act="1"],[data-act="2"]) .answer-btn:hover { background: #ffd1e6; color: var(--fg); transform: translateY(-2px); box-shadow: 0 6px 0 #ffb3d6; }
+body:is([data-act="1"],[data-act="2"]) .answer-btn:disabled { opacity: 0.45; transform: none; }
+body:is([data-act="1"],[data-act="2"]) .question-prompt { font-size: 1.45rem; font-weight: 600; line-height: 1.35; }
+body:is([data-act="1"],[data-act="2"]) .feed-frame,
+body:is([data-act="1"],[data-act="2"]) .case-file { border: 3px solid #ffb3d6; border-radius: 18px; overflow: hidden; }
+body:is([data-act="1"],[data-act="2"]) .feed-status { color: #fff; }
+body:is([data-act="1"],[data-act="2"]) #video-raw { filter: saturate(0.6) sepia(0.25) hue-rotate(290deg); opacity: 0.7; }
+body:is([data-act="1"],[data-act="2"]) #calib-dot { background: #ff5fa8; box-shadow: 0 0 0 4px #fff, 0 0 18px 6px #ff9cca; border-radius: 50%; }
+body:is([data-act="1"],[data-act="2"]) .progress-track { background: #ffd1e6; border-radius: 99px; overflow: hidden; }
+body:is([data-act="1"],[data-act="2"]) .progress-fill { background: #ff7eb6; }
+body:is([data-act="1"],[data-act="2"]) .stage-card { background: #ffe3ef; }
+body:is([data-act="1"],[data-act="2"]) .stage-card-sub { color: var(--fg-dim); font-style: normal; }
+body:is([data-act="1"],[data-act="2"]) .mochi-host { display: flex; }
+body:is([data-act="1"],[data-act="2"]) .mochi-hello {
   display: block; width: 150px; height: 150px; margin: 0 auto 4px; object-fit: contain;
   filter: drop-shadow(0 8px 10px rgba(180, 60, 120, 0.25)); animation: mochi-bob 2.4s ease-in-out infinite;
 }
-body[data-act="1"] .director-overlay .whisper { color: #c2185b; text-shadow: none; }
+body:is([data-act="1"],[data-act="2"]) .director-overlay .whisper { color: #c2185b; text-shadow: none; }
 
 /* ---------- ACT II: same shapes, colour drained, something's off ---------- */
-body[data-act="2"] {
+body[data-act="3"] {
   --bg: #2a1b20;
   --bg-panel: #2f1f25;
   --fg: #e8cdd6;
@@ -716,10 +716,10 @@ body[data-act="2"] {
   font-family: 'Fredoka', system-ui, sans-serif;
   font-size: 18px;
 }
-body[data-act="2"] #crt-overlay { opacity: 0.4; }
-body[data-act="2"] #noise-overlay { opacity: 0.04; }
-body[data-act="2"] .btn-primary,
-body[data-act="2"] .answer-btn {
+body[data-act="3"] #crt-overlay { opacity: 0.4; }
+body[data-act="3"] #noise-overlay { opacity: 0.04; }
+body[data-act="3"] .btn-primary,
+body[data-act="3"] .answer-btn {
   font-family: 'Fredoka', system-ui, sans-serif;
   font-size: 1.02rem;
   background: transparent;
@@ -727,32 +727,32 @@ body[data-act="2"] .answer-btn {
   border: 2px solid #6e4252;
   border-radius: 999px;
 }
-body[data-act="2"] .answer-btn:hover { background: #4a2b37; color: #fff; border-color: var(--accent); }
-body[data-act="2"] .question-prompt { font-size: 1.4rem; line-height: 1.35; }
-body[data-act="2"] .feed-frame,
-body[data-act="2"] .case-file { border: 2px solid #6e4252; border-radius: 14px; overflow: hidden; }
-body[data-act="2"] .stage-card-title { font-family: 'Fredoka', system-ui, sans-serif; color: #e8cdd6; letter-spacing: 0.08em; }
+body[data-act="3"] .answer-btn:hover { background: #4a2b37; color: #fff; border-color: var(--accent); }
+body[data-act="3"] .question-prompt { font-size: 1.4rem; line-height: 1.35; }
+body[data-act="3"] .feed-frame,
+body[data-act="3"] .case-file { border: 2px solid #6e4252; border-radius: 14px; overflow: hidden; }
+body[data-act="3"] .stage-card-title { font-family: 'Fredoka', system-ui, sans-serif; color: #e8cdd6; letter-spacing: 0.08em; }
 
 /* ---------- ACT III: the 1-bit look (rules above, unchanged) ---------- */
 
 /* ---------- ACT IV + V: black and blood red ---------- */
-body[data-act="4"], body[data-act="5"] {
+body[data-act="5"], body[data-act="6"] {
   --fg: #e9d6d6;
   --fg-dim: #8a4a4a;
   --accent: #b3121d;
   --accent-glow: #ff2a35;
 }
-body[data-act="4"] .btn-primary, body[data-act="4"] .answer-btn,
-body[data-act="4"] .feed-frame, body[data-act="4"] .case-file { border-color: #7a0d14; }
-body[data-act="4"] .answer-btn:hover { background: #7a0d14; color: #fff; }
 body[data-act="5"] .btn-primary, body[data-act="5"] .answer-btn,
-body[data-act="5"] .feed-frame, body[data-act="5"] .case-file { border-color: #c4121f; color: #ffd9d9; }
-body[data-act="5"] .answer-btn:hover { background: #c4121f; color: #000; }
-body[data-act="4"] .director-overlay .whisper,
+body[data-act="5"] .feed-frame, body[data-act="5"] .case-file { border-color: #7a0d14; }
+body[data-act="5"] .answer-btn:hover { background: #7a0d14; color: #fff; }
+body[data-act="6"] .btn-primary, body[data-act="6"] .answer-btn,
+body[data-act="6"] .feed-frame, body[data-act="6"] .case-file { border-color: #c4121f; color: #ffd9d9; }
+body[data-act="6"] .answer-btn:hover { background: #c4121f; color: #000; }
 body[data-act="5"] .director-overlay .whisper,
-body[data-act="5"] .mirror-text { color: #ff2a35; }
-body[data-act="5"] { background: radial-gradient(ellipse at center, #1a0002 0%, #000 70%); }
-body[data-act="5"] #noise-overlay { opacity: 0.13; }
+body[data-act="6"] .director-overlay .whisper,
+body[data-act="6"] .mirror-text { color: #ff2a35; }
+body[data-act="6"] { background: radial-gradient(ellipse at center, #1a0002 0%, #000 70%); }
+body[data-act="6"] #noise-overlay { opacity: 0.13; }
 
 
 /* ======================================================================
@@ -909,14 +909,55 @@ body[data-act="5"] #noise-overlay { opacity: 0.13; }
 @keyframes calm-fade { from { opacity: 0; } to { opacity: 0.75; } }
 
 /* Act II: Mochi is still here, hosting. She seems fine. */
-body[data-act="2"] .mochi-host { display: flex; }
-body[data-act="2"] .mochi-host img { filter: saturate(0.55) brightness(0.92) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.4)); animation-duration: 3.4s; }
-body[data-act="2"] .mochi-bubble { background: #3a2730; color: #f1d4de; border-color: #8a5068; box-shadow: 0 4px 0 #6e4252; }
+body[data-act="3"] .mochi-host { display: flex; }
+body[data-act="3"] .mochi-host img { filter: saturate(0.55) brightness(0.92) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.4)); animation-duration: 3.4s; }
+body[data-act="3"] .mochi-bubble { background: #3a2730; color: #f1d4de; border-color: #8a5068; box-shadow: 0 4px 0 #6e4252; }
 
 /* consent screen fits on one laptop screen in Act I */
-body[data-act="1"] #screen-consent .glitch-title { font-size: clamp(2.2rem, 7vw, 3.6rem); margin-bottom: 2px; }
-body[data-act="1"] #screen-consent .tagline { margin-bottom: 16px; }
-body[data-act="1"] #screen-consent .consent-copy { padding: 14px 20px; margin-bottom: 14px; line-height: 1.45; }
-body[data-act="1"] #screen-consent .consent-copy li { margin-bottom: 4px; }
-body[data-act="1"] #screen-consent .ai-optin-row { margin-bottom: 12px; padding: 10px 16px; }
-body[data-act="1"] .mochi-hello { width: 112px; height: 112px; }
+body:is([data-act="1"],[data-act="2"]) #screen-consent .glitch-title { font-size: clamp(2.2rem, 7vw, 3.6rem); margin-bottom: 2px; }
+body:is([data-act="1"],[data-act="2"]) #screen-consent .tagline { margin-bottom: 16px; }
+body:is([data-act="1"],[data-act="2"]) #screen-consent .consent-copy { padding: 14px 20px; margin-bottom: 14px; line-height: 1.45; }
+body:is([data-act="1"],[data-act="2"]) #screen-consent .consent-copy li { margin-bottom: 4px; }
+body:is([data-act="1"],[data-act="2"]) #screen-consent .ai-optin-row { margin-bottom: 12px; padding: 10px 16px; }
+body:is([data-act="1"],[data-act="2"]) .mochi-hello { width: 112px; height: 112px; }
+
+/* ======================================================================
+   Act II: still pink, slowly draining (--drain 0..1 set from main.js)
+   ====================================================================== */
+body[data-act="2"] {
+  --drain: 0;
+  background:
+    radial-gradient(circle at 20% 15%, color-mix(in srgb, #fff0f7 calc(100% - var(--drain) * 55%), #d6cdd0) 0 12%, transparent 13%) 0 0 / 120px 120px,
+    color-mix(in srgb, #ffe3ef calc(100% - var(--drain) * 60%), #cbbcc2);
+}
+body[data-act="2"] #app,
+body[data-act="2"] .mochi-play { filter: saturate(calc(1 - var(--drain) * 0.45)); }
+body[data-act="2"] .mochi-play {
+  background:
+    radial-gradient(circle at 20% 15%, color-mix(in srgb, #fff0f7 calc(100% - var(--drain) * 55%), #d6cdd0) 0 12%, transparent 13%) 0 0 / 120px 120px,
+    color-mix(in srgb, #ffe3ef calc(100% - var(--drain) * 60%), #cbbcc2);
+}
+body[data-act="2"] .mochi-event { background: color-mix(in srgb, #ffe3ef calc(100% - var(--drain) * 60%), #cbbcc2); }
+
+/* Act III: Mochi's moments happen in a faded, dusty pink */
+body[data-act="3"] .mochi-play {
+  background: radial-gradient(circle at 20% 15%, #d9c6cd 0 12%, transparent 13%) 0 0 / 120px 120px, #c9b3bb;
+  color: #4a2a36;
+}
+body[data-act="3"] .mochi-play .mp-mochi { filter: saturate(0.55) drop-shadow(0 12px 14px rgba(60, 20, 40, 0.3)); }
+body[data-act="3"] .mochi-play .mochi-bubble { background: #f3e6ea; color: #5a2a3c; border-color: #b98a9b; box-shadow: 0 4px 0 #9b6e7f; }
+body[data-act="3"] .mochi-event { background: #c9b3bb; }
+
+/* talk moods */
+.mochi-play.mood-off .mp-mochi { animation-duration: 3.8s; filter: saturate(0.5) drop-shadow(0 12px 14px rgba(60, 20, 40, 0.3)); }
+.mochi-play.mood-dark { background: radial-gradient(ellipse at center, #3a2a30 0%, #0c0608 70%) !important; }
+.mochi-play.mood-dark .mp-mochi { filter: brightness(0.4) saturate(0.4) !important; animation: none; }
+.mochi-play.mood-dark .mochi-bubble { background: #1c1215 !important; color: #d9b9c4 !important; border-color: #4a2a36 !important; box-shadow: none !important; }
+
+/* glitched round card ("round fi̵ve ♡") */
+.mochi-play.glitch .mp-round-title { color: #b06a86; text-shadow: 2px 0 0 #fff, -2px 0 0 #6b1d45; animation: jitter 0.7s steps(1) infinite; }
+.mochi-play.glitch .mp-mochi { animation: none; filter: saturate(0.4); }
+
+/* the fake ending */
+.mochi-play.fake-end .mp-round-title { font-size: clamp(2.2rem, 7vw, 3.8rem); }
+.mochi-play.fake-end .mp-again { margin-top: 10px; }
