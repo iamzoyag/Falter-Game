@@ -24,10 +24,11 @@ export class EnvironmentMonitor {
     this.prevGray = null;
     this.baselineBrightness = null;
     this.emaBrightness = null;
+    this.levels = { lo: 0.05, hi: 0.9, face: null }; // smoothed, for the 1-bit look
   }
 
   /** Call once per frame with the live <video> element. Returns a signal snapshot. */
-  update(videoEl) {
+  update(videoEl, keypoints = null) {
     if (videoEl.readyState < 2) return null;
     this.ctx.drawImage(videoEl, 0, 0, SAMPLE_W, SAMPLE_H);
     const { data } = this.ctx.getImageData(0, 0, SAMPLE_W, SAMPLE_H);
@@ -60,7 +61,10 @@ export class EnvironmentMonitor {
     for (let p = 0; p < gray.length; p++) variance += (gray[p] - brightness) ** 2;
     variance = Math.sqrt(variance / gray.length);
 
+    this._updateLevels(gray, keypoints);
+
     return {
+      levels: this.levels,
       brightness,
       brightnessDelta: brightness - this.baselineBrightness,
       brightnessJump,
@@ -69,6 +73,27 @@ export class EnvironmentMonitor {
       lowVariance: variance < OCCLUSION_VARIANCE_THRESHOLD,
       likelyCovered: variance < OCCLUSION_VARIANCE_THRESHOLD && brightness < this.baselineBrightness - 10
     };
+  }
+
+  // Darkest/brightest ends of the frame plus the face's median brightness, so the
+  // 1-bit threshold works in a dim bedroom as well as a bright office.
+  _updateLevels(gray, kp) {
+    const sorted = Float32Array.from(gray).sort();
+    const pct = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] / 255;
+    let face = null;
+    if (kp) {
+      const x0 = Math.max(0, Math.floor(Math.min(kp.cheekL.x, kp.cheekR.x) * SAMPLE_W));
+      const x1 = Math.min(SAMPLE_W - 1, Math.ceil(Math.max(kp.cheekL.x, kp.cheekR.x) * SAMPLE_W));
+      const y0 = Math.max(0, Math.floor(kp.forehead.y * SAMPLE_H));
+      const y1 = Math.min(SAMPLE_H - 1, Math.ceil(kp.chin.y * SAMPLE_H));
+      const vals = [];
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) vals.push(gray[y * SAMPLE_W + x]);
+      if (vals.length > 4) { vals.sort((a, b) => a - b); face = vals[vals.length >> 1] / 255; }
+    }
+    const L = this.levels, k = 0.08; // smooth so the threshold doesn't flicker
+    L.lo += (pct(0.03) - L.lo) * k;
+    L.hi += (pct(0.985) - L.hi) * k;
+    if (face != null) L.face = L.face == null ? face : L.face + (face - L.face) * k;
   }
 
   /** Reset the "normal room" baseline — call after calibration settles. */

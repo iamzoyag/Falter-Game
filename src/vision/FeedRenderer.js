@@ -53,6 +53,7 @@ uniform float uPixel;
 uniform float uOneBit;
 uniform float uThreshold;
 uniform float uInvert;
+uniform vec2 uLevels;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
@@ -142,13 +143,15 @@ void main() {
   col *= mix(1.0, 1.0 - smoothstep(0.35, 0.95, vd), uVignette);
 
   if (uOneBit > 0.001) {
-    float l2 = dot(pre, vec3(0.299, 0.587, 0.114));
+    float span = max(uLevels.y - uLevels.x, 0.05);
+    float l2 = clamp((dot(pre, vec3(0.299, 0.587, 0.114)) - uLevels.x) / span, 0.0, 1.0);
     float nb = 0.0;
     nb += dot(texture2D(uFrame, src + vec2(0.035, 0.0)).rgb, vec3(0.333));
     nb += dot(texture2D(uFrame, src - vec2(0.035, 0.0)).rgb, vec3(0.333));
     nb += dot(texture2D(uFrame, src + vec2(0.0, 0.045)).rgb, vec3(0.333));
     nb += dot(texture2D(uFrame, src - vec2(0.0, 0.045)).rgb, vec3(0.333));
-    float lc = l2 + 0.9 * (l2 - nb * 0.25);
+    float nbn = clamp((nb * 0.25 - uLevels.x) / span, 0.0, 1.0);
+    float lc = l2 + 0.9 * (l2 - nbn);
     vec2 cell = floor(uv * uRes / max(uPixel, 1.0));
     float n = hash(cell + floor(uTime * 12.0) * 7.13) - 0.5;
     float bw = step(uThreshold, lc + n * 0.28);
@@ -201,7 +204,7 @@ export class FeedRenderer {
       "uFrame", "uMask", "uFigure", "uAspect", "uH", "uHP", "uHCount", "uEye", "uEyeAng", "uEyesBlack",
       "uHasMask", "uBgDark", "uVignette", "uGrain", "uAberration", "uDesat", "uContrast", "uBrightness",
       "uWobble", "uTime", "uFigRect", "uFigOpacity", "uFigDark",
-      "uRes", "uPixel", "uOneBit", "uThreshold", "uInvert"
+      "uRes", "uPixel", "uOneBit", "uThreshold", "uInvert", "uLevels"
     ]) this.u[name] = gl.getUniformLocation(prog, name);
 
     this.texFrame = makeTexture(gl);
@@ -214,7 +217,7 @@ export class FeedRenderer {
     this._maskSize = 0;
     this._lastMask = null;
     this._figureSource = null;
-    this.sceneBrightness = 0.45;
+    this.levels = { lo: 0.05, hi: 0.9, face: null };
   }
 
   /** Upload a figure image (HTMLImageElement / canvas / ImageBitmap with alpha). */
@@ -290,9 +293,13 @@ export class FeedRenderer {
     gl.uniform1f(this.u.uPixel, Math.max(1, w.pixel));
     gl.uniform1f(this.u.uOneBit, w.oneBit);
     gl.uniform1f(this.u.uInvert, w.invert);
-    // auto threshold: a bit above the room's average brightness, so roughly the
-    // brightest quarter (the lit face) survives as white
-    const auto = Math.min(0.8, Math.max(0.3, this.sceneBrightness + 0.12));
+    // auto threshold, in the stretched 0..1 range: just under the face's own
+    // brightness, so most of the lit face survives as white and shadows go black
+    const lv = this.levels;
+    const span = Math.max(0.05, lv.hi - lv.lo);
+    const faceN = lv.face != null ? (lv.face - lv.lo) / span : 0.6;
+    const auto = Math.min(0.75, Math.max(0.2, faceN * 0.85));
+    gl.uniform2f(this.u.uLevels, lv.lo, lv.hi);
     gl.uniform1f(this.u.uThreshold, w.threshold ?? auto);
 
     const figOn = figure && figure.opacity > 0.001 && this._figureSource;

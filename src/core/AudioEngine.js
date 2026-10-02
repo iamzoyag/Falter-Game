@@ -17,7 +17,9 @@ export class AudioEngine {
 
   /** Must be called from a user gesture (the consent button click). */
   async init() {
+    if (this.ctx) return this.unlock();
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    this.unlock();
     this.master = this.ctx.createGain();
     this.master.gain.value = 0.7;
     this.master.connect(this.ctx.destination);
@@ -25,6 +27,12 @@ export class AudioEngine {
     this.droneGain = this.ctx.createGain();
     this.droneGain.gain.value = 0.0;
     this.droneGain.connect(this.master);
+  }
+
+  /** Resume the context if the browser suspended it. Safe to call on every click/keypress. */
+  unlock() {
+    if (this.ctx && this.ctx.state !== "running") return this.ctx.resume().catch(() => {});
+    return Promise.resolve();
   }
 
   /** Slowly fades in a low detuned-oscillator drone with a wandering filter. */

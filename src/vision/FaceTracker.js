@@ -5,7 +5,7 @@ const MODEL_URL =
 
 const BLINK_CLOSED_THRESHOLD = 0.5;
 const BLINK_TOO_LONG_MS = 900;
-const LOOK_AWAY_THRESHOLD = 0.35;
+const LOOK_AWAY_THRESHOLD = 0.45; // one eye's sideways/up score
 const LOOK_AWAY_TOO_LONG_MS = 1800;
 
 // ---- reaction ("spike") detection, relative to THIS player's own baseline ----
@@ -175,11 +175,11 @@ export class FaceTracker {
   }
 
   _updateGaze(shapes, nowMs) {
-    const away =
-      ((shapes.eyeLookOutLeft || 0) + (shapes.eyeLookOutRight || 0) +
-       (shapes.eyeLookUpLeft || 0) + (shapes.eyeLookUpRight || 0) +
-       (shapes.eyeLookDownLeft || 0) + (shapes.eyeLookDownRight || 0)) / 6;
-    const isAway = away > LOOK_AWAY_THRESHOLD;
+    // Only sideways, up, or a turned head count. Looking DOWN doesn't: the
+    // answers are below the question, so every player looks down constantly.
+    const sideways = Math.max(shapes.eyeLookOutLeft || 0, shapes.eyeLookOutRight || 0);
+    const up = ((shapes.eyeLookUpLeft || 0) + (shapes.eyeLookUpRight || 0)) / 2;
+    const isAway = sideways > LOOK_AWAY_THRESHOLD || up > LOOK_AWAY_THRESHOLD || Math.abs(this._yawProxy) > 0.3;
 
     if (isAway && !this.lookingAway) {
       this.lookingAway = true;

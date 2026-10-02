@@ -94,7 +94,7 @@ export function shakeScreen() {
 
 /** Fear has consequences: the whole screen dims while the player reacts or looks away. */
 export function setDarkness(amount) {
-  $("#darkness-overlay").style.opacity = String(Math.min(0.88, amount * 0.88));
+  $("#darkness-overlay").style.opacity = String(Math.min(0.6, amount * 0.6)); // dark, but the question stays readable
 }
 
 export function blackout(ms) {
