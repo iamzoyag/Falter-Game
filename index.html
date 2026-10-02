@@ -11,36 +11,41 @@
     <!-- ===================== CONSENT / INTRO ===================== -->
     <section id="screen-consent" class="screen active">
       <div class="panel">
-        <img class="mochi-hello" src="/mochi/cute.jpg" alt="Mochi, a white bunny" />
+        <img class="mochi-hello" src="/mochi/cute.webp" alt="Mochi, a white bunny" />
         <h1 class="glitch-title">FALTER</h1>
-        <p class="tagline">a quiz with mochi ♡ she can't wait to meet you.</p>
+        <p class="tagline">a getting-to-know-you quiz with mochi ♡</p>
 
         <div class="consent-copy">
-          <p>beware of your surroundings.</p>
+          <p>hi!! mochi has been waiting for you ♡</p>
           <ul>
-            <li>it's watching you.</li>
+            <li>she'll ask you a few rounds of questions. there are no wrong answers!</li>
+            <li>she uses your camera and microphone so she can see and hear you. everything stays on your computer.</li>
+            <li>headphones make it extra cosy.</li>
           </ul>
-          <p>wear headphones.</p>
           <p class="content-warning"><strong>content warning:</strong> this game contains gore, body horror and flashing images.</p>
         </div>
 
+        <label class="ai-optin-row">
+          <input type="checkbox" id="reduce-flash-checkbox" />
+          <span>reduce flashing <span class="fineprint">(softer flashes, no strobe or screen shake)</span></span>
+        </label>
         <label id="ai-optin-row" class="ai-optin-row hidden">
           <input type="checkbox" id="ai-optin-checkbox" />
-          <span>let it react to me</span>
+          <span>let an AI help mochi write what she says <span class="fineprint">(your name and answers are sent to an AI service)</span></span>
         </label>
         <p id="ai-unavailable-note" class="fineprint hidden">
           (AI reactions unavailable — the backend server isn't running. See the README.)
         </p>
 
-        <button id="btn-consent" class="btn-primary">i understand — let me in</button>
-        <p class="fineprint">requires camera + microphone permission</p>
+        <button id="btn-consent" class="btn-primary">let's play ♡</button>
+        <p class="fineprint">mochi needs camera + microphone permission</p>
       </div>
     </section>
 
     <!-- ===================== CALIBRATION ===================== -->
     <section id="screen-calibration" class="screen">
       <div class="panel">
-        <h2>calibrating.</h2>
+        <h2>getting ready ♡</h2>
         <p id="calibration-instruction">hold still and look at the dot.</p>
         <div class="calib-stage">
           <video id="video-raw" autoplay playsinline muted></video>
@@ -48,11 +53,11 @@
           <div id="calib-dot"></div>
         </div>
         <div id="calib-sample" class="calib-sample hidden">
-          <p class="question-prompt small">Which of these sounds most like you?</p>
+          <p class="question-prompt small">Which snack sounds the yummiest?</p>
           <div class="answer-options">
-            <div class="answer-btn fake">I sleep with the door closed.</div>
-            <div class="answer-btn fake">I sleep with the door open.</div>
-            <div class="answer-btn fake">I don't really sleep.</div>
+            <div class="answer-btn fake">Strawberries, always.</div>
+            <div class="answer-btn fake">Warm popcorn.</div>
+            <div class="answer-btn fake">I don't really snack.</div>
           </div>
         </div>
         <div class="progress-track"><div id="calib-progress" class="progress-fill"></div></div>
@@ -64,7 +69,7 @@
       <div class="quiz-layout">
         <div class="quiz-main">
           <div id="mochi-host" class="mochi-host">
-            <img src="/mochi/cute.jpg" alt="Mochi" />
+            <img src="/mochi/cute.webp" alt="Mochi" />
             <div id="mochi-host-bubble" class="mochi-bubble"></div>
           </div>
           <div id="quiz-question">
@@ -119,15 +124,19 @@
     <div id="stage-card-title" class="stage-card-title"></div>
     <div id="stage-card-sub" class="stage-card-sub"></div>
   </div>
-  <!-- Mochi events (src/segments/MochiSegment.js) -->
+  <!-- Act I moments with Mochi: name, head pats, snack, polaroid (src/segments/MochiPlay.js) -->
+  <div id="mochi-play" class="mochi-play"></div>
+  <!-- Mochi events (src/segments/MochiSegment.js): she's a cut-out on a full-screen transparent canvas -->
   <div id="mochi-event" class="mochi-event">
+    <div class="mochi-event-dim" id="mochi-event-dim"></div>
+    <canvas id="mochi-canvas"></canvas>
     <div id="mochi-event-bubble" class="mochi-bubble big"></div>
-    <canvas id="mochi-canvas" width="768" height="768"></canvas>
     <div id="mochi-event-watch" class="mochi-watch"></div>
   </div>
   <div id="blackout"></div>
 
   <div id="image-flash" class="image-flash"></div>
+  <canvas id="face-gore" class="face-gore"></canvas>
   <canvas id="noise-overlay"></canvas>
   <div id="crt-overlay"></div>
 

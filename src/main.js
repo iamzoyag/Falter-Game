@@ -23,7 +23,13 @@ import { runMirror } from "./segments/MirrorSegment.js";
 import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
 import { runInterrogation } from "./segments/Interrogator.js";
 import { runEnding } from "./segments/Ending.js";
-import { runMochiEvent, MOCHI_HOST_LINES } from "./segments/MochiSegment.js";
+import { runMochiEvent } from "./segments/MochiSegment.js";
+import { runGreet, runRoundCard, runPet, runFeed, runPolaroid } from "./segments/MochiPlay.js";
+import { answerReaction, hostLine, aiMochiLine } from "./mochi/MochiLines.js";
+import { CuteSfx } from "./core/CuteSfx.js";
+import { SampleBank } from "./core/SampleBank.js";
+import { FaceGore } from "./ui/FaceGore.js";
+import { settings, setReduceFlashing } from "./settings.js";
 import { MochiEngine } from "./mochi/MochiEngine.js";
 import { MochiAudio } from "./mochi/MochiAudio.js";
 import { CuteTheme } from "./core/CuteTheme.js";
@@ -42,6 +48,7 @@ const SEGMENT_LINES = [
   "Close your eyes. Keep them closed until you hear the tone.",
   "Don't make a sound. Not for the next twelve seconds.",
   "It heard you.",
+  "Watch her.",
   ...STAGES.flatMap((s) => s.steps).filter((s) => s.type === "interrogate").map((s) => s.prompt)
 ];
 
@@ -69,6 +76,13 @@ const imageFlash = new ImageFlash(document.getElementById("image-flash"));
 imageFlash.preload();
 new NoiseOverlay(document.getElementById("noise-overlay"));
 const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
+const faceGore = new FaceGore(document.getElementById("face-gore"));
+// What the player tells Mochi in Act I. It all comes back later.
+const player = { name: "", snack: null, petted: null, polaroid: null };
+
+const reduceFlashBox = document.getElementById("reduce-flash-checkbox");
+reduceFlashBox.checked = settings.reduceFlashing;
+reduceFlashBox.addEventListener("change", () => setReduceFlashing(reduceFlashBox.checked));
 mochi.load(); // preload in the background; the first event is ~5 questions away
 ui.setAct(1);
 
@@ -81,6 +95,8 @@ let director = null;
 let playerVoice = null;
 let cuteTheme = null;
 let mochiAudio = null;
+let cuteSfx = null;
+let samples = null;
 
 let latestFace = null;
 let latestEnv = null;
@@ -134,6 +150,7 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
   feedCanvas.width = 640;
   feedCanvas.height = Math.round((640 * vh) / vw);
   feed = new DelayedFeed(feedCanvas);
+  feed.setBaseWarp({ cute: 1, grain: 0, desat: 0, vignette: 0, pixel: 1 }); // Act I photo-booth look
 
   await audio.init(); // must happen inside a user-gesture handler
   audio.setDroneEnabled(false); // Act I is cute: no dread underneath yet
@@ -144,7 +161,10 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
   cuteTheme = new CuteTheme(audio.ctx, audio.master, { url: "/audio/cute-theme.mp3", volume: 0.32 });
   await cuteTheme.load();
   cuteTheme.play({ fade: 2.5 });
-  mochiAudio = new MochiAudio(audio.ctx, audio.master, cuteTheme);
+  cuteSfx = new CuteSfx(audio.ctx, audio.master);
+  samples = new SampleBank(audio.ctx, audio.master);
+  samples.load(); // recorded gore sfx, in the background (synth fallback until they arrive)
+  mochiAudio = new MochiAudio(audio.ctx, audio.master, cuteTheme, samples);
 
   const micTrack = stream.getAudioTracks()[0];
   audioSensor = new AudioSensor(audio.ctx);
@@ -184,7 +204,7 @@ async function runCalibration() {
   const progress = (p) => (calibProgress.style.width = `${Math.round(p * 100)}%`);
 
   // 1. gaze dot
-  ui.setCalibInstruction("hold still and look at the dot.");
+  ui.setCalibInstruction("hold still and look at the dot ♡");
   const positions = [[50, 50], [20, 25], [80, 25], [80, 75], [20, 75], [50, 50]];
   for (let i = 0; i < positions.length; i++) {
     calibDot.style.left = positions[i][0] + "%";
@@ -195,14 +215,14 @@ async function runCalibration() {
   calibDot.classList.add("hidden");
 
   // 2. room scan (objects behind them, labels only)
-  ui.setCalibInstruction("scanning the room behind you.");
+  ui.setCalibInstruction("mochi is having a little look around your room ♡");
   await roomScanner.scan(videoHidden, scanCanvas, () => latestFace, () => latestMask, 4500);
   director.setRoom(roomScanner);
   envMonitor.resetBaseline();
   progress(0.4);
 
   // 3. neutral baseline — while READING, so concentration is part of "normal"
-  ui.setCalibInstruction("read these. don't answer.<br>just relax your face.");
+  ui.setCalibInstruction("read these, but don't answer yet!<br>just relax your face ♡");
   ui.showCalibSample(true);
   await sleep(700);
   faceTracker.beginBaselineCapture();
@@ -219,9 +239,9 @@ async function runCalibration() {
 
   // 4. posed expressions: per-player range + clips the game will use later
   const poses = [
-    ["smile", "smile. a real one."],
-    ["raise", "raise your eyebrows. as high as they go."],
-    ["frown", "now frown."]
+    ["smile", "smile for mochi! a real one ♡"],
+    ["raise", "now look super surprised! eyebrows up!"],
+    ["frown", "now a grumpy face. grrr!"]
   ];
   for (let i = 0; i < poses.length; i++) {
     const [name, text] = poses[i];
@@ -232,7 +252,7 @@ async function runCalibration() {
     await sleep(1500);
     faceTracker.finishExpressionCapture();
     feed.stopClipRecording();
-    ui.setCalibInstruction("relax.");
+    ui.setCalibInstruction("hehe. relax ♡");
     progress(0.55 + ((i + 1) / poses.length) * 0.25);
     await sleep(600);
   }
@@ -242,7 +262,7 @@ async function runCalibration() {
 
   // 5. a line in their own voice
   if (recorder) {
-    ui.setCalibInstruction(`say this out loud:<br><em>"i'm the only one in this room."</em>`);
+    ui.setCalibInstruction(`say this out loud for mochi:<br><em>"mochi, you're my best friend."</em>`);
     await sleep(500);
     cuteTheme?.setVolume(0, 0.2); // keep the music out of their recorded voice
     const samples = await recorder.recordFor(3500);
@@ -253,7 +273,7 @@ async function runCalibration() {
     }
   }
   progress(1);
-  ui.setCalibInstruction("good. hold still.");
+  ui.setCalibInstruction("perfect!! ♡");
   await sleep(1000);
 }
 
@@ -262,7 +282,8 @@ async function runGame() {
   playing = true;
   const ctx = {
     feed, director, ui, audio, voice, playerVoice, recorder, transcriber, aiClient, aiEnabled, faceTracker, imageFlash,
-    engine: mochi, mochiAudio,
+    engine: mochi, mochiAudio, player, faceGore, samples, sfx: cuteSfx,
+    getVideo: () => videoHidden,
     room: roomScanner,
     getFace: () => latestFace,
     getMic: () => latestMic
@@ -282,9 +303,11 @@ async function runGame() {
     for (const step of stage.steps) {
       if (typeof step === "string") {
         currentQuestionIndex = qIndex;
-        if (stage.act === 1) ui.setMochiHostLine(MOCHI_HOST_LINES[Math.min(qIndex, MOCHI_HOST_LINES.length - 1)]);
+        const act = stage.act ?? 1;
+        ui.setMochiHostLine(act === 2 ? hostLine(2, player) : "");
         lastEntry = await quiz.ask(QMAP[step], qIndex, TOTAL_QUESTIONS, stage);
         qIndex++;
+        if (act <= 2) await mochiReacts(QMAP[step], lastEntry, act, ctx);
         if (lateBaseline && qIndex === 2) {
           lateBaseline = false;
           faceTracker.finishBaselineCapture();
@@ -294,6 +317,17 @@ async function runGame() {
         director.suspend(true);
         await runMirror({ ...ctx, durationMs: step.durationMs });
         director.suspend(false);
+      } else if (step.type === "play") {
+        director.suspend(true);
+        ui.setMochiHostLine("");
+        if (step.kind === "greet") await runGreet(ctx);
+        else if (step.kind === "pet") await runPet(ctx);
+        else if (step.kind === "feed") await runFeed(ctx);
+        else if (step.kind === "polaroid") await runPolaroid(ctx);
+        director.suspend(false);
+      } else if (step.type === "round") {
+        ui.setMochiHostLine("");
+        await runRoundCard(ctx, step.title, step.sub);
       } else if (step.type === "mochi") {
         director.suspend(true);
         await runMochiEvent({ ...ctx, scene: step.scene, act: stage.act ?? 1 });
@@ -309,6 +343,26 @@ async function runGame() {
 
   playing = false;
   await runEnding(ctx);
+}
+
+/** Mochi reacts to the answer in her bubble (AI-personalised if it's quick enough). */
+async function mochiReacts(question, entry, act, ctx) {
+  const optionIndex = question.options.findIndex((o) => o.text === entry?.chosenText);
+  const local = answerReaction(question, optionIndex, act, player);
+  ui.setMochiHostLine(local);
+  cuteSfx?.[act === 1 ? "pop" : "tick"]();
+  const hold = sleep(act === 1 ? 1700 : 1100);
+  const ai = await Promise.race([
+    aiMochiLine(ctx.aiClient, ctx.aiEnabled, act === 1 ? "answer" : "host", {
+      act, name: player.name, snack: player.snack, question: question.prompt, answer: entry?.chosenText,
+      localFallbackText: local, dossier: director.getSummary().compactDossier.slice(-8)
+    }, 1300),
+    hold.then(() => null)
+  ]);
+  if (ai) {
+    ui.setMochiHostLine(ai);
+    await sleep(1400);
+  } else await hold;
 }
 
 // ---------------------------------------------------------------- quiz wiring
@@ -352,6 +406,11 @@ on("director-image-flash", (e) => {
   if (imageFlash.flash(e.detail.ms)) audio.playStinger("static", { x: 0, y: 0, z: -0.3 });
 });
 on("director-intensity", (e) => audio.setDroneIntensity(e.detail.amount));
+on("director-face-gore", (e) => {
+  if (!latestFace?.keypoints || !faceGore.flash(videoHidden, latestFace.keypoints, e.detail?.ms)) return;
+  if (!samples?.play("snap", { gain: 0.7 })) audio.playStinger("static", { x: 0, y: 0, z: -0.3 });
+  samples?.play("squelch", { gain: 0.6, delay: 0.05 });
+});
 on("director-darkness", (e) => ui.setDarkness(e.detail.amount));
 
 document.getElementById("btn-restart").addEventListener("click", () => window.location.reload());

@@ -46,25 +46,47 @@ file without touching rendering or audio.
 
 ## Mochi (the mascot) and the colour script
 
-- **Act I** is pink and bubbly: Mochi hosts the quiz from a speech bubble
-  and her theme plays (`src/core/CuteTheme.js`, a synthesised song; drop a
-  loopable `public/audio/cute-theme.mp3` to use a recorded track instead).
-  The ambient drone stays silent until Act II.
+- **Act I ("I. HELLO ♡")** is a long, genuinely cute getting-to-know-you
+  quiz so the player gets attached: Mochi asks their name, then three
+  rounds (favourite things, all about you, the deep questions) with little
+  moments in between: head pats with the mouse, feeding her a snack, and a
+  polaroid of the two of them through a cute webcam filter
+  (`src/segments/MochiPlay.js`). She reacts to every answer. Her theme plays
+  throughout (`src/core/CuteTheme.js`; drop a loopable
+  `public/audio/cute-theme.mp3` to use a recorded track instead). The
+  ambient drone stays silent until Act II, where Mochi keeps hosting but is
+  slightly wrong.
+- **What she learns comes back**: the name, the snack, whether you petted
+  her, your answers (`src/mochi/MochiLines.js` builds the whispers after
+  each event from them), and the polaroid, which returns at the very end
+  with Mochi unzipped and your own face mutilated.
 - **Mochi events** (`src/segments/MochiSegment.js`) sit at every act break,
   worst last: stitches (I→II), eyes (II→III), ears (III→IV), unzip (after V).
   Each starts from cute Mochi + her song, then one wound plays out
-  (`src/mochi/MochiEngine.js`, WebGL) and only advances while the webcam
-  says you're looking. Look away and it freezes and the drone swells. The
-  finished wound holds ~5 s, then hard cut to black. Sound:
-  `src/mochi/MochiAudio.js`.
+  (`src/mochi/MochiEngine.js`, WebGL, Mochi is a cut-out on a full-screen
+  transparent canvas) and only advances while the webcam says you're
+  looking. Look away and it freezes and the drone swells. The finished
+  wound holds ~5 s, then hard cut to black.
+- **Injury sounds** are recorded CC0 foley from freesound.org
+  (`public/audio/sfx/`, credits in `CREDITS.txt` there), played through
+  `src/core/SampleBank.js`; the synthesised versions are the fallback.
+- **The player's face**: in Acts IV and V (and once at the end of the
+  mirror) their own webcam face flashes up mutilated for a split second
+  (`src/ui/FaceGore.js`: wounds painted on the FaceLandmarker landmarks).
+- **The figure behind you** is a jumpscare now: it's there for a fraction
+  of a second when you look back at the screen, a little closer each time.
+- **Reduce flashing** (consent screen, remembered in the browser,
+  `src/settings.js`): no strobes, no inverted flashes, no screen shake;
+  image and gore flashes fade in and out instead.
+- **AI (optional)**: `/api/mochi` writes Mochi's reactions and the
+  post-event whispers from the player's name and answers. Local lines show
+  instantly; the AI version replaces them only if it's fast.
 - `body[data-act]` (1–5) switches the palette in `style.css`: pink → dusty
   rose → the 1-bit look → black and blood red.
-- Assets: `public/mochi/` (images, optical-flow textures, reveal masks, ear
-  sprite). These are the compressed copies from the preview (768 px, JPEG);
-  replace with the full-quality exports if you have them, same names.
-- Content warning is on the consent screen. Image licence: the LoRAs used
-  forbid selling generated content: fine for a free project, recheck
-  before any commercial release.
+- Assets: `public/mochi/` (cut-out RGBA WebP images, optical-flow textures,
+  reveal masks, ear sprite). Image licence: the LoRAs used forbid selling
+  generated content: fine for a free project, recheck before any
+  commercial release.
 
 ## Running it (core game, no AI)
 

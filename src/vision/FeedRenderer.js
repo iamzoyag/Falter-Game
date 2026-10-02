@@ -54,6 +54,9 @@ uniform float uOneBit;
 uniform float uThreshold;
 uniform float uInvert;
 uniform vec2 uLevels;
+uniform float uCute;
+uniform vec4 uBlush;
+uniform float uBlushR;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
@@ -133,6 +136,34 @@ void main() {
     }
   }
 
+  // Act I "cute" filter: dreamy glow, pastel pink grade, anime blush, pink edges
+  if (uCute > 0.001) {
+    vec3 blur = vec3(0.0);
+    blur += texture2D(uFrame, src + vec2(0.006, 0.0)).rgb;
+    blur += texture2D(uFrame, src - vec2(0.006, 0.0)).rgb;
+    blur += texture2D(uFrame, src + vec2(0.0, 0.008)).rgb;
+    blur += texture2D(uFrame, src - vec2(0.0, 0.008)).rgb;
+    blur += texture2D(uFrame, src + vec2(0.013, 0.011)).rgb;
+    blur += texture2D(uFrame, src - vec2(0.013, 0.011)).rgb;
+    blur += texture2D(uFrame, src + vec2(-0.013, 0.011)).rgb;
+    blur += texture2D(uFrame, src - vec2(-0.013, 0.011)).rgb;
+    blur /= 8.0;
+    vec3 soft = mix(col, max(col, blur), 0.55);
+    col = mix(col, soft, 0.65 * uCute);
+    float L = dot(col, vec3(0.299, 0.587, 0.114));
+    vec3 pastel = mix(col, vec3(L), 0.12) * vec3(1.05, 0.96, 1.01) + vec3(0.08, 0.035, 0.065);
+    col = mix(col, pastel, uCute);
+    if (uBlushR > 0.0) {
+      vec2 bp = vec2(uv.x * uAspect, uv.y);
+      vec2 r = vec2(uBlushR * 1.25, uBlushR * 0.75);
+      float bl = exp(-dot((bp - uBlush.xy) / r, (bp - uBlush.xy) / r) * 1.4)
+               + exp(-dot((bp - uBlush.zw) / r, (bp - uBlush.zw) / r) * 1.4);
+      col = mix(col, vec3(1.0, 0.52, 0.64), clamp(bl, 0.0, 1.0) * 0.36 * uCute);
+    }
+    float ed = length(uv - 0.5) * 1.4;
+    col = mix(col, vec3(1.0, 0.83, 0.9), smoothstep(0.55, 1.05, ed) * 0.55 * uCute);
+  }
+
   float l = dot(col, vec3(0.299, 0.587, 0.114));
   vec3 pre = col;
   col = mix(col, vec3(l), uDesat);
@@ -173,6 +204,7 @@ export const DEFAULT_WARP = {
   pixel: 1,        // block size in canvas pixels (1 = off, 3–6 = chunky)
   oneBit: 0,       // 0..1 mix into pure black/white
   invert: 0,       // 1 = photographic negative (only applies with oneBit)
+  cute: 0,         // 0..1 Act I filter: soft pink glow + blush
   threshold: null  // null = automatic, from the room's brightness
 };
 
@@ -204,7 +236,7 @@ export class FeedRenderer {
       "uFrame", "uMask", "uFigure", "uAspect", "uH", "uHP", "uHCount", "uEye", "uEyeAng", "uEyesBlack",
       "uHasMask", "uBgDark", "uVignette", "uGrain", "uAberration", "uDesat", "uContrast", "uBrightness",
       "uWobble", "uTime", "uFigRect", "uFigOpacity", "uFigDark",
-      "uRes", "uPixel", "uOneBit", "uThreshold", "uInvert", "uLevels"
+      "uRes", "uPixel", "uOneBit", "uThreshold", "uInvert", "uLevels", "uCute", "uBlush", "uBlushR"
     ]) this.u[name] = gl.getUniformLocation(prog, name);
 
     this.texFrame = makeTexture(gl);
@@ -302,6 +334,11 @@ export class FeedRenderer {
     gl.uniform2f(this.u.uLevels, lv.lo, lv.hi);
     gl.uniform1f(this.u.uThreshold, w.threshold ?? auto);
 
+    gl.uniform1f(this.u.uCute, w.cute);
+    const blush = kp && w.cute > 0.001 ? buildBlush(kp, A) : null;
+    gl.uniform4fv(this.u.uBlush, blush ? blush.pos : [0, 0, 0, 0]);
+    gl.uniform1f(this.u.uBlushR, blush ? blush.r : 0);
+
     const figOn = figure && figure.opacity > 0.001 && this._figureSource;
     gl.uniform4fv(this.u.uFigRect, figOn ? figure.rect : [0, 0, 1, 1]);
     gl.uniform1f(this.u.uFigOpacity, figOn ? figure.opacity : 0);
@@ -343,6 +380,17 @@ function buildHandles(kp, w, A) {
     }
   }
   return H;
+}
+
+/** Two blush spots between each eye and mouth corner (aspect-corrected coords). */
+function buildBlush(kp, A) {
+  const side = (e, cheek, mouth) => [
+    (e.cx + (cheek.x - e.cx) * 0.3) * A,
+    e.cy + (mouth.y - e.cy) * 0.55
+  ];
+  const l = side(kp.leftEye, kp.cheekL, kp.mouthL), r = side(kp.rightEye, kp.cheekR, kp.mouthR);
+  const ew = Math.hypot((kp.leftEye.b.x - kp.leftEye.a.x) * A, kp.leftEye.b.y - kp.leftEye.a.y);
+  return { pos: [l[0], l[1], r[0], r[1]], r: ew * 0.6 };
 }
 
 function buildEyes(kp, w, A) {

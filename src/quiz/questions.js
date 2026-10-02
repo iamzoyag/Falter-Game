@@ -14,7 +14,105 @@
 // quiz, later ones get progressively closer to the game's actual premise —
 // that it's reading you in real time.
 
+// Act I "Mochi's quiz" questions (m1..m8). Genuinely cute, to let the player
+// relax and get attached. `mochi` holds her reaction to each option (shown
+// in her speech bubble after they answer; the AI can personalise it).
+// m1-m4 claim nothing about feelings ("any"); m5-m8 quietly start the
+// face-vs-answer reading, and several of them pay off later.
+const MOCHI_QUESTIONS = [
+  {
+    id: "m1",
+    callbackId: "fav_season",
+    principle: "rapport (cute round)",
+    prompt: "First things first!! What's your favourite season?",
+    options: [
+      { text: "Spring. Everything's blooming.", expressionHint: "any", mochi: "cherry blossoms!! mochi loves those too ♡" },
+      { text: "Summer. Sunshine forever.", expressionHint: "any", mochi: "ooh, ice cream weather ♡" },
+      { text: "Autumn. Cosy sweaters.", expressionHint: "any", mochi: "crunchy leaves!! good choice ♡" },
+      { text: "Winter. Everything's quiet.", expressionHint: "any", mochi: "mochi likes the quiet too. shhh ♡" }
+    ]
+  },
+  {
+    id: "m2",
+    callbackId: "sweet_salty",
+    principle: "rapport (cute round)",
+    prompt: "Sweet or salty?",
+    options: [
+      { text: "Sweet, obviously.", expressionHint: "any", mochi: "a sweet person who likes sweet things ♡" },
+      { text: "Salty, always.", expressionHint: "any", mochi: "hehe, mochi will remember that ♡" },
+      { text: "Both. At the same time.", expressionHint: "any", mochi: "chaotic!! mochi likes you ♡" }
+    ]
+  },
+  {
+    id: "m3",
+    callbackId: "fav_pet",
+    principle: "rapport (cute round)",
+    prompt: "If you could adopt any pet today, which one?",
+    options: [
+      { text: "A cat.", expressionHint: "any", mochi: "cats are nice. mochi is nicer though ♡" },
+      { text: "A dog.", expressionHint: "any", mochi: "a loyal friend!! just like mochi ♡" },
+      { text: "A bunny, obviously.", expressionHint: "smile", mochi: "!!! mochi is blushing ♡♡♡" }
+    ]
+  },
+  {
+    id: "m4",
+    callbackId: "perfect_saturday",
+    principle: "rapport (cute round)",
+    prompt: "What does your perfect Saturday look like?",
+    options: [
+      { text: "Sleeping in. No alarms.", expressionHint: "any", mochi: "cosy!! mochi will be very quiet ♡" },
+      { text: "Out with my friends.", expressionHint: "any", mochi: "mochi wants to come too!! ♡" },
+      { text: "A book and a blanket.", expressionHint: "any", mochi: "mochi will sit in your lap ♡" }
+    ]
+  },
+  {
+    id: "m5",
+    callbackId: "night_person",
+    principle: "rapport / later: sleep and the dark",
+    prompt: "Are you a morning person or a night person?",
+    options: [
+      { text: "Morning. Up with the sun.", expressionHint: "neutral", mochi: "early bunny gets the carrot ♡" },
+      { text: "Night. I'm up late.", expressionHint: "neutral", mochi: "mochi stays up late too. watching ♡" },
+      { text: "Neither, I'm always tired.", expressionHint: "smile", mochi: "aww. mochi will let you nap ♡" }
+    ]
+  },
+  {
+    id: "m6",
+    callbackId: "sleep_light",
+    principle: "rapport / later: fear of the dark",
+    prompt: "How do you like to fall asleep?",
+    options: [
+      { text: "Lights off. Total dark.", expressionHint: "neutral", mochi: "so brave!! mochi likes the dark ♡" },
+      { text: "With a little light on.", expressionHint: "neutral", mochi: "a nightlight is nothing to be shy about ♡" },
+      { text: "With something playing.", expressionHint: "neutral", mochi: "so it's never too quiet? mochi gets it ♡" }
+    ]
+  },
+  {
+    id: "m7",
+    callbackId: "trust_most",
+    principle: "attachment / later: betrayal",
+    prompt: "Who's the person you trust the most?",
+    options: [
+      { text: "My family.", expressionHint: "neutral", mochi: "that's so sweet ♡ mochi can be family too" },
+      { text: "My best friend.", expressionHint: "smile", mochi: "mochi can be your best friend!! ♡" },
+      { text: "Honestly? Just myself.", expressionHint: "neutral", mochi: "...that's okay. you have mochi now ♡" }
+    ]
+  },
+  {
+    id: "m8",
+    callbackId: "cry_movie",
+    principle: "empathy / later: Mochi gets hurt",
+    prompt: "What always makes you cry in a movie?",
+    options: [
+      { text: "When an animal gets hurt.", expressionHint: "frown", mochi: "mochi would never let anything hurt you ♡" },
+      { text: "When someone ends up all alone.", expressionHint: "frown", mochi: "you won't be alone. mochi's here ♡" },
+      { text: "Nothing. I don't cry at movies.", expressionHint: "neutral", mochi: "so tough!! mochi will remember that ♡" }
+    ]
+  }
+];
+
 export const QUESTIONS = [
+  ...MOCHI_QUESTIONS,
   {
     id: "q1",
     callbackId: "afraid_of_dark",

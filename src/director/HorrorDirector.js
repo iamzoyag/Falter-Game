@@ -1,5 +1,6 @@
 import { on, emit } from "../core/EventBus.js";
 import { FEAR_CHANNELS } from "../vision/FaceTracker.js";
+import { settings } from "../settings.js";
 
 // Central "brain": takes in continuous vision/audio signals every frame plus
 // quiz events, and decides when to fire a horror beat. It emits events
@@ -31,6 +32,9 @@ const COOLDOWNS_MS = {
   darkLine: 30000,
   figureTurn: 20000,
   figureClimax: 30000,
+  figureScare: 9000,
+  figureRandom: 38000,
+  faceGore: 55000,
   flicker: 12000,
   imageFlash: 30000
 };
@@ -124,7 +128,11 @@ export class HorrorDirector {
     this._lastFlinchSnap = 0;
 
     this._figures = figures;
-    this._fig = { active: false, step: 0, side: 0.8, image: null, hiddenUntil: 0, turnSince: null, lastAdvance: 0, lookedBack: false };
+    // The figure is never on screen for long: it's a jumpscare. `step` is how
+    // close the NEXT one will be (it gets closer every time); `pending` means
+    // it's waiting for the moment the player looks back at the screen.
+    this._fig = { active: false, step: 0, side: 0.8, image: null, turnSince: null, lastAdvance: 0, lookedBack: false,
+      pending: false, showUntil: 0, shown: null, lastScareAt: -1e9 };
 
     this.room = { objects: [], personCount: 1 };
     this._hasPlayerVoice = false;
@@ -163,6 +171,7 @@ export class HorrorDirector {
 
   setStage(stage) {
     this.stageId = stage.id;
+    this.act = stage.act ?? 1;
     this.features = stage.features || {};
     this._stageAnswered = 0;
     if (!this.features.figure) this._fig.active = false;
@@ -185,19 +194,44 @@ export class HorrorDirector {
     this.dark = clamp(this.dark + amount, 0, 1);
   }
 
-  /** The figure takes a step closer (only moves while you're not looking). */
+  /**
+   * It moved closer while you weren't looking. Nothing shows yet: the next
+   * time your eyes come back to the screen, it's there for a split second.
+   */
   advanceFigure(nowMs = performance.now()) {
     const fig = this._fig;
-    if (!this.features.figure || !fig.active || nowMs < fig.hiddenUntil) return;
+    if (!this.features.figure) return;
+    this._ensureFigure();
     if (nowMs - fig.lastAdvance < 2500) return;
     fig.lastAdvance = nowMs;
     fig.step = Math.min(FIGURE_MAX_STEP, fig.step + 1);
+    fig.pending = true;
     if (fig.step === FIGURE_MAX_STEP && !this._onCooldown("figureClimax", nowMs)) {
       this._arm("figureClimax", nowMs);
       this.say(pick(WHISPERS.figureClimax), { stinger: "heartbeat", position: { x: 0.3, y: 0, z: 0.4 } });
-      // if they don't turn around, it eases back a little so it can come again
-      setTimeout(() => { if (fig.step === FIGURE_MAX_STEP) fig.step = 3; }, 7000);
     }
+  }
+
+  /** Flash the figure in the feed for `ms`, at closeness `step`. */
+  figureScare(step = this._fig.step, ms = 260, nowMs = performance.now()) {
+    const fig = this._fig;
+    this._ensureFigure();
+    if (!fig.image) fig.image = this._figures?.random() || null;
+    if (fig.image) this._feed?.setFigureImage(fig.image);
+    const shown = this.figureAt(Math.max(2, step), null);
+    if (!shown) return;
+    shown.opacity = 0.97;
+    fig.shown = shown;
+    fig.showUntil = nowMs + (settings.reduceFlashing ? Math.max(ms, 420) : ms);
+    fig.lastScareAt = nowMs;
+    fig.pending = false;
+    this._logBeat("figureScare", nowMs);
+    emit("director-beat", {
+      kind: settings.reduceFlashing ? "audio" : "audio+shake", stinger: "jumpscare",
+      position: { x: fig.side > 0.5 ? 0.4 : -0.4, y: 0, z: 0.5 }
+    });
+    // after the closest one, it backs off so it can come again
+    if (step >= FIGURE_MAX_STEP) fig.step = 2;
   }
 
   /** Pick a figure image if none yet, and return it (for segments that show the figure themselves). */
@@ -206,10 +240,11 @@ export class HorrorDirector {
     return this._fig.image;
   }
 
+  /** Set how close the next jumpscare is, and arm it for when they next look at the screen. */
   setFigureStep(step) {
     this._ensureFigure();
     this._fig.step = clamp(step, 0, FIGURE_MAX_STEP);
-    this._fig.hiddenUntil = 0;
+    this._fig.pending = step > 0;
   }
 
   /** Figure rect/opacity for a given step (used by the close-your-eyes replay too). */
@@ -388,6 +423,11 @@ export class HorrorDirector {
   }
 
   _applyBaseWarp(feed) {
+    // Act I: the feed is a cute photo-booth filter. A little of it lingers into Act II.
+    if (this.act === 1) {
+      feed.setBaseWarp({ cute: 1, grain: 0, desat: 0, contrast: -0.04, vignette: 0, brightness: 1.04, pixel: 1, bgDark: 0 });
+      return;
+    }
     const c = this.creep, d = this.dark;
     feed.setBaseWarp({
       smile: c * 0.35,
@@ -398,7 +438,8 @@ export class HorrorDirector {
       vignette: 0.2 + d * 0.5,
       grain: 0.14 + c * 0.2,
       desat: 0.15 + c * 0.3,
-      pixel: 2 + Math.round(c * 3)
+      pixel: 2 + Math.round(c * 3),
+      cute: this.act === 2 ? Math.max(0, 0.3 - c * 1.5) : 0
     });
   }
 
@@ -446,35 +487,47 @@ export class HorrorDirector {
   }
 
   _updateFigure(face, feed, nowMs) {
-    if (!this.features.figure) {
-      feed.setFigure(null);
+    const fig = this._fig;
+    // the jumpscare frame itself (also runs when features.figure is off, so a scripted scare can finish)
+    if (nowMs < fig.showUntil && fig.shown) {
+      feed.setFigure(fig.shown);
       return;
     }
+    feed.setFigure(null);
+    if (!this.features.figure) return;
     this._ensureFigure();
-    const fig = this._fig;
-    if (!fig.image) fig.image = this._figures?.random() || null;
-    if (fig.image) feed.setFigureImage(fig.image); // no-op if already uploaded
-    if (face?.keypoints && fig.step <= 1) fig.side = face.keypoints.nose.x > 0.5 ? 0.18 : 0.82;
+    if (face?.keypoints) fig.side = face.keypoints.nose.x > 0.5 ? 0.18 : 0.82;
 
-    // Turning around to check the real room makes it vanish.
+    const watching = face?.faceVisible && !face.lookingAway && !face.blinking && Math.abs(face.yawProxy ?? 0) < 0.2;
+
+    // Armed while they weren't looking: it's there the moment they look back.
+    if (fig.pending && watching && !this._onCooldown("figureScare", nowMs)) {
+      this._arm("figureScare", nowMs);
+      this.figureScare(fig.step, 220 + fig.step * 40, nowMs);
+      return;
+    }
+    // Every so often, for no reason at all.
+    if (watching && !this._onCooldown("figureRandom", nowMs) && !this._onCooldown("figureScare", nowMs) && Math.random() < 0.0012) {
+      this._arm("figureRandom", nowMs);
+      this._arm("figureScare", nowMs);
+      fig.step = Math.min(FIGURE_MAX_STEP, fig.step + 1);
+      this.figureScare(fig.step, 200, nowMs);
+      return;
+    }
+
+    // Turning around to check the room right after a scare.
     const turned = face && (!face.faceVisible ? face.faceMissingMs > 700 : Math.abs(face.yawProxy) > 0.28);
     if (turned) fig.turnSince ??= nowMs;
     else fig.turnSince = null;
-    if (fig.turnSince && nowMs - fig.turnSince > 350 && fig.step >= 2 && !this._onCooldown("figureTurn", nowMs)) {
+    if (fig.turnSince && nowMs - fig.turnSince > 350 && nowMs - fig.lastScareAt < 4000 && !this._onCooldown("figureTurn", nowMs)) {
       this._arm("figureTurn", nowMs);
       this.stats.figureTurns += 1;
-      fig.step = 0;
-      fig.hiddenUntil = nowMs + 20000;
       fig.lookedBack = true;
-      setTimeout(() => { if (fig.step === 0) fig.step = 1; }, 20000);
     }
     if (fig.lookedBack && face?.faceVisible && Math.abs(face.yawProxy) < 0.15) {
       fig.lookedBack = false;
       this.say(pick(WHISPERS.figureTurnBack));
     }
-
-    const visible = nowMs > fig.hiddenUntil && fig.step > 0;
-    feed.setFigure(visible ? this.figureAt(fig.step, face) : null);
   }
 
   _trackFlinch(face, feed, nowMs) {
@@ -579,9 +632,19 @@ export class HorrorDirector {
     }
 
     // A split-second glitch of the live feed into the 1-bit look (sometimes negative).
-    if (!this._onCooldown("flicker", nowMs) && Math.random() < 0.002 + this.creep * 0.004) {
+    if (!settings.reduceFlashing && !this._onCooldown("flicker", nowMs) && Math.random() < 0.002 + this.creep * 0.004) {
       this._arm("flicker", nowMs);
       feed.burst({ oneBit: 1, pixel: 4, invert: Math.random() < 0.3 ? 1 : 0 }, 90 + Math.random() * 160);
+    }
+
+    // Their own face, mutilated, for a fraction of a second.
+    if (
+      f.faceGore && face?.faceVisible && !face.lookingAway && face.keypoints &&
+      !this._onCooldown("faceGore", nowMs) && Math.random() < 0.0012 + this.creep * 0.001
+    ) {
+      this._arm("faceGore", nowMs);
+      this._logBeat("faceGore", nowMs);
+      emit("director-face-gore", { ms: 110 + Math.random() * 90 });
     }
 
     // A subliminal full-screen image, Fear Assessment-style. Rare, and gone before you're sure.

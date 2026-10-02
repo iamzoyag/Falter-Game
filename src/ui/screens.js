@@ -1,3 +1,4 @@
+import { settings } from "../settings.js";
 const $ = (sel) => document.querySelector(sel);
 
 export function showScreen(id) {
@@ -100,11 +101,10 @@ export function setMochiWatchText(text) {
   el.classList.toggle("show", !!text);
 }
 
-/** Background around Mochi drains from her pink to black as the wound opens. */
+/** As the wound opens, the room around Mochi goes dark (she stays lit). */
 export function setMochiEventProgress(p) {
   const d = Math.min(1, p * 1.25);
-  const mix = (a, b) => Math.round(a + (b - a) * d);
-  $("#mochi-event").style.background = `rgb(${mix(227, 8)},${mix(181, 2)},${mix(187, 4)})`;
+  $("#mochi-event-dim").style.opacity = String(d * 0.92);
 }
 
 // ---------------------------------------------------------------- fx
@@ -120,6 +120,7 @@ export function showWhisper(text, durationMs = 3600) {
 }
 
 export function flashScreen(intensity = 0.5) {
+  if (settings.reduceFlashing) intensity *= 0.2; // a soft lift, not a strobe
   let flash = document.getElementById("fx-flash");
   if (!flash) {
     flash = document.createElement("div");
@@ -135,6 +136,7 @@ export function flashScreen(intensity = 0.5) {
 }
 
 export function shakeScreen() {
+  if (settings.reduceFlashing) return;
   const app = $("#app");
   app.classList.remove("shake");
   void app.offsetWidth; // restart animation

@@ -120,6 +120,48 @@ export async function generateBeatCopy({ signalType, localFallbackText, dossier,
   return callGeminiWithFallback(FAST_MODELS, system, userContent, BeatCopyGeminiSchema, BeatCopyZod, 120);
 }
 
+/**
+ * Mochi's voice (cute, bubbly) for most moments; for "event-after" the
+ * game's narrator instead: the flat whisper that follows her mutilation.
+ */
+export async function generateMochiLine({ moment, act, scene, name, snack, question, answer, localFallbackText, dossier, stats }) {
+  const narrator = moment === "event-after";
+  const system = narrator
+    ? `You write the single whispered line that appears right after a scene in "FALTER," a browser psychological ` +
+      `horror game, in which the player was made to watch Mochi (a cute pink bunny mascot they had befriended) get ` +
+      `hurt (scene: ${scene}). ${SAFETY_NOTE} The line should make the player feel seen and complicit: refer to ` +
+      `something specific they told Mochi earlier, or to how they watched (looked away, flinched or didn't). ` +
+      `Rules: under 14 words, lowercase, no exclamation marks, no hearts, calm and unsettling, never describe gore, ` +
+      `never repeat the example verbatim.`
+    : `You write one speech-bubble line for Mochi, the mascot of "FALTER," a browser game that pretends to be a ` +
+      `cute getting-to-know-you quiz (Doki Doki Literature Club style) before it turns into psychological horror. ` +
+      `Mochi is a small white bunny: bubbly, affectionate, a little clingy, talks about herself in the third person ` +
+      `("mochi"), uses lowercase and the occasional ♡. ${SAFETY_NOTE} ` +
+      (act >= 2
+        ? `It is now act ${act}: something has happened to Mochi that she doesn't remember. Stay sweet on the surface ` +
+          `but let one detail be slightly wrong, too attentive, or possessive. `
+        : `It is act 1: be genuinely sweet and warm so the player gets attached. Nothing creepy at all. `) +
+      `React specifically to what the player just said or did, and use their name sometimes. Under 16 words, one line, ` +
+      `never repeat the example verbatim.`;
+  const userContent =
+    `Moment: ${moment}
+` +
+    `Player's name: ${name || "(not given)"}
+` +
+    (snack ? `Snack they fed Mochi: ${snack}
+` : "") +
+    (question ? `Question: ${question}
+` : "") +
+    (answer ? `Their answer: ${answer}
+` : "") +
+    `Example line in the right voice (don't reuse verbatim): "${localFallbackText}"
+` +
+    `How they watched / session stats: ${JSON.stringify(stats).slice(0, 300)}
+` +
+    `Their answers so far: ${JSON.stringify(dossier).slice(0, 2500)}`;
+  return callGeminiWithFallback(FAST_MODELS, system, userContent, BeatCopyGeminiSchema, BeatCopyZod, 80);
+}
+
 /** One-time personalized closing report built from the full dossier. */
 export async function generateEndingReport({ dossier, interrogations = [], stats = {} }) {
   const system =

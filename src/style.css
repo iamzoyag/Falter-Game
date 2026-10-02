@@ -564,24 +564,36 @@ html, body { font-family: 'VT323', monospace; font-size: 20px; }
   position: fixed;
   inset: 0;
   z-index: 84; /* above the stage card (80), under blackout (90) and flashes */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2vh;
-  background: rgb(227, 181, 187);
+  background: var(--bg);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.6s ease;
 }
+body[data-act="1"] .mochi-event { background: radial-gradient(circle at 20% 15%, #fff0f7 0 12%, transparent 13%) 0 0 / 120px 120px, #ffe3ef; }
+/* the room goes dark around her as the wound opens (opacity set from JS) */
+.mochi-event-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(10,0,2,0.55) 0%, #050002 75%);
+  opacity: 0;
+}
 .mochi-event.show { opacity: 1; pointer-events: auto; }
 .mochi-event.instant { transition: none; }
 #mochi-canvas {
-  width: min(78vh, 92vw);
-  height: min(78vh, 92vw);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: block;
-  image-rendering: auto;
 }
+#mochi-event-bubble {
+  position: absolute;
+  left: 50%;
+  top: max(12px, calc(50% - min(39vh, 46vw) + 1vh));
+  transform: translate(-50%, 0) scale(0.96);
+  z-index: 2;
+}
+#mochi-event-bubble.show { transform: translate(-50%, 0); }
 .mochi-watch {
   position: absolute;
   left: 0; right: 0; bottom: 6vh;
@@ -621,8 +633,8 @@ body.mochi-mode #noise-overlay { opacity: 0.05; }
 /* Act I host: Mochi beside the question */
 .mochi-host { display: none; align-items: center; gap: 14px; margin-bottom: 18px; }
 .mochi-host img {
-  width: 92px; height: 92px; border-radius: 50%; object-fit: cover;
-  border: 3px solid #ff8cc2; box-shadow: 0 4px 0 #ff8cc2;
+  width: 104px; height: 104px; object-fit: contain;
+  filter: drop-shadow(0 6px 8px rgba(180, 60, 120, 0.25));
   animation: mochi-bob 2.4s ease-in-out infinite;
 }
 @keyframes mochi-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-6px) rotate(2deg); } }
@@ -687,8 +699,8 @@ body[data-act="1"] .stage-card { background: #ffe3ef; }
 body[data-act="1"] .stage-card-sub { color: var(--fg-dim); font-style: normal; }
 body[data-act="1"] .mochi-host { display: flex; }
 body[data-act="1"] .mochi-hello {
-  display: block; width: 120px; height: 120px; margin: 0 auto 6px; border-radius: 50%; object-fit: cover;
-  border: 4px solid #ffb3d6; animation: mochi-bob 2.4s ease-in-out infinite;
+  display: block; width: 150px; height: 150px; margin: 0 auto 4px; object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(180, 60, 120, 0.25)); animation: mochi-bob 2.4s ease-in-out infinite;
 }
 body[data-act="1"] .director-overlay .whisper { color: #c2185b; text-shadow: none; }
 
@@ -741,3 +753,170 @@ body[data-act="5"] .director-overlay .whisper,
 body[data-act="5"] .mirror-text { color: #ff2a35; }
 body[data-act="5"] { background: radial-gradient(ellipse at center, #1a0002 0%, #000 70%); }
 body[data-act="5"] #noise-overlay { opacity: 0.13; }
+
+
+/* ======================================================================
+   Act I moments with Mochi (src/segments/MochiPlay.js)
+   ====================================================================== */
+.mochi-play {
+  position: fixed;
+  inset: 0;
+  z-index: 72;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vh;
+  padding: 24px 16px;
+  background: radial-gradient(circle at 20% 15%, #fff0f7 0 12%, transparent 13%) 0 0 / 120px 120px, #ffe3ef;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  color: #6b1d45;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.mochi-play.show { opacity: 1; pointer-events: auto; }
+.mochi-play .mochi-bubble { max-width: min(560px, 92vw); }
+.mp-mochi-wrap { position: relative; transform-origin: 50% 90%; }
+.mp-mochi {
+  display: block;
+  height: min(46vh, 72vw);
+  width: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 12px 14px rgba(180, 60, 120, 0.22));
+  animation: mochi-bob 2.6s ease-in-out infinite;
+}
+.mochi-play.round .mp-mochi { height: min(22vh, 40vw); }
+.mochi-play.photo .mp-mochi-wrap { display: none; }
+.mp-mochi-wrap.hop { animation: mp-hop 0.5s cubic-bezier(.3,1.6,.5,1); }
+.mp-mochi-wrap.squish { animation: mp-squish 0.28s ease-out; }
+.mp-mochi-wrap.nom { animation: mp-nom 0.24s ease-in-out; }
+.mp-mochi-wrap.wiggle { animation: mp-wiggle 0.6s ease-in-out 2; }
+.mp-mochi-wrap.sad .mp-mochi { filter: grayscale(0.35) drop-shadow(0 12px 14px rgba(120, 60, 90, 0.2)); transform: translateY(6px); }
+@keyframes mp-hop { 0% { transform: translateY(0); } 40% { transform: translateY(-28px) scale(1.03, 0.97); } 100% { transform: none; } }
+@keyframes mp-squish { 0% { transform: none; } 40% { transform: scale(1.08, 0.9); } 100% { transform: none; } }
+@keyframes mp-nom { 50% { transform: scale(1.04, 0.95) translateY(4px); } }
+@keyframes mp-wiggle { 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+
+.mp-controls { display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 60px; }
+.mp-hint { margin: 0; color: #b0608b; font-size: 0.95rem; }
+.mp-fx { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.mp-heart {
+  position: fixed;
+  font-size: 28px;
+  color: #ff5fa8;
+  text-shadow: 0 2px 0 #fff;
+  transform: translate(-50%, -50%);
+  animation: mp-float 1.1s ease-out forwards;
+}
+@keyframes mp-float { to { transform: translate(calc(-50% + var(--dx)), -140px) scale(1.4); opacity: 0; } }
+.mp-meter { display: flex; gap: 4px; font-size: 1.5rem; color: #ffc6de; }
+.mp-meter span.on { color: #ff5fa8; animation: mp-squish 0.3s; }
+
+.mp-name { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.mp-name input {
+  font: 600 1.15rem 'Fredoka', system-ui, sans-serif;
+  color: #6b1d45;
+  padding: 12px 18px;
+  border: 3px solid #ffb3d6;
+  border-radius: 999px;
+  background: #fff;
+  outline: none;
+  min-width: 220px;
+  text-align: center;
+}
+.mp-name input:focus { border-color: #ff7eb6; box-shadow: 0 0 0 4px #ffd1e6; }
+.mochi-play .btn-primary {
+  font: 600 1.05rem 'Fredoka', system-ui, sans-serif;
+  background: #ff7eb6; color: #fff; border: 3px solid #ff5fa8; border-radius: 999px;
+  box-shadow: 0 4px 0 #e0438d; padding: 12px 24px;
+}
+
+.mp-snacks { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.mp-snack {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font: 600 0.95rem 'Fredoka', system-ui, sans-serif; color: #6b1d45;
+  background: #fff; border: 3px solid #ffb3d6; border-radius: 22px; box-shadow: 0 4px 0 #ffb3d6;
+  padding: 10px 18px; cursor: pointer; transition: transform 0.12s;
+}
+.mp-snack span { font-size: 2.2rem; line-height: 1.1; }
+.mp-snack:hover { transform: translateY(-3px) rotate(-3deg); }
+.mp-fly { position: fixed; font-size: 2.4rem; transform: translate(-50%, -50%); transition: transform 0.6s cubic-bezier(.5,-0.3,.6,1), opacity 0.6s; }
+
+.mp-round { text-align: center; }
+.mp-round-title {
+  font-weight: 700; font-size: clamp(2.4rem, 8vw, 4.2rem); color: #ff5fa8;
+  text-shadow: 0 4px 0 #fff, 0 7px 0 #ffb3d6; animation: mp-hop 0.6s cubic-bezier(.3,1.6,.5,1);
+}
+.mp-round-sub { font-size: 1.3rem; color: #b0608b; margin-top: 6px; }
+
+/* polaroid */
+.mp-polaroid {
+  background: #fffdf8;
+  padding: 14px 14px 0;
+  box-shadow: 0 14px 30px rgba(120, 40, 80, 0.25);
+  transform: rotate(-2deg);
+  width: min(560px, 88vw);
+}
+.mp-photo { position: relative; background: #f4d6e2; }
+.mp-photo canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; }
+.mp-sticker {
+  position: absolute; right: -6%; bottom: -8%; width: 38%;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.25));
+  transform: rotate(6deg);
+}
+.mp-count {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: clamp(3rem, 12vw, 6rem); color: #fff;
+  text-shadow: 0 4px 0 #ff7eb6, 0 0 20px rgba(255, 126, 182, 0.8);
+}
+.mp-count.pop { animation: mp-hop 0.5s cubic-bezier(.3,1.6,.5,1); }
+.mp-caption {
+  font-family: 'Fredoka', system-ui, sans-serif; font-weight: 500; font-size: 1.25rem;
+  color: #c2185b; text-align: center; padding: 14px 0 18px; min-height: 1.3em;
+}
+.mp-flash { position: fixed; inset: 0; background: #fff; animation: mp-flash 0.6s ease-out forwards; pointer-events: none; }
+.mp-flash.calm { animation-duration: 1.2s; opacity: 0.35; }
+@keyframes mp-flash { from { opacity: 1; } to { opacity: 0; } }
+
+/* the polaroid, when it comes back at the end */
+.mochi-play.photo:has(.cursed) { background: #000; }
+.mp-polaroid.cursed { transform: rotate(3deg); }
+.mp-polaroid.ruined { background: #d9cfc2; filter: contrast(1.15) sepia(0.25); animation: jitter 0.5s steps(1) infinite; }
+.mp-polaroid.ruined .mp-caption { color: #6b0010; font-family: 'Special Elite', monospace; letter-spacing: 0.08em; }
+
+/* player face gore flash (src/ui/FaceGore.js): mirrored, full screen */
+.face-gore {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  transform: scaleX(-1);
+  z-index: 96;
+  background: #000;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+.face-gore.show { opacity: 1; visibility: visible; }
+.face-gore.calm { transition: opacity 0.22s ease, visibility 0.22s; }
+.face-gore.calm.show { opacity: 0.85; }
+
+/* reduce flashing: image flashes fade instead of popping */
+.image-flash.calm.show { animation: calm-fade 0.5s ease both; opacity: 0.75; }
+@keyframes calm-fade { from { opacity: 0; } to { opacity: 0.75; } }
+
+/* Act II: Mochi is still here, hosting. She seems fine. */
+body[data-act="2"] .mochi-host { display: flex; }
+body[data-act="2"] .mochi-host img { filter: saturate(0.55) brightness(0.92) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.4)); animation-duration: 3.4s; }
+body[data-act="2"] .mochi-bubble { background: #3a2730; color: #f1d4de; border-color: #8a5068; box-shadow: 0 4px 0 #6e4252; }
+
+/* consent screen fits on one laptop screen in Act I */
+body[data-act="1"] #screen-consent .glitch-title { font-size: clamp(2.2rem, 7vw, 3.6rem); margin-bottom: 2px; }
+body[data-act="1"] #screen-consent .tagline { margin-bottom: 16px; }
+body[data-act="1"] #screen-consent .consent-copy { padding: 14px 20px; margin-bottom: 14px; line-height: 1.45; }
+body[data-act="1"] #screen-consent .consent-copy li { margin-bottom: 4px; }
+body[data-act="1"] #screen-consent .ai-optin-row { margin-bottom: 12px; padding: 10px 16px; }
+body[data-act="1"] .mochi-hello { width: 112px; height: 112px; }
