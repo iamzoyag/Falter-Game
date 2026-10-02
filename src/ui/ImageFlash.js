@@ -1,3 +1,4 @@
+import { settings } from "../settings.js";
 import { FLASH_URLS } from "../config.js";
 
 // Full-screen subliminal image flashes — a 1-bit face for a fraction of a
@@ -29,11 +30,13 @@ export class ImageFlash {
   flash(ms = 110, { invert = Math.random() < 0.3 } = {}) {
     const url = this.randomUrl();
     if (!url) return false;
+    const calm = settings.reduceFlashing; // fade in/out, never inverted, held a little longer
     this.el.style.backgroundImage = `url("${url}")`;
-    this.el.classList.toggle("invert", invert);
+    this.el.classList.toggle("invert", invert && !calm);
+    this.el.classList.toggle("calm", calm);
     this.el.classList.add("show");
     clearTimeout(this._timer);
-    this._timer = setTimeout(() => this.el.classList.remove("show"), ms);
+    this._timer = setTimeout(() => this.el.classList.remove("show"), calm ? Math.max(ms, 450) : ms);
     return true;
   }
 }

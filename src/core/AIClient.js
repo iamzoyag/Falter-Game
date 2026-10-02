@@ -61,6 +61,14 @@ export class AIClient {
     return postJson(`${this.baseUrl}/api/pacing`, { dossier, recentSignals }, timeoutMs);
   }
 
+  /**
+   * A personalised line for Mochi (or the whisper after one of her events).
+   * Called after the local line is already on screen; replaces it only if fast.
+   */
+  async requestMochiLine(payload, timeoutMs = 1300) {
+    return postJson(`${this.baseUrl}/api/mochi`, payload, timeoutMs);
+  }
+
   /** Text -> speech. Returns { audio: base64 16-bit PCM, sampleRate }. */
   async requestSpeech({ text }, timeoutMs = 9000) {
     return postJson(`${this.baseUrl}/api/tts`, { text }, timeoutMs);

@@ -1,3 +1,4 @@
+import { settings } from "../settings.js";
 // III. THE MIRROR — based on the strange-face-in-the-mirror illusion 
 // in dim light, staring at your own face for under a minute makes most
 // people see it distort. Here the feed ALSO distorts, slowly, so the player
@@ -11,7 +12,7 @@ const HOLD_EYE_CONTACT = (face) =>
 
 const MAX_REAL_TIME_MS = 110000; // never trap anyone: after this it ends regardless
 
-export async function runMirror({ durationMs = 60000, feed, getFace, director, ui, audio, voice }) {
+export async function runMirror({ durationMs = 60000, feed, getFace, director, ui, audio, voice, faceGore, getVideo, samples }) {
   feed.setFigureImage(director.prepareFigureImage()); // the figure hasn't appeared yet in normal play
   ui.enterMirror("look into your own eyes.<br>don't look away.");
   voice?.speak("Look into your own eyes. Don't look away.", { position: { x: 0, y: 0, z: -0.4 } });
@@ -27,6 +28,7 @@ export async function runMirror({ durationMs = 60000, feed, getFace, director, u
   let nextSwapAt = start + 9000;
   let nextBeatAt = start + 1200;
   let bgPulse = 0;
+  let scared = false;
 
   while (held < durationMs && performance.now() - start < MAX_REAL_TIME_MS) {
     await nextFrame();
@@ -71,11 +73,17 @@ export async function runMirror({ durationMs = 60000, feed, getFace, director, u
       oneBit: p > 0.45 ? Math.min(1, (p - 0.45) / 0.35) : 0 // grey slowly gives way to pure black and white
     });
 
-    // The figure fades in behind them for the last stretch.
-    if (p > 0.55) {
-      const fig = director.figureAt(1 + ((p - 0.55) / 0.45) * 2.5, face);
-      if (fig) fig.opacity *= Math.min(1, (p - 0.55) / 0.2);
-      feed.setFigure(fig);
+    // Near the end, for a split second, something is standing right behind them.
+    if (p > 0.8 && !scared && holding) {
+      scared = true;
+      const fig = director.figureAt(4.2, face);
+      if (fig) {
+        fig.opacity = 0.97;
+        feed.setFigure(fig);
+        audio.playStinger("jumpscare", { x: 0.3, y: 0, z: 0.5 });
+        ui.shakeScreen();
+        setTimeout(() => feed.setFigure(null), settings.reduceFlashing ? 450 : 260);
+      }
     }
 
     // Uncanny valley: for a fraction of a second, a different expression —
@@ -112,6 +120,9 @@ export async function runMirror({ durationMs = 60000, feed, getFace, director, u
     smile: 1.1, widen: 0.5, eyeScale: 0.55, jaw: 0.45, eyesBlack: 1, bgDark: 0.95, vignette: 0.9, aberration: 0.5, oneBit: 1, pixel: 3
   });
   await sleep(1100);
+  // ...and for one frame, what's underneath
+  const kp = getFace()?.keypoints;
+  if (faceGore && kp && faceGore.flash(getVideo?.(), kp, 170)) samples?.play("snap", { gain: 0.7 });
   audio.playStinger("static", { x: 0, y: 0, z: -0.2 });
   ui.blackout(1400);
   await sleep(1400);

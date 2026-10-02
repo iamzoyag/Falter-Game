@@ -65,7 +65,8 @@ export async function taskCloseEyes({ feed, getFace, director, ui, audio, voice,
   feed.setFigureImage(director.prepareFigureImage());
   feed.startReplay(t0, t1, (p) => ({
     warp: { bgDark: 0.45 + p * 0.3, vignette: 0.6, grain: 0.35, desat: 0.5, smile: p > 0.85 ? (p - 0.85) * 4 : 0, pixel: 3, oneBit: p > 0.5 ? 1 : 0 },
-    figure: director.figureAt(1 + p * 3.6, getFace())
+    // nothing... nothing... then, for the last moment of the replay, right behind them
+    figure: p > 0.86 ? { ...director.figureAt(4.6, getFace()), opacity: 0.97 } : null
   }));
   await sleep(t1 - t0 + 100);
 
@@ -76,7 +77,7 @@ export async function taskCloseEyes({ feed, getFace, director, ui, audio, voice,
   await sleep(900);
 
   ui.exitMirror();
-  director.setFigureStep(3); // and now it's still there, in the live feed
+  director.setFigureStep(3); // and the next time they look at the screen, it's there for a moment
   director.suspend(false);
   return { complied: true, opens };
 }

@@ -3,9 +3,9 @@
 //     resonant lowpass at 150 Hz swept by a slow LFO). Don't touch it.
 //   - the cute music is now the full CuteTheme track, damaged live by the
 //     transition (slows, sinks in pitch, wobbles, goes underwater, fades).
-//   - injury sfx are still synthesised placeholders on the same trigger
-//     points (sew steps, snap at t=.55, tearing bursts, drips). Swap in
-//     recorded samples later via AudioEngine.loadBuffer/playBuffer.
+//   - injury sfx are RECORDED (CC0, public/audio/sfx/, via SampleBank) on the
+//     same trigger points (sew steps, snap at t=.55, tearing, drips). If the
+//     files are missing, the old synthesised versions play instead.
 
 const sm = (a, b, x) => {
   x = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -18,9 +18,12 @@ export class MochiAudio {
    * @param {AudioNode} destination usually AudioEngine.master
    * @param {import('../core/CuteTheme').CuteTheme} theme
    */
-  constructor(ctx, destination, theme) {
+  constructor(ctx, destination, theme, samples = null) {
     this.ctx = ctx;
     this.theme = theme;
+    /** @type {import('../core/SampleBank').SampleBank|null} */
+    this.samples = samples;
+    this._lastTear = 0;
     this.act = 1;
 
     // preview master was 0.55 straight to the speakers; the game's master is 0.7
@@ -136,7 +139,7 @@ export class MochiAudio {
     this.whine.gain.setTargetAtTime(0.025 * away, now, 0.3);
 
     const S = this.state;
-    if (S.name !== name || t < (S.t || 0) - 0.02) Object.assign(S, { name, step: 0, snap: false, sq: false, acc: 0 });
+    if (S.name !== name || t < (S.t || 0) - 0.02) Object.assign(S, { name, step: 0, snap: false, sq: false, gush: false, acc: 0 });
     S.t = t;
 
     const cr = watching && name === "ears" && t < 0.55 ? sm(0, 0.55, t) : 0;
@@ -164,13 +167,15 @@ export class MochiAudio {
     } else if (name === "unzip") {
       if (t > 0.06 && t < 0.72) {
         S.acc += dt;
-        const gap = 0.16 + (1 - sm(0.06, 0.5, t)) * 0.1;
+        // recorded tears are longer than the synth bursts, so space them out
+        const gap = this.samples?.has("tear") ? 0.42 + (1 - sm(0.06, 0.5, t)) * 0.3 : 0.16 + (1 - sm(0.06, 0.5, t)) * 0.1;
         if (S.acc > gap) {
           S.acc = 0;
           this.sfx.tear(this, 0.1 + Math.random() * 0.16, 0.35 + 0.35 * sm(0.06, 0.4, t));
           if (Math.random() < 0.5) this.sfx.squelch(this, 0.3);
         }
       }
+      if (t >= 0.45 && !S.gush) { S.gush = true; this.samples?.play("gush", { gain: 0.6, maxDur: 2.2 }); }
       if (t > 0.6 && Math.random() < dt * 3) this.sfx.drip(this);
     }
   }
@@ -230,17 +235,33 @@ export class MochiAudio {
     o.stop(t0 + dur + 0.02);
   }
 
+  // each one: recorded sample when available, synthesised fallback otherwise
   sfx = {
     stitch(A) {
+      const S = A.samples;
+      if (S?.has("stitch")) {
+        S.play("stitch", { gain: 0.9, jitter: 0.06 });
+        if (Math.random() < 0.6) S.play("thread", { gain: 0.45, delay: 0.14, maxDur: 0.6 });
+        A.thump(130, 55, 0.08, 0.25); // a little weight under the needle
+        return;
+      }
       A.burst({ dur: 0.05, f0: 2600, f1: 900, q: 2, gain: 0.55 });
       A.thump(150, 55, 0.09, 0.45);
       A.burst({ dur: 0.2, f0: 2800, f1: 6500, q: 1, gain: 0.13, type: "highpass", delay: 0.07 });
     },
     tear(A, len, g) {
+      if (A.samples?.has("tear")) {
+        A.samples.play("tear", { gain: 0.5 + (g || 0.5) * 0.6, jitter: 0.1, maxDur: 1.4 });
+        return;
+      }
       A.burst({ dur: len, f0: 900 + Math.random() * 500, f1: 250, q: 1.2, gain: g || 0.5 });
       A.burst({ dur: len * 0.8, f0: 3000, f1: 1200, q: 0.8, gain: (g || 0.5) * 0.35, type: "highpass" });
     },
     squelch(A, g) {
+      if (A.samples?.has("squelch")) {
+        A.samples.play("squelch", { gain: 0.35 + (g || 0.4) * 1.1, jitter: 0.12, maxDur: 1 });
+        return;
+      }
       const n = 4 + Math.floor(Math.random() * 3);
       for (let i = 0; i < n; i++) {
         A.burst({ dur: 0.05 + Math.random() * 0.05, f0: 250 + Math.random() * 350, f1: 700 + Math.random() * 500, q: 5, gain: (g || 0.4) * (0.5 + Math.random() * 0.5), delay: i * 0.06 });
@@ -248,6 +269,10 @@ export class MochiAudio {
       A.thump(90, 45, 0.18, 0.3);
     },
     drip(A) {
+      if (A.samples?.has("drip")) {
+        A.samples.play("drip", { gain: 0.5 + Math.random() * 0.3, jitter: 0.15, pan: Math.random() * 0.6 - 0.3 });
+        return;
+      }
       const c = A.ctx, t0 = c.currentTime;
       const o = c.createOscillator();
       o.frequency.setValueAtTime(1400 + Math.random() * 400, t0);
@@ -261,6 +286,15 @@ export class MochiAudio {
       o.stop(t0 + 0.14);
     },
     snap(A) {
+      const S = A.samples;
+      if (S?.has("snap")) {
+        S.play("snap", { gain: 1, jitter: 0.04 });
+        S.play("crack", { gain: 0.8, delay: 0.02 });
+        S.play("gush", { gain: 0.55, delay: 0.12, maxDur: 1.8 });
+        S.play("squelch", { gain: 0.7, delay: 0.2 });
+        A.thump(120, 28, 0.7, 0.8);
+        return;
+      }
       A.burst({ dur: 0.35, f0: 1800, f1: 200, q: 0.7, gain: 0.9 });
       A.thump(120, 28, 0.7, 1);
       A.burst({ dur: 0.5, f0: 600, f1: 150, q: 3, gain: 0.5, delay: 0.06 });

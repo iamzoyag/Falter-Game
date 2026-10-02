@@ -1,0 +1,21 @@
+Sound effects in this folder are cut from recordings on freesound.org, all released under
+Creative Commons 0 (public domain, https://creativecommons.org/publicdomain/zero/1.0/). Credit isn't
+required, but here's where each came from:
+
+"stitching flesh in the Frankenstein's Lab" by HowardV, https://freesound.org/people/HowardV/sounds/646047/ -> stitch-1, stitch-2, stitch-3, stitch-4, stitch-5, stitch-6
+"Sew Stitch Fix" by qubodup, https://freesound.org/people/qubodup/sounds/807956/ -> thread-1
+"Sewing Stitching Fixing Quick" by qubodup, https://freesound.org/people/qubodup/sounds/807958/ -> thread-2
+"rip_tear FLESH!.wav" by aust_paul, https://freesound.org/people/aust_paul/sounds/30931/ -> tear-1
+"Gut Rip (Unbladed)" by magnuswaker, https://freesound.org/people/magnuswaker/sounds/530919/ -> tear-2, tear-3
+"Ripping Apart Carcass.wav" by ProductionNow, https://freesound.org/people/ProductionNow/sounds/234236/ -> tear-4, tear-5, tear-6, tear-7
+"squishes.wav" by Eneasz, https://freesound.org/people/Eneasz/sounds/216882/ -> squelch-1, squelch-2, squelch-3, squelch-4, squelch-5, squelch-6
+"Chicken Meat Slime" by qubodup, https://freesound.org/people/qubodup/sounds/211605/ -> squelch-7, squelch-8
+"Eating Juicy Meat.wav" by ProductionNow, https://freesound.org/people/ProductionNow/sounds/234237/ -> squelch-9, squelch-10
+"goreSplat.wav" by ThefitzyG, https://freesound.org/people/ThefitzyG/sounds/414296/ -> splat-1
+"Long Wet Pepper Crunch with Rip.wav" by minituffy, https://freesound.org/people/minituffy/sounds/385965/ -> snap-1
+"Necksnap_build.wav" by danielrutterfilms, https://freesound.org/people/danielrutterfilms/sounds/134025/ -> snap-2
+"BreakingNeck.wav" by cinevid, https://freesound.org/people/cinevid/sounds/144159/ -> snap-3
+"Chicken Bone Break" by qubodup, https://freesound.org/people/qubodup/sounds/211606/ -> crack-1, crack-2, crack-3
+"Blood_Drips_Tomato.wav" by melissapons, https://freesound.org/people/melissapons/sounds/178156/ -> drip-1, drip-2, drip-3, drip-4, drip-5, drip-6
+"48-Blood.wav" by lauracarolina09, https://freesound.org/people/lauracarolina09/sounds/445884/ -> drip-7
+"Blood Gush / Spray" by clif_creates, https://freesound.org/people/clif_creates/sounds/345985/ -> gush-1

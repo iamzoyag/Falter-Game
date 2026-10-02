@@ -1,3 +1,4 @@
+import { settings } from "../settings.js";
 import { FeedRenderer } from "./FeedRenderer.js";
 import { MASK_SIZE } from "./Segmenter.js";
 
@@ -154,7 +155,11 @@ export class DelayedFeed {
   setBaseWarp(warp) { this.baseWarp = warp || {}; }
 
   /** Temporarily override some warp values. */
-  burst(warp, ms) { this._burst = { warp, until: performance.now() + ms }; }
+  burst(warp, ms) {
+    // reduce flashing: no photographic-negative strobes
+    if (settings.reduceFlashing && warp?.invert) warp = { ...warp, invert: 0 };
+    this._burst = { warp, until: performance.now() + ms };
+  }
 
   setFigure(figure) { this.figure = figure; }
 

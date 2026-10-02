@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import {
   generateBeatCopy, generateEndingReport, generatePacingHint,
-  generateSpeech, transcribeAudio, generateInterrogation
+  generateSpeech, transcribeAudio, generateInterrogation, generateMochiLine
 } from "./llm.js";
 
 if (!process.env.GEMINI_API_KEY) {
@@ -51,6 +51,32 @@ app.post("/api/beat", async (req, res) => {
     res.json({ text: String(result.text).slice(0, 300) });
   } catch (err) {
     console.error("[/api/beat]", err.message);
+    res.status(500).json({ error: "internal" });
+  }
+});
+
+// Mochi's lines (cute) and the whisper after each Mochi event (not cute).
+app.post("/api/mochi", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const moments = ["answer", "greet", "pet", "feed", "polaroid", "event-before", "event-after", "host"];
+    if (!moments.includes(b.moment)) return res.status(400).json({ error: "bad moment" });
+    const result = await generateMochiLine({
+      moment: b.moment,
+      act: Number(b.act) || 1,
+      scene: typeof b.scene === "string" ? b.scene.slice(0, 20) : null,
+      name: typeof b.name === "string" ? b.name.slice(0, 24) : "",
+      snack: typeof b.snack === "string" ? b.snack.slice(0, 20) : null,
+      question: typeof b.question === "string" ? b.question.slice(0, 200) : null,
+      answer: typeof b.answer === "string" ? b.answer.slice(0, 200) : null,
+      localFallbackText: String(b.localFallbackText || "").slice(0, 200),
+      dossier: Array.isArray(b.dossier) ? b.dossier.slice(-20) : [],
+      stats: b.stats && typeof b.stats === "object" ? b.stats : {}
+    });
+    if (!result?.text) return res.status(502).json({ error: "no_result" });
+    res.json({ text: String(result.text).slice(0, 140) });
+  } catch (err) {
+    console.error("[/api/mochi]", err.message);
     res.status(500).json({ error: "internal" });
   }
 });

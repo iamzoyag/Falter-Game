@@ -9,6 +9,10 @@
 // Looking away freezes everything, swells the drone, and tells them to watch.
 // A hard real-time cap means nobody can be trapped (same rule as the mirror).
 
+import { eventBefore, eventAfter, aiMochiLine } from "../mochi/MochiLines.js";
+import { FEAR_CHANNELS } from "../vision/FaceTracker.js";
+import { settings } from "../settings.js";
+
 const WATCHING = (face) => !!face && face.faceVisible && !face.lookingAway && !face.blinkTooLong;
 
 const PREROLL_MS = 4500;
@@ -18,38 +22,25 @@ const REVEAL_END = 0.73;       // ...and where it's complete (the rest is the ho
 const MAX_REAL_TIME_MS = 80000;
 const CUT_BLACK_MS = 1300;
 
-export const MOCHI_LINES = {
-  stitches: { before: "hiii!! it's me, mochi ♡ you've been sooo honest so far!", after: "she won't be telling anyone." },
-  eyes: { before: "mochi missed you!! did you miss mochi? ♡", after: "she saw too much." },
-  ears: { before: "shhh... mochi's listening ♡", after: "she heard everything." },
-  unzip: { before: "mochi saved something for you. it's inside ♡", after: "now you know what's inside." }
-};
-
-/** Mochi chirps one of these beside each Act I question. */
-export const MOCHI_HOST_LINES = [
-  "yay, you're here!! let's be friends ♡",
-  "no wrong answers!! just be honest, ok? ♡",
-  "ooh, interesting~",
-  "mochi is taking sooo many notes ♡",
-  "you have a really nice face, did you know?",
-  "almost done!! mochi has a surprise for you ♡"
-];
-
 /**
  * @param {{scene: string, act: number, engine: import('../mochi/MochiEngine').MochiEngine,
  *          mochiAudio: import('../mochi/MochiAudio').MochiAudio, getFace: () => object,
  *          ui: object, director: object, voice?: object}} ctx
  */
-export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, ui, director, voice }) {
+export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, ui, director, voice, player, aiClient, aiEnabled }) {
   const ok = await engine.load();
   if (!ok) return { skipped: true };
-  const lines = MOCHI_LINES[scene] || { before: "", after: "" };
+  engine.calm = settings.reduceFlashing;
+  const dossier = director?.getSummary().compactDossier ?? [];
+  const before = eventBefore(scene, player);
 
   ui.showMochiEvent();
   ui.setMochiEventProgress(0);
   engine.render(scene, 0, 0, performance.now());
   mochiAudio?.begin(act, { musicVolume: 0.5 });
-  ui.setMochiBubble(lines.before);
+  ui.setMochiBubble(before);
+  aiMochiLine(aiClient, aiEnabled, "event-before", { act, scene, name: player?.name, snack: player?.snack, localFallbackText: before, dossier }, 1500)
+    .then((t) => { if (t && document.getElementById("mochi-event-bubble")?.textContent === before) ui.setMochiBubble(t); });
 
   // ---- 1. pre-roll: cute. (just let it be cute.)
   const preEnd = performance.now() + PREROLL_MS;
@@ -62,12 +53,14 @@ export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, u
 
   // ---- 2 + 3. transition and hold, gated by attention
   const start = performance.now();
-  let last = start, P = 0, awayMs = 0, lookAways = 0, wasWatching = true, lastNag = 0;
+  let last = start, P = 0, awayMs = 0, lookAways = 0, wasWatching = true, lastNag = 0, flinch = 0;
   while (P < 1 && performance.now() - start < MAX_REAL_TIME_MS) {
     const now = await nextFrame();
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
-    const watching = WATCHING(getFace()) && !document.hidden;
+    const face = getFace();
+    const watching = WATCHING(face) && !document.hidden;
+    if (face?.reaction && FEAR_CHANNELS.includes(face.dominantExpression)) flinch = Math.max(flinch, face.reaction);
 
     if (watching) {
       P = Math.min(1, P + dt / EVENT_SEC);
@@ -99,7 +92,13 @@ export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, u
   await sleep(CUT_BLACK_MS);
 
   director?.bumpCreep(0.05);
-  if (lines.after) director?.say(lines.after);
+  const after = eventAfter(scene, player, dossier, { lookAways, flinch });
+  const aiAfter = aiMochiLine(aiClient, aiEnabled, "event-after", {
+    act, scene, name: player?.name, snack: player?.snack, localFallbackText: after, dossier,
+    stats: { lookAways, flinchedHard: flinch > 3, pettedHer: player?.petted }
+  }, 1500);
+  const upgraded = await Promise.race([aiAfter, sleep(900).then(() => null)]);
+  director?.say(upgraded || after);
   if (director) director.stats.mochiLookAways = (director.stats.mochiLookAways || 0) + lookAways;
   return { lookAways, completed: P >= 1 };
 }

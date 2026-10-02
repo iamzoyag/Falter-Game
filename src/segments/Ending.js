@@ -2,7 +2,9 @@
 // (or, if they never flinched, their calibration smile) — pushed as far as it
 // goes. Then the report, with that frame kept as "the moment you flinched".
 
-export async function runEnding({ feed, audio, ui, director, aiClient, aiEnabled, imageFlash }) {
+import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
+
+export async function runEnding({ feed, audio, ui, director, aiClient, aiEnabled, imageFlash, player, faceGore, samples }) {
   director.suspend(true);
   const summary = director.getSummary();
 
@@ -18,6 +20,9 @@ export async function runEnding({ feed, audio, ui, director, aiClient, aiEnabled
   audio.muteDrone(4000);
   ui.blackout(2000);
   await sleep(2000);
+
+  // The polaroid from Act I comes back.
+  if (player?.polaroid?.raw && faceGore) await cursedPolaroid(player, faceGore, samples);
   // three subliminal frames right before it
   for (let i = 0; i < 3; i++) {
     imageFlash?.flash(60);
@@ -53,6 +58,42 @@ export async function runEnding({ feed, audio, ui, director, aiClient, aiEnabled
   ui.showEndingLoading();
   const report = await reportPromise;
   ui.renderEnding(summary, report);
+}
+
+/** "{name} & mochi ♡ best friends", except it's the unzipped Mochi now, and it's your face underneath. */
+export async function cursedPolaroid(player, faceGore, samples) {
+  const root = document.getElementById("mochi-play");
+  root.innerHTML = `
+    <div class="mp-controls"><div class="mp-polaroid cursed">
+      <div class="mp-photo"><canvas width="640" height="480"></canvas><img class="mp-sticker" alt="" /></div>
+      <div class="mp-caption"></div>
+    </div></div>`;
+  const canvas = root.querySelector("canvas");
+  const { raw, keypoints, cute } = player.polaroid;
+  // first: exactly the photo they took
+  canvas.getContext("2d").drawImage(cute, 0, 0, 640, 480);
+  root.querySelector(".mp-sticker").src = MOCHI_CUTE_URL;
+  root.querySelector(".mp-caption").textContent = `${player.name || "friend"} & mochi ♡ best friends`;
+  root.classList.add("show", "photo");
+  await sleep(1800);
+  // then: what it really looks like
+  const gore = document.createElement("canvas");
+  if (keypoints && faceGore.render(raw, keypoints, { target: gore, kinds: ["eyes", "smile"] })) {
+    const g = canvas.getContext("2d");
+    g.save();
+    g.translate(640, 0);
+    g.scale(-1, 1);
+    g.drawImage(gore, 0, 0, 640, 480);
+    g.restore();
+  }
+  root.querySelector(".mp-sticker").src = "/mochi/unzip.webp";
+  root.querySelector(".mp-caption").textContent = "best friends forever";
+  root.querySelector(".mp-polaroid").classList.add("ruined");
+  samples?.play("splat", { gain: 0.8 });
+  await sleep(2600);
+  root.classList.remove("show", "photo");
+  await sleep(400);
+  root.innerHTML = "";
 }
 
 function sleep(ms) {
