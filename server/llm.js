@@ -18,9 +18,10 @@ const SAFETY_NOTE =
   "Keep it atmospheric and psychological, never graphic, never targeting the real person outside the fiction, " +
   "no instructions for self-harm or violence, no real names or real threats.";
 
-const FAST_MODELS = (process.env.AI_MODELS_FAST || "gemini-2.5-flash,gemini-2.5-flash-lite")
+// 2.5 models are closed to new API keys; these are the replacements Google's error names.
+const FAST_MODELS = (process.env.AI_MODELS_FAST || "gemini-3.8-flash,gemini-3.5-flash-lite")
   .split(",").map((s) => s.trim()).filter(Boolean);
-const ENDING_MODELS = (process.env.AI_MODELS_ENDING || "gemini-2.5-pro,gemini-2.5-flash,gemini-2.5-flash-lite")
+const ENDING_MODELS = (process.env.AI_MODELS_ENDING || "gemini-3.8-flash,gemini-3.5-flash-lite")
   .split(",").map((s) => s.trim()).filter(Boolean);
 
 function isFatalError(err) {
@@ -179,15 +180,64 @@ const TTS_DIRECTION =
   "Whisper this slowly and intimately, very close to the listener, flat and calm, with small pauses";
 const TTS_CACHE_DIR = path.resolve(process.env.TTS_CACHE_DIR || ".tts-cache");
 
-// TTS quotas are tight, and the same lines come up every playthrough, so
-// every synthesized line is cached on disk by (voice, direction, text).
-export async function generateSpeech({ text }) {
-  const key = createHash("sha1").update(`${TTS_MODEL}|${TTS_VOICE}|${TTS_DIRECTION}|${text}`).digest("hex");
-  const file = path.join(TTS_CACHE_DIR, `${key}.json`);
-  try {
-    return JSON.parse(await readFile(file, "utf8"));
-  } catch { /* not cached yet */ }
+// Free-tier TTS allows ~3 requests a minute, so lines can't be made on demand.
+// Instead: every line is cached on disk; an uncached line is QUEUED and the
+// request returns "pending" immediately (the game speaks it with the browser's
+// own voice meanwhile). The queue drains at the allowed rate in the background,
+// so after one playthrough with the server left running, every line is cached.
+const TTS_MIN_INTERVAL_MS = Number(process.env.TTS_MIN_INTERVAL_MS ?? 21000); // set 0 on a paid key
+const ttsQueue = [];
+const ttsQueued = new Set();
+let ttsWorking = false;
+let ttsNextAt = 0;
 
+function ttsKey(text) {
+  return createHash("sha1").update(`${TTS_MODEL}|${TTS_VOICE}|${TTS_DIRECTION}|${text}`).digest("hex");
+}
+
+async function readTtsCache(text) {
+  try {
+    return JSON.parse(await readFile(path.join(TTS_CACHE_DIR, `${ttsKey(text)}.json`), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+/** Returns { status: "ready", audio, sampleRate } or { status: "pending", queued } */
+export async function generateSpeech({ text }) {
+  const cached = await readTtsCache(text);
+  if (cached) return { status: "ready", ...cached };
+  const key = ttsKey(text);
+  if (!ttsQueued.has(key)) {
+    ttsQueued.add(key);
+    ttsQueue.push({ text, key, attempts: 0 });
+    pumpTts();
+  }
+  return { status: "pending", queued: ttsQueue.length };
+}
+
+async function pumpTts() {
+  if (ttsWorking) return;
+  ttsWorking = true;
+  while (ttsQueue.length) {
+    const wait = ttsNextAt - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    const job = ttsQueue[0];
+    const result = await synthesize(job.text);
+    if (result.retryMs && ++job.attempts < 4) {
+      ttsNextAt = Date.now() + result.retryMs + 500;
+      console.warn(`TTS rate-limited — waiting ${Math.round(result.retryMs / 1000)}s (${ttsQueue.length} lines queued)`);
+      continue;
+    }
+    ttsQueue.shift();
+    ttsQueued.delete(job.key);
+    ttsNextAt = Date.now() + TTS_MIN_INTERVAL_MS;
+    if (result.ok) console.log(`TTS cached: "${job.text.slice(0, 40)}" (${ttsQueue.length} left)`);
+  }
+  ttsWorking = false;
+}
+
+async function synthesize(text) {
   try {
     const res = await ai.models.generateContent({
       model: TTS_MODEL,
@@ -198,16 +248,20 @@ export async function generateSpeech({ text }) {
       }
     });
     const part = res.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
-    if (!part) return null;
+    if (!part) return { ok: false };
     const mime = part.inlineData.mimeType || "";
     const sampleRate = Number(/rate=(\d+)/.exec(mime)?.[1]) || 24000;
-    const out = { audio: part.inlineData.data, sampleRate };
     await mkdir(TTS_CACHE_DIR, { recursive: true });
-    await writeFile(file, JSON.stringify(out)).catch(() => {});
-    return out;
+    await writeFile(path.join(TTS_CACHE_DIR, `${ttsKey(text)}.json`), JSON.stringify({ audio: part.inlineData.data, sampleRate }));
+    return { ok: true };
   } catch (err) {
-    console.warn(`Gemini TTS failed (${err?.message ?? err})`);
-    return null;
+    const msg = String(err?.message ?? err);
+    if (msg.includes("RESOURCE_EXHAUSTED") || msg.includes('"code":429')) {
+      const secs = Number(/retry in ([\d.]+)s/i.exec(msg)?.[1]) || 30;
+      return { ok: false, retryMs: secs * 1000 };
+    }
+    console.warn(`Gemini TTS failed: ${msg.slice(0, 200)}`);
+    return { ok: false };
   }
 }
 

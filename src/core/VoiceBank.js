@@ -12,7 +12,8 @@ export class VoiceBank {
   constructor(aiClient, audio, enabled) {
     this.ai = aiClient;
     this.audio = audio;
-    this.enabled = enabled;
+    this.enabled = enabled; // remote (Gemini) voice
+    this.local = "speechSynthesis" in window;
     this.cache = new Map();   // text -> AudioBuffer
     this.pending = new Map(); // text -> Promise<AudioBuffer|null>
     this.speaking = false;
@@ -50,20 +51,42 @@ export class VoiceBank {
    * Resolves true if it played (after playback finishes).
    */
   async speak(text, { position, maxWaitMs = 2500, gain = 1, rate = 1, dropIfBusy = false } = {}) {
-    if (!this.enabled || !text) return false;
+    if (!text || (!this.enabled && !this.local)) return false;
     if (dropIfBusy && this.speaking) return false; // don't talk over ourselves
     let buf = this.cache.get(text);
-    if (!buf) {
+    if (!buf && this.enabled) {
       buf = await Promise.race([this.get(text), sleep(maxWaitMs).then(() => null)]);
     }
-    if (!buf || (dropIfBusy && this.speaking)) return false;
+    if (dropIfBusy && this.speaking) return false;
     this.speaking = true;
     try {
-      await this.audio.playVoice(buf, position, { gain, rate });
+      if (buf) await this.audio.playVoice(buf, position, { gain, rate });
+      else if (this.local) await this._speakLocal(text, rate);
+      else return false;
     } finally {
       this.speaking = false;
     }
     return true;
+  }
+
+  _speakLocal(text, rate = 1) {
+    const synth = window.speechSynthesis;
+    return new Promise((resolve) => {
+      const u = new SpeechSynthesisUtterance(text);
+      const v = pickVoice(synth.getVoices());
+      if (v) u.voice = v;
+      u.rate = 0.8 * rate;
+      u.pitch = 0.4;
+      u.volume = 0.9;
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      u.onend = finish;
+      u.onerror = finish;
+      setTimeout(finish, 1500 + text.length * 110); // never hang if the engine goes quiet
+      this.audio.duckDrone(Math.min(6, 0.8 + text.length * 0.07));
+      synth.cancel();
+      synth.speak(u);
+    });
   }
 }
 
@@ -84,6 +107,15 @@ function pcmToAudioBuffer(ctx, base64, sampleRate) {
   } catch {
     return null;
   }
+}
+
+// macOS ships a voice literally called "Whisper"; otherwise take a low English voice.
+function pickVoice(voices) {
+  for (const name of ["Whisper", "Bad News", "Daniel", "Fred", "Google UK English Male"]) {
+    const v = voices.find((x) => x.name.startsWith(name));
+    if (v) return v;
+  }
+  return voices.find((x) => x.lang?.startsWith("en")) || null;
 }
 
 function sleep(ms) {

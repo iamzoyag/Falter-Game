@@ -74,7 +74,9 @@ function processImage(img) {
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
   const ctx = c.getContext("2d");
-  ctx.filter = "grayscale(1) brightness(0.4) contrast(1.5) blur(0.8px)";
+  ctx.filter = "grayscale(1) brightness(1.05) contrast(1.35) blur(0.6px)";
+  ctx.drawImage(img, 0, 0, W, H);
+  c.pale = true; // lit like a ghost, not a shadow
   ctx.drawImage(img, 0, 0, W, H);
   return c;
 }

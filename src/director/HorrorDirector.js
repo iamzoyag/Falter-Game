@@ -225,7 +225,9 @@ export class HorrorDirector {
     const nearX = faceX + (fig.side > faceX ? 1 : -1) * 0.3;
     const cx = lerp(fig.side, nearX, t);
     const bottom = lerp(0.82, 1.25, t);
-    return { rect: [cx - w / 2, bottom - h, w, h], opacity: FIGURE_OPACITY[Math.round(lerp(1, FIGURE_MAX_STEP, t))], dark: 0.3 };
+    // photo figures are pale (they read in a dark room AND in 1-bit); the silhouette fallback stays dark
+    const dark = img?.pale ? 0.95 : 0.3;
+    return { rect: [cx - w / 2, bottom - h, w, h], opacity: FIGURE_OPACITY[Math.round(lerp(1, FIGURE_MAX_STEP, t))], dark };
   }
 
   getSummary() {
@@ -362,10 +364,11 @@ export class HorrorDirector {
       this.dark = Math.max(0, this.dark - 0.5 * dt);
     } else {
       const reacting = face?.reaction >= 3 && FEAR_CHANNELS.includes(face.dominantExpression);
-      const away = face && (!face.faceVisible || face.lookingAway);
-      if (reacting) this.dark += 0.6 * dt;
-      else if (away) this.dark += 0.3 * dt;
-      else this.dark -= 0.07 * dt;
+      // sustained look-aways only (a glance doesn't count), or the face gone for a moment
+      const away = face && ((!face.faceVisible && face.faceMissingMs > 800) || face.lookAwayTooLong);
+      if (reacting) this.dark += 0.45 * dt;
+      else if (away) this.dark += 0.25 * dt;
+      else this.dark -= 0.15 * dt;
       this.dark = clamp(this.dark, 0, 1);
 
       if (!this._darkHintShown && this.dark > 0.35) {
