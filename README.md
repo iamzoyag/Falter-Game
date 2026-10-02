@@ -44,6 +44,28 @@ and mismatches pile up. It's deliberately decoupled from audio/DOM code —
 it just emits "beat" events — so you can retune pacing/thresholds in one
 file without touching rendering or audio.
 
+## Mochi (the mascot) and the colour script
+
+- **Act I** is pink and bubbly: Mochi hosts the quiz from a speech bubble
+  and her theme plays (`src/core/CuteTheme.js`, a synthesised song; drop a
+  loopable `public/audio/cute-theme.mp3` to use a recorded track instead).
+  The ambient drone stays silent until Act II.
+- **Mochi events** (`src/segments/MochiSegment.js`) sit at every act break,
+  worst last: stitches (I→II), eyes (II→III), ears (III→IV), unzip (after V).
+  Each starts from cute Mochi + her song, then one wound plays out
+  (`src/mochi/MochiEngine.js`, WebGL) and only advances while the webcam
+  says you're looking. Look away and it freezes and the drone swells. The
+  finished wound holds ~5 s, then hard cut to black. Sound:
+  `src/mochi/MochiAudio.js`.
+- `body[data-act]` (1–5) switches the palette in `style.css`: pink → dusty
+  rose → the 1-bit look → black and blood red.
+- Assets: `public/mochi/` (images, optical-flow textures, reveal masks, ear
+  sprite). These are the compressed copies from the preview (768 px, JPEG);
+  replace with the full-quality exports if you have them, same names.
+- Content warning is on the consent screen. Image licence: the LoRAs used
+  forbid selling generated content: fine for a free project, recheck
+  before any commercial release.
+
 ## Running it (core game, no AI)
 
 ```

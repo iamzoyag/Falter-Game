@@ -23,6 +23,10 @@ import { runMirror } from "./segments/MirrorSegment.js";
 import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
 import { runInterrogation } from "./segments/Interrogator.js";
 import { runEnding } from "./segments/Ending.js";
+import { runMochiEvent, MOCHI_HOST_LINES } from "./segments/MochiSegment.js";
+import { MochiEngine } from "./mochi/MochiEngine.js";
+import { MochiAudio } from "./mochi/MochiAudio.js";
+import { CuteTheme } from "./core/CuteTheme.js";
 import { DebugOverlay } from "./debug/DebugOverlay.js";
 import { ImageFlash } from "./ui/ImageFlash.js";
 import { NoiseOverlay } from "./ui/NoiseOverlay.js";
@@ -64,6 +68,9 @@ const debug = new DebugOverlay();
 const imageFlash = new ImageFlash(document.getElementById("image-flash"));
 imageFlash.preload();
 new NoiseOverlay(document.getElementById("noise-overlay"));
+const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
+mochi.load(); // preload in the background; the first event is ~5 questions away
+ui.setAct(1);
 
 let feed = null;
 let audioSensor = null;
@@ -72,6 +79,8 @@ let voice = null;
 let transcriber = null;
 let director = null;
 let playerVoice = null;
+let cuteTheme = null;
+let mochiAudio = null;
 
 let latestFace = null;
 let latestEnv = null;
@@ -123,7 +132,15 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
   feed = new DelayedFeed(feedCanvas);
 
   await audio.init(); // must happen inside a user-gesture handler
+  audio.setDroneEnabled(false); // Act I is cute: no dread underneath yet
   audio.startAmbientDrone();
+
+  // Mochi's theme plays from here through Act I. A recorded track at
+  // public/audio/cute-theme.mp3 is used if present, else the synth version.
+  cuteTheme = new CuteTheme(audio.ctx, audio.master, { url: "/audio/cute-theme.mp3", volume: 0.32 });
+  await cuteTheme.load();
+  cuteTheme.play({ fade: 2.5 });
+  mochiAudio = new MochiAudio(audio.ctx, audio.master, cuteTheme);
 
   const micTrack = stream.getAudioTracks()[0];
   audioSensor = new AudioSensor(audio.ctx);
@@ -223,7 +240,9 @@ async function runCalibration() {
   if (recorder) {
     ui.setCalibInstruction(`say this out loud:<br><em>"i'm the only one in this room."</em>`);
     await sleep(500);
+    cuteTheme?.setVolume(0, 0.2); // keep the music out of their recorded voice
     const samples = await recorder.recordFor(3500);
+    cuteTheme?.setVolume(0.32, 1.5);
     if (samples.length > audio.ctx.sampleRate * 0.4) {
       playerVoice = recorder.toAudioBuffer(samples);
       director.setPlayerVoiceAvailable(true);
@@ -239,6 +258,7 @@ async function runGame() {
   playing = true;
   const ctx = {
     feed, director, ui, audio, voice, playerVoice, recorder, transcriber, aiClient, aiEnabled, faceTracker, imageFlash,
+    engine: mochi, mochiAudio,
     room: roomScanner,
     getFace: () => latestFace,
     getMic: () => latestMic
@@ -248,6 +268,8 @@ async function runGame() {
   if (lateBaseline) faceTracker.beginBaselineCapture();
   for (const stage of STAGES) {
     currentStage = stage;
+    ui.setAct(stage.act ?? 1);
+    if ((stage.act ?? 1) >= 2 && !audio.droneEnabled) audio.setDroneEnabled(true);
     director.setStage(stage);
     director.suspend(true); // nothing fires over the title card
     await ui.showStageCard(stage.title, stage.subtitle, 3200, stage.id === "intake" ? null : imageFlash.randomUrl());
@@ -256,6 +278,7 @@ async function runGame() {
     for (const step of stage.steps) {
       if (typeof step === "string") {
         currentQuestionIndex = qIndex;
+        if (stage.act === 1) ui.setMochiHostLine(MOCHI_HOST_LINES[Math.min(qIndex, MOCHI_HOST_LINES.length - 1)]);
         lastEntry = await quiz.ask(QMAP[step], qIndex, TOTAL_QUESTIONS, stage);
         qIndex++;
         if (lateBaseline && qIndex === 2) {
@@ -266,6 +289,10 @@ async function runGame() {
       } else if (step.type === "mirror") {
         director.suspend(true);
         await runMirror({ ...ctx, durationMs: step.durationMs });
+        director.suspend(false);
+      } else if (step.type === "mochi") {
+        director.suspend(true);
+        await runMochiEvent({ ...ctx, scene: step.scene, act: stage.act ?? 1 });
         director.suspend(false);
       } else if (step.type === "task") {
         if (step.task === "closeEyes") await taskCloseEyes(ctx);
