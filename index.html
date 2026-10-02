@@ -11,8 +11,9 @@
     <!-- ===================== CONSENT / INTRO ===================== -->
     <section id="screen-consent" class="screen active">
       <div class="panel">
+        <img class="mochi-hello" src="/mochi/cute.jpg" alt="Mochi, a white bunny" />
         <h1 class="glitch-title">FALTER</h1>
-        <p class="tagline">a quiz that watches you answer.</p>
+        <p class="tagline">a quiz with mochi ♡ she can't wait to meet you.</p>
 
         <div class="consent-copy">
           <p>beware of your surroundings.</p>
@@ -20,6 +21,7 @@
             <li>it's watching you.</li>
           </ul>
           <p>wear headphones.</p>
+          <p class="content-warning"><strong>content warning:</strong> this game contains gore, body horror and flashing images.</p>
         </div>
 
         <label id="ai-optin-row" class="ai-optin-row hidden">
@@ -61,6 +63,10 @@
     <section id="screen-quiz" class="screen">
       <div class="quiz-layout">
         <div class="quiz-main">
+          <div id="mochi-host" class="mochi-host">
+            <img src="/mochi/cute.jpg" alt="Mochi" />
+            <div id="mochi-host-bubble" class="mochi-bubble"></div>
+          </div>
           <div id="quiz-question">
             <div class="question-index" id="question-index"></div>
             <h2 id="question-prompt" class="question-prompt"></h2>
@@ -112,6 +118,12 @@
     <div id="stage-card-img" class="stage-card-img"></div>
     <div id="stage-card-title" class="stage-card-title"></div>
     <div id="stage-card-sub" class="stage-card-sub"></div>
+  </div>
+  <!-- Mochi events (src/segments/MochiSegment.js) -->
+  <div id="mochi-event" class="mochi-event">
+    <div id="mochi-event-bubble" class="mochi-bubble big"></div>
+    <canvas id="mochi-canvas" width="768" height="768"></canvas>
+    <div id="mochi-event-watch" class="mochi-watch"></div>
   </div>
   <div id="blackout"></div>
 

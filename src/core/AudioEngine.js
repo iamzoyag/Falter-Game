@@ -13,6 +13,7 @@ export class AudioEngine {
     this.droneGain = null;
     this._droneNodes = [];
     this._buffers = {}; // name -> AudioBuffer, for real assets later
+    this.droneEnabled = true; // off during Act I: the cute part has no dread under it
   }
 
   /** Must be called from a user gesture (the consent button click). */
@@ -77,12 +78,22 @@ export class AudioEngine {
     subOsc.start();
     this._droneNodes.push(subOsc);
 
-    this.droneGain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 6);
+    if (this.droneEnabled) this.droneGain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 6);
+  }
+
+  /** Act I keeps the ambient drone silent; turning it on fades it in. */
+  setDroneEnabled(on, amount = 0.3) {
+    this.droneEnabled = on;
+    if (!this.droneGain) return;
+    const g = this.droneGain.gain, t = this.ctx.currentTime;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(on ? 0.2 + amount * 0.5 : 0, t + (on ? 4 : 0.5));
   }
 
   /** Raise/lower drone intensity, e.g. as the quiz escalates (0..1). */
   setDroneIntensity(amount) {
-    if (!this.droneGain) return;
+    if (!this.droneGain || !this.droneEnabled) return;
     const target = 0.2 + Math.min(1, Math.max(0, amount)) * 0.5;
     this.droneGain.gain.linearRampToValueAtTime(target, this.ctx.currentTime + 1.5);
   }
@@ -323,7 +334,7 @@ export class AudioEngine {
 
   /** Bring the drone back immediately (e.g. the silence was broken). */
   restoreDrone(level = 0.4) {
-    if (!this.droneGain) return;
+    if (!this.droneGain || !this.droneEnabled) return;
     const g = this.droneGain.gain, t = this.ctx.currentTime;
     g.cancelScheduledValues(t);
     g.setValueAtTime(g.value, t);

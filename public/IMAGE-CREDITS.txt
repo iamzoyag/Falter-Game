@@ -21,3 +21,6 @@ flash09.png: "Frankenstein's Monster Experiment II, stitches and coloring" by De
 flash10.png: "Devil" by ste3ve is licensed under CC BY-SA 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-sa/2.0/.
 flash11.png: "Creepy woman climbs the stairs" by simpleinsomnia is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
 flash12.png: "creepy mask" by jelene is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.
+
+[mochi]
+public/mochi/*: Mochi artwork by Zoya Ghoshal, generated locally in Draw Things (SDXL Base 1.0) with the "Horror Skeletons [SDXL]" LoRA from Tensor.Art. The LoRA licence forbids selling generated content: do not use these images commercially.

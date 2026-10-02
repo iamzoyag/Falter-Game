@@ -58,6 +58,55 @@ export function showStageCard(title, subtitle, ms = 3200, imageUrl = null) {
   }, ms));
 }
 
+// ---------------------------------------------------------------- acts + mochi
+
+/** Colour script: body[data-act] switches the palette (pink I -> black/red V). */
+export function setAct(act) {
+  document.body.dataset.act = String(act);
+}
+
+/** Act I host: Mochi beside the question, with a speech bubble. */
+export function setMochiHostLine(text) {
+  const el = $("#mochi-host-bubble");
+  el.textContent = text || "";
+  el.classList.toggle("show", !!text);
+}
+
+export function showMochiEvent() {
+  const el = $("#mochi-event");
+  el.classList.remove("instant");
+  el.classList.add("show");
+  document.body.classList.add("mochi-mode");
+}
+
+export function hideMochiEvent({ instant = false } = {}) {
+  const el = $("#mochi-event");
+  el.classList.toggle("instant", instant);
+  el.classList.remove("show");
+  document.body.classList.remove("mochi-mode");
+  setMochiBubble("");
+  setMochiWatchText("");
+}
+
+export function setMochiBubble(text) {
+  const el = $("#mochi-event-bubble");
+  el.textContent = text || "";
+  el.classList.toggle("show", !!text);
+}
+
+export function setMochiWatchText(text) {
+  const el = $("#mochi-event-watch");
+  el.textContent = text || "";
+  el.classList.toggle("show", !!text);
+}
+
+/** Background around Mochi drains from her pink to black as the wound opens. */
+export function setMochiEventProgress(p) {
+  const d = Math.min(1, p * 1.25);
+  const mix = (a, b) => Math.round(a + (b - a) * d);
+  $("#mochi-event").style.background = `rgb(${mix(227, 8)},${mix(181, 2)},${mix(187, 4)})`;
+}
+
 // ---------------------------------------------------------------- fx
 
 let whisperTimeout = null;

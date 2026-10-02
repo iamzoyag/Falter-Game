@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Special+Elite&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fredoka:wght@400;500;600;700&family=Special+Elite&family=VT323&display=swap');
 
 :root {
   --bg: #050506;
@@ -552,3 +552,192 @@ html, body { font-family: 'VT323', monospace; font-size: 20px; }
 
 /* taller pixel font: let long screens scroll instead of clipping the top */
 .screen { justify-content: safe center; overflow-y: auto; }
+
+/* ======================================================================
+   Mochi + the colour script (body[data-act] is set per stage in main.js)
+   I: super bubbly pink  ->  II: dusty rose, something's off  ->
+   III: the 1-bit look above  ->  IV / V: black and blood red
+   ====================================================================== */
+
+/* ---------- Mochi event overlay ---------- */
+.mochi-event {
+  position: fixed;
+  inset: 0;
+  z-index: 84; /* above the stage card (80), under blackout (90) and flashes */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vh;
+  background: rgb(227, 181, 187);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.mochi-event.show { opacity: 1; pointer-events: auto; }
+.mochi-event.instant { transition: none; }
+#mochi-canvas {
+  width: min(78vh, 92vw);
+  height: min(78vh, 92vw);
+  display: block;
+  image-rendering: auto;
+}
+.mochi-watch {
+  position: absolute;
+  left: 0; right: 0; bottom: 6vh;
+  text-align: center;
+  font-family: 'VT323', monospace;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  color: #e0202c;
+  text-shadow: 3px 0 0 #000, -1px 0 0 #ff6b6b;
+  opacity: 0;
+  transition: opacity 0.2s;
+  animation: jitter 0.9s steps(1) infinite;
+}
+.mochi-watch.show { opacity: 1; }
+body.mochi-mode #noise-overlay { opacity: 0.05; }
+
+/* speech bubble, used by the Act I host and the event pre-roll */
+.mochi-bubble {
+  position: relative;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: #7a1f4b;
+  background: #fff;
+  border: 3px solid #ff8cc2;
+  border-radius: 22px;
+  padding: 10px 16px;
+  box-shadow: 0 4px 0 #ff8cc2;
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  transition: opacity 0.25s, transform 0.25s cubic-bezier(.3,1.6,.5,1);
+}
+.mochi-bubble.show { opacity: 1; transform: none; }
+.mochi-bubble.big { font-size: clamp(1.1rem, 2.6vw, 1.6rem); max-width: min(560px, 90vw); text-align: center; min-height: 1em; }
+.mochi-bubble:empty { visibility: hidden; }
+
+/* Act I host: Mochi beside the question */
+.mochi-host { display: none; align-items: center; gap: 14px; margin-bottom: 18px; }
+.mochi-host img {
+  width: 92px; height: 92px; border-radius: 50%; object-fit: cover;
+  border: 3px solid #ff8cc2; box-shadow: 0 4px 0 #ff8cc2;
+  animation: mochi-bob 2.4s ease-in-out infinite;
+}
+@keyframes mochi-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-6px) rotate(2deg); } }
+.mochi-hello { display: none; }
+.content-warning { font-size: 0.9em; opacity: 0.85; }
+
+/* ---------- ACT I: super bubbly, girly, pink ---------- */
+body[data-act="1"] {
+  --bg: #ffe3ef;
+  --bg-panel: #fff5fa;
+  --fg: #6b1d45;
+  --fg-dim: #b0608b;
+  --accent: #ff7eb6;
+  --accent-glow: #ff4fa0;
+  background: radial-gradient(circle at 20% 15%, #fff0f7 0 12%, transparent 13%) 0 0 / 120px 120px, #ffe3ef;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 18px;
+}
+body[data-act="1"] #noise-overlay,
+body[data-act="1"] #crt-overlay { display: none; }
+body[data-act="1"] .glitch-title,
+body[data-act="1"] .stage-card-title {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ff5fa8;
+  text-shadow: 0 4px 0 #fff, 0 7px 0 #ffb3d6;
+  animation: mochi-bob 3s ease-in-out infinite;
+}
+body[data-act="1"] .tagline,
+body[data-act="1"] .fineprint,
+body[data-act="1"] .question-index { color: var(--fg-dim); font-style: normal; }
+body[data-act="1"] .consent-copy,
+body[data-act="1"] .ai-optin-row {
+  background: #fff; color: var(--fg); border: 3px solid #ffb3d6; border-radius: 20px;
+}
+body[data-act="1"] .btn-primary,
+body[data-act="1"] .answer-btn {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  background: #fff;
+  color: var(--fg);
+  border: 3px solid #ffb3d6;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 #ffb3d6;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+}
+body[data-act="1"] .btn-primary { background: #ff7eb6; color: #fff; border-color: #ff5fa8; box-shadow: 0 4px 0 #e0438d; }
+body[data-act="1"] .btn-primary:hover,
+body[data-act="1"] .answer-btn:hover { background: #ffd1e6; color: var(--fg); transform: translateY(-2px); box-shadow: 0 6px 0 #ffb3d6; }
+body[data-act="1"] .answer-btn:disabled { opacity: 0.45; transform: none; }
+body[data-act="1"] .question-prompt { font-size: 1.45rem; font-weight: 600; line-height: 1.35; }
+body[data-act="1"] .feed-frame,
+body[data-act="1"] .case-file { border: 3px solid #ffb3d6; border-radius: 18px; overflow: hidden; }
+body[data-act="1"] .feed-status { color: #fff; }
+body[data-act="1"] #video-raw { filter: saturate(0.6) sepia(0.25) hue-rotate(290deg); opacity: 0.7; }
+body[data-act="1"] #calib-dot { background: #ff5fa8; box-shadow: 0 0 0 4px #fff, 0 0 18px 6px #ff9cca; border-radius: 50%; }
+body[data-act="1"] .progress-track { background: #ffd1e6; border-radius: 99px; overflow: hidden; }
+body[data-act="1"] .progress-fill { background: #ff7eb6; }
+body[data-act="1"] .stage-card { background: #ffe3ef; }
+body[data-act="1"] .stage-card-sub { color: var(--fg-dim); font-style: normal; }
+body[data-act="1"] .mochi-host { display: flex; }
+body[data-act="1"] .mochi-hello {
+  display: block; width: 120px; height: 120px; margin: 0 auto 6px; border-radius: 50%; object-fit: cover;
+  border: 4px solid #ffb3d6; animation: mochi-bob 2.4s ease-in-out infinite;
+}
+body[data-act="1"] .director-overlay .whisper { color: #c2185b; text-shadow: none; }
+
+/* ---------- ACT II: same shapes, colour drained, something's off ---------- */
+body[data-act="2"] {
+  --bg: #2a1b20;
+  --bg-panel: #2f1f25;
+  --fg: #e8cdd6;
+  --fg-dim: #9c7884;
+  --accent: #c76a8e;
+  --accent-glow: #e07aa0;
+  background: #2a1b20;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 18px;
+}
+body[data-act="2"] #crt-overlay { opacity: 0.4; }
+body[data-act="2"] #noise-overlay { opacity: 0.04; }
+body[data-act="2"] .btn-primary,
+body[data-act="2"] .answer-btn {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 1.02rem;
+  background: transparent;
+  color: var(--fg);
+  border: 2px solid #6e4252;
+  border-radius: 999px;
+}
+body[data-act="2"] .answer-btn:hover { background: #4a2b37; color: #fff; border-color: var(--accent); }
+body[data-act="2"] .question-prompt { font-size: 1.4rem; line-height: 1.35; }
+body[data-act="2"] .feed-frame,
+body[data-act="2"] .case-file { border: 2px solid #6e4252; border-radius: 14px; overflow: hidden; }
+body[data-act="2"] .stage-card-title { font-family: 'Fredoka', system-ui, sans-serif; color: #e8cdd6; letter-spacing: 0.08em; }
+
+/* ---------- ACT III: the 1-bit look (rules above, unchanged) ---------- */
+
+/* ---------- ACT IV + V: black and blood red ---------- */
+body[data-act="4"], body[data-act="5"] {
+  --fg: #e9d6d6;
+  --fg-dim: #8a4a4a;
+  --accent: #b3121d;
+  --accent-glow: #ff2a35;
+}
+body[data-act="4"] .btn-primary, body[data-act="4"] .answer-btn,
+body[data-act="4"] .feed-frame, body[data-act="4"] .case-file { border-color: #7a0d14; }
+body[data-act="4"] .answer-btn:hover { background: #7a0d14; color: #fff; }
+body[data-act="5"] .btn-primary, body[data-act="5"] .answer-btn,
+body[data-act="5"] .feed-frame, body[data-act="5"] .case-file { border-color: #c4121f; color: #ffd9d9; }
+body[data-act="5"] .answer-btn:hover { background: #c4121f; color: #000; }
+body[data-act="4"] .director-overlay .whisper,
+body[data-act="5"] .director-overlay .whisper,
+body[data-act="5"] .mirror-text { color: #ff2a35; }
+body[data-act="5"] { background: radial-gradient(ellipse at center, #1a0002 0%, #000 70%); }
+body[data-act="5"] #noise-overlay { opacity: 0.13; }
