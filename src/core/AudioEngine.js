@@ -91,6 +91,86 @@ export class AudioEngine {
     g.linearRampToValueAtTime(on ? 0.2 + amount * 0.5 : 0, t + (on ? 4 : 0.5));
   }
 
+  /**
+   * Unease: what the body notices before the player does. A sub-bass hum
+   * around 19 Hz (felt more than heard, on headphones) plus a slow heartbeat
+   * tucked far behind the music. 0 = off, 1 = as much as Act II ever gets.
+   * The heartbeat speeds up with the level.
+   */
+  setUnease(level) {
+    if (!this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    if (!this._unease) {
+      const g = ctx.createGain();
+      g.gain.value = 0;
+      g.connect(this.master);
+      [[19, 1], [38.5, 0.25]].forEach(([f, a]) => {
+        const o = ctx.createOscillator();
+        o.frequency.value = f;
+        const og = ctx.createGain();
+        og.gain.value = a;
+        o.connect(og);
+        og.connect(g);
+        o.start();
+      });
+      this._unease = { gain: g, level: 0, timer: null };
+      const beat = () => {
+        const u = this._unease;
+        if (u.level > 0.05) {
+          const v = 0.06 + u.level * 0.22;
+          this._heartbeat(v);
+        }
+        u.timer = setTimeout(beat, 1400 - u.level * 600);
+      };
+      beat();
+    }
+    const L = Math.max(0, Math.min(1, level));
+    this._unease.level = L;
+    this._unease.gain.gain.setTargetAtTime(L * 0.32, t, 2);
+  }
+
+  /** A quiet double thump from slightly behind the listener. */
+  _heartbeat(gain = 0.2) {
+    const ctx = this.ctx, now = ctx.currentTime;
+    const p = this._panner({ x: 0, y: -0.2, z: 0.6 });
+    p.connect(this.master);
+    [0, 0.26].forEach((off, i) => {
+      const o = ctx.createOscillator();
+      o.frequency.setValueAtTime(58, now + off);
+      o.frequency.exponentialRampToValueAtTime(32, now + off + 0.14);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now + off);
+      g.gain.exponentialRampToValueAtTime(gain * (i ? 0.7 : 1), now + off + 0.025);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + off + 0.2);
+      o.connect(g);
+      g.connect(p);
+      o.start(now + off);
+      o.stop(now + off + 0.22);
+    });
+  }
+
+  /** Something breathing, far behind you, very quietly. */
+  breatheBehind(gain = 0.12) {
+    if (!this.ctx) return;
+    const ctx = this.ctx, now = ctx.currentTime;
+    const noise = this._noiseSource(1.6);
+    const f = ctx.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.value = 420;
+    f.Q.value = 0.8;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(gain, now + 0.6);
+    g.gain.linearRampToValueAtTime(0.0001, now + 1.6);
+    const p = this._panner({ x: Math.random() < 0.5 ? -0.6 : 0.6, y: 0, z: 1.2 });
+    noise.connect(f);
+    f.connect(g);
+    g.connect(p);
+    p.connect(this.master);
+    noise.start(now);
+    noise.stop(now + 1.7);
+  }
+
   /** Raise/lower drone intensity, e.g. as the quiz escalates (0..1). */
   setDroneIntensity(amount) {
     if (!this.droneGain || !this.droneEnabled) return;

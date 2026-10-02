@@ -24,8 +24,8 @@ import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
 import { runInterrogation } from "./segments/Interrogator.js";
 import { runEnding } from "./segments/Ending.js";
 import { runMochiEvent } from "./segments/MochiSegment.js";
-import { runGreet, runRoundCard, runPet, runFeed, runPolaroid } from "./segments/MochiPlay.js";
-import { answerReaction, hostLine, aiMochiLine } from "./mochi/MochiLines.js";
+import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeEnd } from "./segments/MochiPlay.js";
+import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
 import { FaceGore } from "./ui/FaceGore.js";
@@ -39,7 +39,7 @@ import { NoiseOverlay } from "./ui/NoiseOverlay.js";
 import * as ui from "./ui/screens.js";
 
 const QMAP = Object.fromEntries(QUESTIONS.map((q) => [q.id, q]));
-const TOTAL_QUESTIONS = STAGES.flatMap((s) => s.steps).filter((s) => typeof s === "string").length;
+const TOTAL_QUESTIONS = STAGES.flatMap((s) => s.steps).filter((s) => typeof s === "string" || s.type === "repeat").length;
 
 // Lines spoken by segments — synthesized first, before the whisper pools.
 const SEGMENT_LINES = [
@@ -293,26 +293,51 @@ async function runGame() {
   if (lateBaseline) faceTracker.beginBaselineCapture();
   for (const stage of STAGES) {
     currentStage = stage;
-    ui.setAct(stage.act ?? 1);
-    if ((stage.act ?? 1) >= 2 && !audio.droneEnabled) audio.setDroneEnabled(true);
+    const act = stage.act ?? 1;
+    ui.setAct(act);
     director.setStage(stage);
-    director.suspend(true); // nothing fires over the title card
-    await ui.showStageCard(stage.title, stage.subtitle, 3200, stage.id === "intake" ? null : imageFlash.randomUrl());
-    director.suspend(false);
+    enterActAudio(act);
+    if (stage.card !== "none") {
+      director.suspend(true); // nothing fires over the title card
+      await ui.showStageCard(stage.title, stage.subtitle, 3200, act <= 3 ? null : imageFlash.randomUrl());
+      director.suspend(false);
+    }
 
-    for (const step of stage.steps) {
-      if (typeof step === "string") {
+    for (let si = 0; si < stage.steps.length; si++) {
+      const step = stage.steps[si];
+      if (stage.drift) applyDrift(si / (stage.steps.length - 1));
+
+      if (typeof step === "string" || step.type === "repeat") {
         currentQuestionIndex = qIndex;
-        const act = stage.act ?? 1;
-        ui.setMochiHostLine(act === 2 ? hostLine(2, player) : "");
-        lastEntry = await quiz.ask(QMAP[step], qIndex, TOTAL_QUESTIONS, stage);
+        ui.setMochiHostLine(hostLine(act, player));
+        const base = QMAP[typeof step === "string" ? step : step.of];
+        const q = typeof step === "string" ? base : { ...base, id: `${base.id}-again`, callbackId: `${base.callbackId}_again` };
+        lastEntry = await quiz.ask(q, qIndex, TOTAL_QUESTIONS, stage);
         qIndex++;
-        if (act <= 2) await mochiReacts(QMAP[step], lastEntry, act, ctx);
+        const previous = step.type === "repeat" ? quiz.getDossier().find((d) => d.questionId === base.id) : null;
+        if (act <= 3) await mochiReacts(q, lastEntry, act, ctx, previous);
         if (lateBaseline && qIndex === 2) {
           lateBaseline = false;
           faceTracker.finishBaselineCapture();
         }
         await sleep(350);
+      } else if (step.type === "talk") {
+        director.suspend(true);
+        ui.setMochiHostLine("");
+        if (step.lines === "bonus") cuteTheme?.play({ fade: 0.4, fromTop: true }); // she bursts back in, song and all
+        await runTalk(ctx, TALK[step.lines] || [], { mood: step.mood || "cute", flicker: step.flicker || null });
+        director.suspend(false);
+      } else if (step.type === "fakeEnd") {
+        cuteTheme?.stop({ fade: 2.5 }); // the song ends. it's over.
+        await runFakeEnd(ctx);
+        await sleep(900);
+      } else if (step.type === "pause") {
+        // let the last whisper sit in the faded room, then black
+        await sleep(2400);
+        ui.blackout(step.ms - 2400);
+        await sleep(step.ms - 2400);
+      } else if (step.type === "features") {
+        director.setFeatures(step.set);
       } else if (step.type === "mirror") {
         director.suspend(true);
         await runMirror({ ...ctx, durationMs: step.durationMs });
@@ -327,10 +352,11 @@ async function runGame() {
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");
-        await runRoundCard(ctx, step.title, step.sub);
+        await runRoundCard(ctx, step.title, step.sub, { glitch: !!step.glitch });
       } else if (step.type === "mochi") {
         director.suspend(true);
-        await runMochiEvent({ ...ctx, scene: step.scene, act: stage.act ?? 1 });
+        ui.setHostHurt(false);
+        await runMochiEvent({ ...ctx, scene: step.scene, act });
         director.suspend(false);
       } else if (step.type === "task") {
         if (step.task === "closeEyes") await taskCloseEyes(ctx);
@@ -346,16 +372,22 @@ async function runGame() {
 }
 
 /** Mochi reacts to the answer in her bubble (AI-personalised if it's quick enough). */
-async function mochiReacts(question, entry, act, ctx) {
+async function mochiReacts(question, entry, act, ctx, previous = null) {
   const optionIndex = question.options.findIndex((o) => o.text === entry?.chosenText);
-  const local = answerReaction(question, optionIndex, act, player);
+  const dossier = director.getSummary().compactDossier;
+  const special = previous
+    ? repeatReaction(previous.chosenText, entry?.chosenText, player)
+    : act <= 2 ? specialReaction(question, optionIndex, { player, room: roomScanner, dossier }) : null;
+  const local = special || answerReaction(question, optionIndex, act, player);
   ui.setMochiHostLine(local);
-  cuteSfx?.[act === 1 ? "pop" : "tick"]();
-  const hold = sleep(act === 1 ? 1700 : 1100);
-  const ai = await Promise.race([
+  cuteSfx?.[act <= 2 ? "pop" : "tick"]();
+  if (special === "...") ui.flickerHost("/mochi/stitches.webp", 70); // "would you miss her?" "probably not."
+  const hold = sleep(special ? 2600 : act <= 2 ? 1700 : 1100);
+  // the special lines are already personal; only the plain reactions go to the AI
+  const ai = special ? null : await Promise.race([
     aiMochiLine(ctx.aiClient, ctx.aiEnabled, act === 1 ? "answer" : "host", {
       act, name: player.name, snack: player.snack, question: question.prompt, answer: entry?.chosenText,
-      localFallbackText: local, dossier: director.getSummary().compactDossier.slice(-8)
+      localFallbackText: local, dossier: dossier.slice(-8)
     }, 1300),
     hold.then(() => null)
   ]);
@@ -363,6 +395,47 @@ async function mochiReacts(question, entry, act, ctx) {
     ui.setMochiHostLine(ai);
     await sleep(1400);
   } else await hold;
+}
+
+/** Sound + colour for the start of each act. */
+function enterActAudio(act) {
+  if (act === 2) {
+    audio.setUnease(0.1);
+  } else if (act === 3) {
+    // the song comes back broken, and the drone is under it now
+    cuteTheme?.setWarp({ tempo: 0.88, cents: -45, wobble: 0.35, muffle: 0.3 });
+    cuteTheme?.play({ fade: 3, fromTop: true });
+    cuteTheme?.setVolume(0.22);
+    audio.setUnease(0.5);
+    if (!audio.droneEnabled) audio.setDroneEnabled(true, 0.05);
+    director.setCute(0.3);
+  } else if (act >= 4) {
+    cuteTheme?.stop({ fade: 1 });
+    audio.setUnease(0);
+    if (!audio.droneEnabled) audio.setDroneEnabled(true);
+  }
+}
+
+/** Act II: everything drifts a little further from normal with every step (p 0..1). */
+function applyDrift(p) {
+  ui.setDrain(p);
+  director.setCute(1 - p * 0.6);
+  audio.setUnease(0.1 + p * 0.7);
+  cuteTheme?.setWarp({ tempo: 1 - p * 0.05, cents: -6 - p * 34, wobble: 0.04 + p * 0.22, muffle: p * 0.15 });
+}
+
+/** One deniable thing. The player shouldn't be sure anything happened. */
+function subliminal(kind, level) {
+  const act = currentStage?.act ?? 1;
+  if (kind === "host") ui.flickerHost(act >= 3 ? "/mochi/eyes.webp" : "/mochi/stitches.webp", 45);
+  else if (kind === "breath") audio.breatheBehind(level >= 2 ? 0.16 : 0.1);
+  else if (kind === "prompt") ui.glitchPrompt(player.name);
+  else if (kind === "feed" && feed?.isLive()) feed.startGlitch(0.6, 380);
+  else if (kind === "song" && cuteTheme?.playing) {
+    const w = { ...cuteTheme.warp };
+    cuteTheme.setWarp({ tempo: w.tempo * 0.55, cents: w.cents - 140 });
+    setTimeout(() => cuteTheme.setWarp(w), 420);
+  }
 }
 
 // ---------------------------------------------------------------- quiz wiring
@@ -406,6 +479,7 @@ on("director-image-flash", (e) => {
   if (imageFlash.flash(e.detail.ms)) audio.playStinger("static", { x: 0, y: 0, z: -0.3 });
 });
 on("director-intensity", (e) => audio.setDroneIntensity(e.detail.amount));
+on("director-subliminal", (e) => subliminal(e.detail.kind, e.detail.level));
 on("director-face-gore", (e) => {
   if (!latestFace?.keypoints || !faceGore.flash(videoHidden, latestFace.keypoints, e.detail?.ms)) return;
   if (!samples?.play("snap", { gain: 0.7 })) audio.playStinger("static", { x: 0, y: 0, z: -0.3 });
@@ -423,6 +497,9 @@ function loop() {
   latestEnv = envMonitor.update(videoHidden, latestFace?.keypoints) || latestEnv;
   latestMic = audioSensor?.update(now) || latestMic;
   feed.update(videoHidden, now, { face: latestFace, mask: latestMask, motion: latestEnv?.inMotion, levels: latestEnv?.levels });
+
+  // Act III: she has her stitches whenever your eyes are closed
+  ui.setHostHurt(!!(currentStage?.features?.hostHurt && director?.features?.hostHurt !== false && latestFace?.blinking));
 
   const behind = feed.mode === "delayed" || feed.mode === "replay";
   ui.setFeedStatus(behind ? "● …" : "● live", behind); // frozen/clip modes still claim to be live

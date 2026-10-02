@@ -181,6 +181,10 @@ export class HorrorDirector {
   suspend(v) { this._suspended = v; }
 
   setRoom(room) { this.room = room; }
+  /** Act I/II webcam filter strength (Act II drains it). */
+  setCute(level) { this.cuteLevel = level; }
+  /** Turn individual features on/off mid-act (pacing within an act). */
+  setFeatures(set) { this.features = { ...this.features, ...set }; }
   setPlayerVoiceAvailable(v) { this._hasPlayerVoice = v; }
   bumpCreep(amount) { this.creep = Math.min(1, this.creep + amount); }
 
@@ -424,8 +428,10 @@ export class HorrorDirector {
 
   _applyBaseWarp(feed) {
     // Act I: the feed is a cute photo-booth filter. A little of it lingers into Act II.
-    if (this.act === 1) {
-      feed.setBaseWarp({ cute: 1, grain: 0, desat: 0, contrast: -0.04, vignette: 0, brightness: 1.04, pixel: 1, bgDark: 0 });
+    if (this.act <= 2) {
+      // Act II: the photo-booth filter is still on, but it's quietly losing its colour
+      const k = this.cuteLevel ?? 1;
+      feed.setBaseWarp({ cute: k, grain: (1 - k) * 0.08, desat: (1 - k) * 0.3, contrast: -0.04, vignette: (1 - k) * 0.2, brightness: 1.04, pixel: 1, bgDark: 0 });
       return;
     }
     const c = this.creep, d = this.dark;
@@ -439,7 +445,7 @@ export class HorrorDirector {
       grain: 0.14 + c * 0.2,
       desat: 0.15 + c * 0.3,
       pixel: 2 + Math.round(c * 3),
-      cute: this.act === 2 ? Math.max(0, 0.3 - c * 1.5) : 0
+      cute: this.act === 3 ? Math.max(0, 0.3 - c * 1.5) : 0
     });
   }
 
@@ -561,6 +567,17 @@ export class HorrorDirector {
     if (face?.lookAwayTooLong && !this._wasAway) this.stats.lookAways += 1;
     this._wasAway = !!face?.lookAwayTooLong;
 
+    // Subliminal unease (Acts II-III): small, deniable, and spaced out. The
+    // player should feel something is off before they can say what.
+    if (f.subliminal && !this._onCooldown("subliminal", nowMs) && Math.random() < 0.02) {
+      const gap = f.subliminal >= 2 ? 14000 : 22000;
+      this._cooldowns.subliminal = nowMs + gap + Math.random() * gap;
+      const kinds = f.subliminal >= 2
+        ? ["host", "breath", "prompt", "feed", "song", "host", "breath"]
+        : ["host", "breath", "song", "prompt", "breath"];
+      emit("director-subliminal", { kind: pick(kinds), level: f.subliminal });
+    }
+
     if (!f.beats) return;
 
     if (face?.blinkTooLong) {
@@ -638,6 +655,7 @@ export class HorrorDirector {
     }
 
     // Their own face, mutilated, for a fraction of a second.
+    // (Subliminal unease runs even when beats are off: see the top of tick.)
     if (
       f.faceGore && face?.faceVisible && !face.lookingAway && face.keypoints &&
       !this._onCooldown("faceGore", nowMs) && Math.random() < 0.0012 + this.creep * 0.001

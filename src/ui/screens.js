@@ -20,7 +20,10 @@ export function showCalibSample(show) {
 
 /** Renders a question. Buttons carry data-index (CursorTracker needs it). Returns the options container. */
 export function renderQuestion(question, index, total, stage, onSelect) {
-  $("#question-index").textContent = `${stage ? stage.title.split(".")[0] + " · " : ""}${index + 1} / ${total}`;
+  // while it's still "a cute quiz", don't show how much game is left (it would give the fake ending away)
+  $("#question-index").textContent = (stage?.act ?? 1) <= 2
+    ? `question ${index + 1} ♡`
+    : `${stage ? stage.title.split(".")[0] + " · " : ""}${index + 1} / ${total}`;
   $("#question-prompt").textContent = question.prompt;
   $("#quiz-question").classList.remove("hidden");
 
@@ -71,6 +74,46 @@ export function setMochiHostLine(text) {
   const el = $("#mochi-host-bubble");
   el.textContent = text || "";
   el.classList.toggle("show", !!text);
+}
+
+const HOST_CUTE = "/mochi/cute.webp";
+let hostHurt = false;
+
+/** One or two frames of a hurt Mochi in the host avatar. Too quick to be sure. */
+export function flickerHost(url = "/mochi/stitches.webp", ms = 45) {
+  const img = $("#mochi-host img");
+  if (!img || hostHurt) return;
+  img.src = url;
+  setTimeout(() => { if (!hostHurt) img.src = HOST_CUTE; }, ms);
+}
+
+/** Act III: while the player's eyes are closed, Mochi has her stitches. */
+export function setHostHurt(on, url = "/mochi/stitches.webp") {
+  if (on === hostHurt) return;
+  hostHurt = on;
+  const img = $("#mochi-host img");
+  if (img) img.src = on ? url : HOST_CUTE;
+}
+
+/** Swap a word of the question on screen for a moment, then put it back. */
+export function glitchPrompt(name) {
+  const el = $("#question-prompt");
+  if (!el || !el.textContent) return;
+  const orig = el.textContent;
+  const swaps = [
+    [/\byou\b/i, name || "you"],
+    [/\?$/, `, ${name || "friend"}?`],
+    [/\b(right now|now)\b/i, "behind you"],
+    [/\b(room)\b/i, "dark"]
+  ];
+  const [re, rep] = swaps.find(([re]) => re.test(orig)) || swaps[1];
+  el.textContent = orig.replace(re, rep);
+  setTimeout(() => { if (el.textContent !== orig) el.textContent = orig; }, 110);
+}
+
+/** Act II: the pink slowly drains (0..1). */
+export function setDrain(x) {
+  document.body.style.setProperty("--drain", String(Math.max(0, Math.min(1, x))));
 }
 
 export function showMochiEvent() {
