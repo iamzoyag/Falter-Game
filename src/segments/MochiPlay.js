@@ -554,22 +554,30 @@ export const DESSERTS = {
   cinnamon: { glyph: "🍯", name: "honey cinnamon roll", blurb: "warm and cosy and loyal to the very end. you'd do anything for the people you love ♡" },
   brulee: { glyph: "🍮", name: "crème brûlée", blurb: "a crisp little shell, and soft all the way through. you don't let just anyone in ♡" }
 };
-const DESSERT_ORDER = ["daifuku", "matcha", "cinnamon", "brulee"];
 
-/** Tally the d1..d5 answers into a dessert. Ties go to whichever they picked last. */
-export function dessertFromDossier(dossier) {
+/**
+ * Tally a personality quiz from the dossier: each chosen option can carry a
+ * tag under `key` (dessert, friend, ...). Most picks wins; ties go to the
+ * one they picked last.
+ */
+export function tally(dossier, key, fallback = null) {
   const counts = {}, lastSeen = {};
   (dossier || []).forEach((d, i) => {
     const q = QUESTIONS.find((x) => x.id === d.questionId);
-    const opt = q?.options?.find((o) => o.text === d.chosenText);
-    if (!opt?.dessert) return;
-    counts[opt.dessert] = (counts[opt.dessert] || 0) + 1;
-    lastSeen[opt.dessert] = i;
+    const tag = q?.options?.find((o) => o.text === d.chosenText)?.[key];
+    if (!tag) return;
+    counts[tag] = (counts[tag] || 0) + 1;
+    lastSeen[tag] = i;
   });
   const ids = Object.keys(counts);
-  if (!ids.length) return "daifuku";
-  ids.sort((a, b) => counts[b] - counts[a] || lastSeen[b] - lastSeen[a] || DESSERT_ORDER.indexOf(a) - DESSERT_ORDER.indexOf(b));
+  if (!ids.length) return fallback;
+  ids.sort((a, b) => counts[b] - counts[a] || lastSeen[b] - lastSeen[a]);
   return ids[0];
+}
+
+/** "which dessert are you?" (d1..d5) */
+export function dessertFromDossier(dossier) {
+  return tally(dossier, "dessert", "daifuku");
 }
 
 export async function runDessertResult(ctx, dossier) {
@@ -621,3 +629,6 @@ function sleep(ms) {
 function pick(a) {
   return a[Math.floor(Math.random() * a.length)];
 }
+
+// shared with the other acts' play moments (MochiRoom.js, ...)
+export { build, show, hide, say, sayPersonal, bounce, heart, sleep, pick };

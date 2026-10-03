@@ -44,34 +44,43 @@ and mismatches pile up. It's deliberately decoupled from audio/DOM code —
 it just emits "beat" events — so you can retune pacing/thresholds in one
 file without touching rendering or audio.
 
-## The shape of the game (six acts)
+## The shape of the game (nine acts, being rebuilt one at a time)
 
-The dread is meant to arrive before the player can name it. Nothing visibly
-goes wrong until they already feel it.
+The dread is meant to arrive before the player can name it. Each act adds
+one new wrong thing, and the cute mini-games come back later, warped.
+`src/stages.js` has the full plan; ★ = built in its final form, the rest
+are older acts parked in the slot they'll be replaced in.
 
-1. **I. HELLO ♡** honest and cute: name, three quiz rounds, head pats,
+1. ★ **I. HELLO ♡** honest and cute: name, three quiz rounds, head pats,
    snack, polaroid. Then a real goodbye and a fake "thanks for playing ♡"
    ending with a play-again button.
-2. **II. BONUS ROUND ♡** "wait wait wait!!" Still pink, still Mochi, but
-   underneath: a 19 Hz hum and a heartbeat behind the music
-   (`AudioEngine.setUnease`), the song drifting flat, the pink draining
-   step by step (`--drain`), single frames of a hurt Mochi, breathing behind
-   you, a word in a question flickering to your name. Then the conscious
-   "wait...": she repeats a question and notices if your answer changed,
-   tells you the real time, sees your room, asks if you'd miss her, and
-   counts your lies. "mochi should be quiet now ♡" → **stitches**.
-3. **III. WHERE WERE WE? ♡** she's back as if nothing happened. Faded
-   colours, the song plays broken with the drone under it, she knows your
-   city and battery level, and whenever you blink her avatar has stitches.
-   Halfway through, the director's beats switch on. "it's getting dark..."
-   → **eyes**.
-4. **IV. THE MIRROR** black and white from here. → **ears**.
-5. **V. PRESENCE** the figure, the room, your own face.
-6. **VI. INTERVIEW** answer out loud. → **unzip**, then the ending.
+2. ★ **II. BONUS ROUND ♡** "wait wait wait!!" Nothing is wrong, on purpose:
+   dress-up (she wears the outfit for the rest of the game), strawberry
+   catch, and a "which dessert are you?" personality quiz with a result card.
+3. ★ **III. MOCHI'S ROOM ♡** decorate her empty room (the layout is saved),
+   a "what kind of friend are you?" quiz, and hide-and-seek. Only two things
+   are off: her song slows a hair over the act, and in the last round she
+   isn't hiding behind anything. She's standing in the corner, facing the
+   wall. "found you ♡"
+4. **IV. BIRTHDAY ♡** (to build; for now the old bonus round: the pink
+   drains, she knows your real time and room, counts your lies) → **stitches**.
+5. **V. WHERE WERE WE? ♡** (to rebuild; for now the old act III: faded
+   colours, broken song, city/battery, stitches when you blink) → **eyes**.
+6. **VI. LIGHTS OUT** (to build).
+7. **VII. PHOTO BOOTH** (to build; replaces the mirror).
+8. **VIII. TEA PARTY** (for now: the old presence act, with **ears** at its start).
+9. **IX. RESULTS** (for now: the old interview) → **unzip**, then the ending.
+
+Each stage has an `act` (its place in the story) and a `look` (how far gone
+the world is: 1 pink … 6 blood red). Colour, music, webcam filter, the
+director and Mochi's AI voice all follow the look, so slow early acts can
+stay fully pink. For playtesting, the dev server takes `?act=N` to start at
+act N.
 
 Pacing tools in `src/stages.js`: `talk` (Mochi carries the transition
 instead of a title card), `fakeEnd`, `repeat`, `features` (switch director
-behaviour mid-act), `pause`, `card: "none"`, `drift: true`.
+behaviour mid-act), `pause`, `card: "none"`, `drift: true`, `songDrift`
+(only the song slides, gradually, over the act).
 
 ## Mochi (the mascot) and the colour script
 
@@ -82,13 +91,13 @@ behaviour mid-act), `pause`, `card: "none"`, `drift: true`.
   polaroid of the two of them through a cute webcam filter
   (`src/segments/MochiPlay.js`). She reacts to every answer. Her theme plays
   throughout (`src/core/CuteTheme.js`; drop a loopable
-  `public/audio/cute-theme.mp3` to use a recorded track instead). The ambient drone stays silent until Act III.
+  `public/audio/cute-theme.mp3` to use a recorded track instead). The ambient drone stays silent until Act V (the first faded act).
 - **What she learns comes back**: the name, the snack, whether you petted
   her, your answers (`src/mochi/MochiLines.js` builds the whispers after
   each event from them), and the polaroid, which returns at the very end
   with Mochi unzipped and your own face mutilated.
 - **Mochi events** (`src/segments/MochiSegment.js`) sit at every act break,
-  worst last: stitches (end of II), eyes (end of III), ears (end of IV), unzip (end of VI).
+  worst last: stitches (end of IV), eyes (end of V), ears (for now at the start of VIII), unzip (end of IX).
   Each starts from cute Mochi + her song, then one wound plays out
   (`src/mochi/MochiEngine.js`, WebGL, Mochi is a cut-out on a full-screen
   transparent canvas) and only advances while the webcam says you're
@@ -97,8 +106,7 @@ behaviour mid-act), `pause`, `card: "none"`, `drift: true`.
 - **Injury sounds** are recorded CC0 foley from freesound.org
   (`public/audio/sfx/`, credits in `CREDITS.txt` there), played through
   `src/core/SampleBank.js`; the synthesised versions are the fallback.
-- **The player's face**: in Acts V and VI (and once at the end of the
-  mirror) their own webcam face flashes up mutilated for a split second
+- **The player's face**: in the last two acts their own webcam face flashes up mutilated for a split second
   (`src/ui/FaceGore.js`: wounds painted on the FaceLandmarker landmarks).
 - **The figure behind you** is a jumpscare now: it's there for a fraction
   of a second when you look back at the screen, a little closer each time.

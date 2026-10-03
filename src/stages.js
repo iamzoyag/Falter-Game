@@ -13,13 +13,16 @@
 // in the slot that will replace them):
 //   ★ I    HELLO           the quiz, pet, feed, polaroid, a fake ending
 //   ★ II   BONUS ROUND     nothing is wrong at all. dress-up, strawberry catch, "which dessert are you?"
-//     III  MOCHI'S ROOM    (to build) decorate + hide-and-seek. wrong in a way you can't name
+//   ★ III  MOCHI'S ROOM    decorate, "what kind of friend are you?", hide-and-seek. wrong in a way you can't name
 //     IV   BIRTHDAY        (old bonus act for now) pink drains -> stitches
 //     V    WHERE WERE WE   (old act III for now) memory match, the "proper" test -> ears
 //     VI   LIGHTS OUT      (to build) flashlight, falling things -> eyes
 //     VII  PHOTO BOOTH     (to build) 1-bit; the strip prints wrong
 //     VIII TEA PARTY       (old presence act for now)
 //     IX   RESULTS         (old interview for now) -> unzip -> ending
+//
+// `songDrift` (optional): how far her song has slowed/flattened by the end of
+// the act; it gets there gradually, step by step. Nothing else changes.
 //
 // Step types: a string is a question id. { type: "talk" } Mochi says lines
 // full screen; { type: "round" } a bubbly round card; { type: "play", kind }
@@ -78,6 +81,28 @@ export const STAGES = [
       "d4", "d5",
       { type: "play", kind: "dessert" },
       { type: "talk", lines: "bonusDone" }
+    ]
+  },
+  {
+    id: "room",
+    act: 3,
+    look: 1,
+    card: "none",
+    title: "III. MOCHI'S ROOM ♡",
+    subtitle: "",
+    // Still look 1: pink, sweet, no subliminals. Two things are off and you
+    // can't put your finger on either: her song slows a hair over the act,
+    // and in the last round of hide-and-seek she's in the corner facing the
+    // wall ("found you ♡"). Then straight back to normal.
+    features: CALM,
+    songDrift: { tempo: 0.95, cents: -14, wobble: 0.03 },
+    steps: [
+      { type: "play", kind: "decorate" },
+      { type: "round", title: "friend round ♡", sub: "what kind of friend are you?" },
+      "f1", "f2", "f3",
+      { type: "play", kind: "hide" },
+      "f4", "f5",
+      { type: "talk", lines: "roomBye" }
     ]
   },
   {

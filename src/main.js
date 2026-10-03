@@ -24,7 +24,8 @@ import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
 import { runInterrogation } from "./segments/Interrogator.js";
 import { runEnding } from "./segments/Ending.js";
 import { runMochiEvent } from "./segments/MochiSegment.js";
-import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeEnd, runDressUp, runCatch, runDessertResult } from "./segments/MochiPlay.js";
+import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeEnd, runDressUp, runCatch, runDessertResult, tally } from "./segments/MochiPlay.js";
+import { runDecorate, runHideAndSeek } from "./segments/MochiRoom.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
@@ -78,8 +79,8 @@ new NoiseOverlay(document.getElementById("noise-overlay"));
 const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
 const faceGore = new FaceGore(document.getElementById("face-gore"));
 // What the player tells Mochi in Act I. It all comes back later.
-// outfit, caught and dessert come from Act II
-const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null };
+// outfit, caught and dessert come from Act II; room, friend and cornerFound from Act III
+const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null };
 
 const reduceFlashBox = document.getElementById("reduce-flash-checkbox");
 reduceFlashBox.checked = settings.reduceFlashing;
@@ -160,6 +161,7 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
   // Mochi's theme plays from here through Act I. A recorded track at
   // public/audio/cute-theme.mp3 is used if present, else the synth version.
   cuteTheme = new CuteTheme(audio.ctx, audio.master, { url: "/audio/cute-theme.mp3", volume: 0.32 });
+  if (import.meta.env.DEV) window.__warp = () => ({ ...cuteTheme.warp }); // for playtesting the song drift
   await cuteTheme.load();
   cuteTheme.play({ fade: 2.5 });
   cuteSfx = new CuteSfx(audio.ctx, audio.master);
@@ -310,9 +312,12 @@ async function runGame() {
       director.suspend(false);
     }
 
+    driftBase = { ...(cuteTheme?.warp || { tempo: 1, cents: 0, wobble: 0, muffle: 0 }) };
     for (let si = 0; si < stage.steps.length; si++) {
       const step = stage.steps[si];
-      if (stage.drift) applyDrift(si / (stage.steps.length - 1));
+      const p = si / Math.max(1, stage.steps.length - 1);
+      if (stage.drift) applyDrift(p);
+      else if (stage.songDrift) applySongDrift(stage.songDrift, p);
 
       if (typeof step === "string" || step.type === "repeat") {
         currentQuestionIndex = qIndex;
@@ -332,6 +337,7 @@ async function runGame() {
         director.suspend(true);
         ui.setMochiHostLine("");
         if (step.lines === "bonus") cuteTheme?.play({ fade: 0.4, fromTop: true }); // she bursts back in, song and all
+        player.friend = tally(quiz.getDossier(), "friend", player.friend);
         await runTalk(ctx, TALK[step.lines] || [], { mood: step.mood || "cute", flicker: step.flicker || null });
         director.suspend(false);
       } else if (step.type === "fakeEnd") {
@@ -359,6 +365,8 @@ async function runGame() {
         else if (step.kind === "dressup") { await runDressUp(ctx); ui.setHostOutfit(player.outfit); }
         else if (step.kind === "catch") await runCatch(ctx);
         else if (step.kind === "dessert") await runDessertResult(ctx, quiz.getDossier());
+        else if (step.kind === "decorate") await runDecorate(ctx);
+        else if (step.kind === "hide") await runHideAndSeek(ctx);
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");
@@ -426,12 +434,28 @@ function enterActAudio(act) {
   }
 }
 
-/** Act II: everything drifts a little further from normal with every step (p 0..1). */
+// the song's state when the current stage began, so drift carries on from
+// wherever the last act left it instead of snapping back to normal
+let driftBase = { tempo: 1, cents: 0, wobble: 0, muffle: 0 };
+
+/** The draining act: everything drifts a little further from normal with every step (p 0..1). */
 function applyDrift(p) {
   ui.setDrain(p);
   director.setCute(1 - p * 0.6);
   audio.setUnease(0.1 + p * 0.7);
-  cuteTheme?.setWarp({ tempo: 1 - p * 0.05, cents: -6 - p * 34, wobble: 0.04 + p * 0.22, muffle: p * 0.15 });
+  const b = driftBase;
+  cuteTheme?.setWarp({
+    tempo: Math.min(b.tempo, 1) - p * 0.05,
+    cents: Math.min(b.cents, -6) - p * 34,
+    wobble: Math.max(b.wobble, 0.04) + p * 0.22,
+    muffle: Math.max(b.muffle, 0) + p * 0.15
+  });
+}
+
+/** Only the song changes: a slow slide toward `to` (tempo/cents/wobble) over the act. */
+function applySongDrift(to, p) {
+  const b = driftBase, lerp = (x, y) => x + (y - x) * p;
+  cuteTheme?.setWarp({ tempo: lerp(b.tempo, to.tempo ?? b.tempo), cents: lerp(b.cents, to.cents ?? b.cents), wobble: lerp(b.wobble, to.wobble ?? b.wobble) });
 }
 
 /** One deniable thing. The player shouldn't be sure anything happened. */
