@@ -111,7 +111,74 @@ const MOCHI_QUESTIONS = [
   }
 ];
 
-// Act II "bonus round" (b1..b6). Still pink, still Mochi, still cute on the
+// Act II "which dessert are you?" (d1..d5). A silly personality test with no
+// edge at all; each option is tagged with the dessert it counts towards
+// (daifuku / matcha / cinnamon / brulee). The result card tallies them
+// (MochiPlay.dessertFromDossier) and the dessert comes back later.
+const DESSERT_QUESTIONS = [
+  {
+    id: "d1",
+    callbackId: "cosy_spot",
+    principle: "rapport (dessert quiz)",
+    prompt: "Pick a cosy spot!",
+    options: [
+      { text: "A busy café with all my friends.", dessert: "daifuku", expressionHint: "any", mochi: "mochi wants to come!! ♡" },
+      { text: "A window seat while it rains.", dessert: "matcha", expressionHint: "any", mochi: "pitter patter ♡ so peaceful" },
+      { text: "A blanket fort. Obviously.", dessert: "cinnamon", expressionHint: "any", mochi: "can mochi come in?? ♡" },
+      { text: "Somewhere nobody can find me.", dessert: "brulee", expressionHint: "any", mochi: "a secret spot!! mochi won't tell ♡" }
+    ]
+  },
+  {
+    id: "d2",
+    callbackId: "friend_sad",
+    principle: "rapport (dessert quiz)",
+    prompt: "Your friend is sad. What do you do?",
+    options: [
+      { text: "Big hug. Immediately.", dessert: "daifuku", expressionHint: "any", mochi: "the best medicine ♡" },
+      { text: "Make them tea and just sit with them.", dessert: "matcha", expressionHint: "any", mochi: "that's so sweet, {name} ♡" },
+      { text: "Bake them something.", dessert: "cinnamon", expressionHint: "any", mochi: "mochi would feel better instantly ♡" },
+      { text: "Crack jokes until they laugh.", dessert: "brulee", expressionHint: "any", mochi: "hehe ♡ a funny friend!!" }
+    ]
+  },
+  {
+    id: "d3",
+    callbackId: "superpower",
+    principle: "rapport (dessert quiz)",
+    prompt: "Pick a superpower!",
+    options: [
+      { text: "Talking to animals.", dessert: "daifuku", expressionHint: "any", mochi: "you can already talk to mochi!! ♡" },
+      { text: "Stopping time.", dessert: "matcha", expressionHint: "any", mochi: "more time for naps ♡" },
+      { text: "Teleporting home whenever I want.", dessert: "cinnamon", expressionHint: "any", mochi: "no more long goodbyes ♡" },
+      { text: "Being invisible.", dessert: "brulee", expressionHint: "any", mochi: "ooh, sneaky ♡" }
+    ]
+  },
+  {
+    id: "d4",
+    callbackId: "people_say",
+    principle: "rapport (dessert quiz)",
+    prompt: "What do people usually say about you?",
+    options: [
+      { text: "\"You're so fun!\"", dessert: "daifuku", expressionHint: "any", mochi: "you ARE fun!! ♡" },
+      { text: "\"You're so calm.\"", dessert: "matcha", expressionHint: "any", mochi: "very zen ♡" },
+      { text: "\"You're so sweet.\"", dessert: "cinnamon", expressionHint: "any", mochi: "they're right!! ♡" },
+      { text: "\"I never know what you're thinking.\"", dessert: "brulee", expressionHint: "any", mochi: "mysterious!! ♡" }
+    ]
+  },
+  {
+    id: "d5",
+    callbackId: "ideal_party",
+    principle: "rapport (dessert quiz)",
+    prompt: "Last one!! Your ideal party?",
+    options: [
+      { text: "Huge. Everyone's invited.", dessert: "daifuku", expressionHint: "any", mochi: "mochi's on the list, right? ♡" },
+      { text: "Honestly? A quiet night in.", dessert: "matcha", expressionHint: "any", mochi: "pyjamas and snacks ♡" },
+      { text: "Three close friends and a lot of cake.", dessert: "cinnamon", expressionHint: "any", mochi: "perfect!! ♡ save mochi a slice" },
+      { text: "I'd slip out early. Nobody would notice.", dessert: "brulee", expressionHint: "any", mochi: "mochi would notice ♡" }
+    ]
+  }
+];
+
+// The old Act II "bonus round" (b1..b6), parked in the Birthday act for now. Still pink, still Mochi, still cute on the
 // surface, but each one leans a little further into the player's real life.
 // `special` hooks a reaction that uses something real (the clock, the room
 // scan, their earlier answers) — see specialReaction() in MochiLines.js.
@@ -120,7 +187,7 @@ const BONUS_QUESTIONS = [
     id: "b1",
     callbackId: "last_ate",
     principle: "rapport (bonus round)",
-    prompt: "Bonus round!! What's the last thing you ate?",
+    prompt: "Okay!! What's the last thing you ate?",
     options: [
       { text: "Something healthy.", expressionHint: "any", mochi: "so responsible!! ♡" },
       { text: "Snacks. Lots of snacks.", expressionHint: "smile", mochi: "hehe, mochi won't tell ♡" },
@@ -190,6 +257,7 @@ const BONUS_QUESTIONS = [
 
 export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
+  ...DESSERT_QUESTIONS,
   ...BONUS_QUESTIONS,
   {
     id: "q1",

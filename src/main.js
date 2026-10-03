@@ -24,7 +24,7 @@ import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
 import { runInterrogation } from "./segments/Interrogator.js";
 import { runEnding } from "./segments/Ending.js";
 import { runMochiEvent } from "./segments/MochiSegment.js";
-import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeEnd } from "./segments/MochiPlay.js";
+import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeEnd, runDressUp, runCatch, runDessertResult } from "./segments/MochiPlay.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
@@ -78,7 +78,8 @@ new NoiseOverlay(document.getElementById("noise-overlay"));
 const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
 const faceGore = new FaceGore(document.getElementById("face-gore"));
 // What the player tells Mochi in Act I. It all comes back later.
-const player = { name: "", snack: null, petted: null, polaroid: null };
+// outfit, caught and dessert come from Act II
+const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null };
 
 const reduceFlashBox = document.getElementById("reduce-flash-checkbox");
 reduceFlashBox.checked = settings.reduceFlashing;
@@ -291,9 +292,15 @@ async function runGame() {
 
   let qIndex = 0;
   if (lateBaseline) faceTracker.beginBaselineCapture();
+  // dev only: ?act=2 starts at that act, for playtesting one act at a time
+  const startAct = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("act")) || 1 : 1;
+  if (startAct > 1) player.name ||= "friend";
   for (const stage of STAGES) {
+    if ((stage.act ?? 1) < startAct) continue;
     currentStage = stage;
-    const act = stage.act ?? 1;
+    // `look` (how far gone the world is) drives colour, music, filter and Mochi's voice;
+    // `act` is only the act's place in the story.
+    const act = stage.look ?? stage.act ?? 1;
     ui.setAct(act);
     director.setStage(stage);
     enterActAudio(act);
@@ -349,6 +356,9 @@ async function runGame() {
         else if (step.kind === "pet") await runPet(ctx);
         else if (step.kind === "feed") await runFeed(ctx);
         else if (step.kind === "polaroid") await runPolaroid(ctx);
+        else if (step.kind === "dressup") { await runDressUp(ctx); ui.setHostOutfit(player.outfit); }
+        else if (step.kind === "catch") await runCatch(ctx);
+        else if (step.kind === "dessert") await runDessertResult(ctx, quiz.getDossier());
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");

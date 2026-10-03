@@ -632,10 +632,10 @@ body.mochi-mode #noise-overlay { opacity: 0.05; }
 
 /* Act I host: Mochi beside the question */
 .mochi-host { display: none; align-items: center; gap: 14px; margin-bottom: 18px; }
+.mochi-host-figure { position: relative; display: block; flex: none; width: 104px; height: 104px; --mochi-h: 104px; animation: mochi-bob 2.4s ease-in-out infinite; }
 .mochi-host img {
-  width: 104px; height: 104px; object-fit: contain;
+  width: 104px; height: 104px; object-fit: contain; display: block;
   filter: drop-shadow(0 6px 8px rgba(180, 60, 120, 0.25));
-  animation: mochi-bob 2.4s ease-in-out infinite;
 }
 @keyframes mochi-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-6px) rotate(2deg); } }
 .mochi-hello { display: none; }
@@ -778,16 +778,16 @@ body[data-act="6"] #noise-overlay { opacity: 0.13; }
 .mochi-play.show { opacity: 1; pointer-events: auto; }
 .mochi-play .mochi-bubble { max-width: min(560px, 92vw); }
 .mp-mochi-wrap { position: relative; transform-origin: 50% 90%; }
+.mp-mochi-body { position: relative; --mochi-h: min(46vh, 72vw); animation: mochi-bob 2.6s ease-in-out infinite; }
 .mp-mochi {
   display: block;
-  height: min(46vh, 72vw);
+  height: var(--mochi-h);
   width: auto;
   user-select: none;
   -webkit-user-drag: none;
   filter: drop-shadow(0 12px 14px rgba(180, 60, 120, 0.22));
-  animation: mochi-bob 2.6s ease-in-out infinite;
 }
-.mochi-play.round .mp-mochi { height: min(22vh, 40vw); }
+.mochi-play.round .mp-mochi-body { --mochi-h: min(22vh, 40vw); }
 .mochi-play.photo .mp-mochi-wrap { display: none; }
 .mp-mochi-wrap.hop { animation: mp-hop 0.5s cubic-bezier(.3,1.6,.5,1); }
 .mp-mochi-wrap.squish { animation: mp-squish 0.28s ease-out; }
@@ -910,7 +910,8 @@ body[data-act="6"] #noise-overlay { opacity: 0.13; }
 
 /* Act II: Mochi is still here, hosting. She seems fine. */
 body[data-act="3"] .mochi-host { display: flex; }
-body[data-act="3"] .mochi-host img { filter: saturate(0.55) brightness(0.92) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.4)); animation-duration: 3.4s; }
+body[data-act="3"] .mochi-host img { filter: saturate(0.55) brightness(0.92) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.4)); }
+body[data-act="3"] .mochi-host-figure { animation-duration: 3.4s; }
 body[data-act="3"] .mochi-bubble { background: #3a2730; color: #f1d4de; border-color: #8a5068; box-shadow: 0 4px 0 #6e4252; }
 
 /* consent screen fits on one laptop screen in Act I */
@@ -949,15 +950,77 @@ body[data-act="3"] .mochi-play .mochi-bubble { background: #f3e6ea; color: #5a2a
 body[data-act="3"] .mochi-event { background: #c9b3bb; }
 
 /* talk moods */
-.mochi-play.mood-off .mp-mochi { animation-duration: 3.8s; filter: saturate(0.5) drop-shadow(0 12px 14px rgba(60, 20, 40, 0.3)); }
+.mochi-play.mood-off .mp-mochi-body { animation-duration: 3.8s; }
+.mochi-play.mood-off .mp-mochi { filter: saturate(0.5) drop-shadow(0 12px 14px rgba(60, 20, 40, 0.3)); }
 .mochi-play.mood-dark { background: radial-gradient(ellipse at center, #3a2a30 0%, #0c0608 70%) !important; }
-.mochi-play.mood-dark .mp-mochi { filter: brightness(0.4) saturate(0.4) !important; animation: none; }
+.mochi-play.mood-dark .mp-mochi { filter: brightness(0.4) saturate(0.4) !important; }
+.mochi-play.mood-dark .mp-mochi-body { animation: none; }
+.mochi-play.mood-dark .mochi-acc { filter: brightness(0.4) saturate(0.4); }
 .mochi-play.mood-dark .mochi-bubble { background: #1c1215 !important; color: #d9b9c4 !important; border-color: #4a2a36 !important; box-shadow: none !important; }
 
 /* glitched round card ("round fi̵ve ♡") */
 .mochi-play.glitch .mp-round-title { color: #b06a86; text-shadow: 2px 0 0 #fff, -2px 0 0 #6b1d45; animation: jitter 0.7s steps(1) infinite; }
-.mochi-play.glitch .mp-mochi { animation: none; filter: saturate(0.4); }
+.mochi-play.glitch .mp-mochi { filter: saturate(0.4); }
+.mochi-play.glitch .mp-mochi-body { animation: none; }
 
 /* the fake ending */
 .mochi-play.fake-end .mp-round-title { font-size: clamp(2.2rem, 7vw, 3.8rem); }
 .mochi-play.fake-end .mp-again { margin-top: 10px; }
+
+
+/* ======================================================================
+   Act II: the bonus round (dress-up, strawberry catch, dessert result)
+   ====================================================================== */
+/* Mochi's outfit: positioned over her image (src/mochi/outfit.js) */
+.mochi-acc {
+  position: absolute;
+  font-size: calc(var(--mochi-h) * var(--acc-size));
+  line-height: 1;
+  transform: translate(-50%, -50%) rotate(var(--acc-rot));
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(120, 40, 80, 0.25));
+}
+.mochi-acc.fresh { animation: mp-acc-pop 0.35s cubic-bezier(.3,1.6,.5,1); }
+@keyframes mp-acc-pop { from { transform: translate(-50%, -50%) rotate(var(--acc-rot)) scale(0.2); } }
+body[data-act="3"] .mochi-acc { filter: saturate(0.55) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3)); }
+
+.mochi-play.dressup .mp-mochi-body { --mochi-h: min(36vh, 62vw); }
+.mochi-play.dressup .mp-controls { gap: 10px; }
+.mp-dress-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
+.mp-dress-label { width: 100%; text-align: center; color: #b0608b; font-size: 0.95rem; }
+.mp-dress { padding: 6px 14px; min-width: 84px; }
+.mp-dress span { font-size: 1.7rem; }
+.mp-dress.picked { border-color: #ff5fa8; background: #ffe3ef; box-shadow: 0 4px 0 #ff5fa8; transform: translateY(-2px); }
+.mp-dress-done:disabled { opacity: 0.5; box-shadow: none; }
+
+.mochi-play.catch { justify-content: flex-start; padding-top: 4vh; }
+.mochi-play.catch .mp-mochi-body { --mochi-h: min(20vh, 36vw); }
+.mp-field { position: fixed; inset: 0; z-index: 1; cursor: none; touch-action: none; }
+.mp-field.done { opacity: 0; transition: opacity 0.45s; }
+.mp-berry { position: absolute; left: 0; top: 0; font-size: clamp(30px, 4.4vw, 44px); will-change: transform; pointer-events: none; }
+.mp-berry.star { filter: drop-shadow(0 0 8px #ffd54a); }
+.mp-basket {
+  position: absolute; left: 0; bottom: 4vh; font-size: clamp(56px, 8vw, 84px); line-height: 1;
+  will-change: transform; pointer-events: none; filter: drop-shadow(0 6px 6px rgba(120, 40, 80, 0.25));
+}
+.mp-basket.got { animation: mp-basket-got 0.22s ease-out; }
+@keyframes mp-basket-got { 50% { font-size: clamp(62px, 8.8vw, 92px); } }
+.mp-score {
+  position: absolute; top: 18px; right: 22px; padding: 8px 16px; border-radius: 999px;
+  background: #fff; border: 3px solid #ffb3d6; box-shadow: 0 4px 0 #ffb3d6; font-size: 1.2rem; color: #6b1d45;
+}
+
+.mochi-play.dessert .mp-mochi-body { --mochi-h: min(22vh, 40vw); }
+.mp-result {
+  background: #fff; border: 3px solid #ffb3d6; border-radius: 26px; box-shadow: 0 8px 0 #ffb3d6;
+  padding: 18px 26px 16px; width: min(440px, 90vw); text-align: center;
+  opacity: 0; transform: scale(0.85) rotate(-2deg); transition: opacity 0.35s, transform 0.5s cubic-bezier(.3,1.6,.5,1);
+}
+.mp-result.show { opacity: 1; transform: rotate(-1.5deg); }
+.mp-result-top { font-size: 0.95rem; color: #b0608b; letter-spacing: 0.04em; }
+.mp-result-glyph { font-size: 4rem; line-height: 1.15; margin: 4px 0; }
+.mp-result-you { color: #b0608b; }
+.mp-result-name { font-weight: 700; font-size: clamp(1.7rem, 5vw, 2.3rem); color: #ff5fa8; text-shadow: 0 3px 0 #ffe3ef; }
+.mp-result-blurb { margin: 8px 0 10px; line-height: 1.4; }
+.mp-result-match { font-size: 0.95rem; color: #b0608b; }
+.mp-result-match b { color: #ff5fa8; }

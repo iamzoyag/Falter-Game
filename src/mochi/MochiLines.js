@@ -27,6 +27,33 @@ export const LINES = {
   },
   polaroidAsk: "let's take a picture together!! squeeze in ♡",
   polaroidAfter: ["mochi will keep this forever ♡", "best friends!! mochi's putting this on the fridge ♡"],
+  // Act II bonus round: still 100% sweet
+  dressAsk: "mochi wants to look extra cute for you!! pick her something to wear ♡",
+  dressReact: {
+    bow: "a bow!! so classic ♡",
+    crown: "princess mochi!! ♡",
+    flower: "it smells so nice ♡",
+    clip: "a strawberry!! mochi's favourite ♡",
+    bell: "jingle jingle ♡ now you'll always hear mochi coming",
+    heart: "a locket!! mochi will keep you in it ♡",
+    ribbon: "so fancy!! ♡",
+    none: "simple and cute. okay!! ♡"
+  },
+  dressDone: ["mochi looks so pretty!! she's never taking it off ♡", "{name} has the best taste ♡ mochi feels like a princess"],
+  catchAsk: "mochi picked sooo many strawberries!! catch them for her? ♡",
+  catchHint: "(move the basket with your mouse, or the arrow keys)",
+  catchGo: "ready? here they come!! ♡",
+  catchCheer: ["nice catch, {name}!! ♡", "wow wow wow!! ♡", "you're so good at this ♡", "yay!! ♡"],
+  catchMiss: ["oopsie ♡", "it's okay!! there's more ♡", "whoops~ ♡"],
+  catchWin: ["you caught them all!! mochi's gonna make jam ♡", "best basket ever, {name}!! ♡"],
+  catchSome: "you caught {n}!! that's plenty for jam ♡",
+  dessertDrum: "and the results are...",
+  dessertSay: {
+    daifuku: "mochi knew it!! you're a mochi too, {name} ♡",
+    matcha: "ooh, calm and cosy. mochi likes that about you ♡",
+    cinnamon: "warm and sweet!! mochi could tell from the start ♡",
+    brulee: "crème brûlée!! so fancy, {name} ♡"
+  },
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
   // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
   hostAct3: [
@@ -46,9 +73,11 @@ export const LINES = {
 export const TALK = {
   // end of Act I: a real goodbye, so Act II feels like a bonus
   goodbye: ["that's all the rounds!! you did sooo good, {name} ♡", "thank you for playing with mochi ♡ bye bye!"],
-  // start of Act II
+  // start of Act II, after the fake ending
   bonus: ["wait wait wait!!", "don't go yet, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
-  // end of Act II, right before the stitches
+  // end of Act II (the bonus round): nothing's wrong, she just wants to keep playing
+  bonusDone: ["that was the best bonus round ever!! ♡", "okay okay... mochi has just a few more questions. is that okay? ♡", "yay!! ♡"],
+  // end of the Birthday act, right before the stitches
   quiet: ["mochi has been talking a lot, hasn't she?", "...", "mochi should be quiet now ♡"],
   // start of Act III: as if nothing happened
   whereWereWe: ["...", "hi {name}!! ♡", "where were we? ♡", "mochi feels a little funny. it's fine!! mochi is fine ♡"],

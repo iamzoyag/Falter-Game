@@ -171,7 +171,7 @@ export class HorrorDirector {
 
   setStage(stage) {
     this.stageId = stage.id;
-    this.act = stage.act ?? 1;
+    this.act = stage.look ?? stage.act ?? 1; // behaviour follows the look, not the act number
     this.features = stage.features || {};
     this._stageAnswered = 0;
     if (!this.features.figure) this._fig.active = false;

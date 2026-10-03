@@ -1,35 +1,45 @@
 // The game as a sequence of stages. A string step is a question id from
 // questions.js; objects are special segments. `features` switches director
-// behaviour on per stage, so the first stage can be a genuinely normal quiz
-// and everything after it can go wrong in layers.
+// behaviour on per stage.
 //
-// `act` (1..6) drives the colour script (body[data-act] in style.css):
-// pink and bubbly in I and II, faded in III, black and white in IV, black
-// and red in V and VI.
+// `act` is the act's place in the story (I..IX). `look` is how far gone the
+// world is, and it's what the colour script (body[data-act]), the music, the
+// webcam filter and Mochi's AI voice all key off:
+//   1 pink and honest   2 pink, quietly draining   3 dusty rose
+//   5 black + dark red  6 black + blood red
+// Several acts can share a look; the slow acts early on do.
 //
-// The shape of the whole thing: I is honest and cute. II looks the same
-// but quietly isn't (subliminal unease first, conscious "wait..." later).
-// The first gore lands at the END of II, after they've already felt it.
-// III pretends nothing happened. From IV on, it stops pretending.
+// The plan (one act at a time; ★ = rebuilt, the rest are the old acts parked
+// in the slot that will replace them):
+//   ★ I    HELLO           the quiz, pet, feed, polaroid, a fake ending
+//   ★ II   BONUS ROUND     nothing is wrong at all. dress-up, strawberry catch, "which dessert are you?"
+//     III  MOCHI'S ROOM    (to build) decorate + hide-and-seek. wrong in a way you can't name
+//     IV   BIRTHDAY        (old bonus act for now) pink drains -> stitches
+//     V    WHERE WERE WE   (old act III for now) memory match, the "proper" test -> ears
+//     VI   LIGHTS OUT      (to build) flashlight, falling things -> eyes
+//     VII  PHOTO BOOTH     (to build) 1-bit; the strip prints wrong
+//     VIII TEA PARTY       (old presence act for now)
+//     IX   RESULTS         (old interview for now) -> unzip -> ending
 //
 // Step types: a string is a question id. { type: "talk" } Mochi says lines
-// full screen; { type: "round" } a bubbly round card; { type: "play" } an Act I
-// moment; { type: "repeat", of } asks an earlier question again;
-// { type: "features", set } changes director features mid-act (pacing);
-// { type: "mochi", scene } a Mochi event; plus mirror / task / interrogate.
+// full screen; { type: "round" } a bubbly round card; { type: "play", kind }
+// a moment with Mochi (src/segments/MochiPlay.js); { type: "repeat", of } asks
+// an earlier question again; { type: "features", set } changes director
+// features mid-act; { type: "mochi", scene } a Mochi event
+// (src/segments/MochiSegment.js); plus task / interrogate.
 // `card`: "stage" shows the act's title card first, "none" lets Mochi carry the transition.
-// { type: "mochi", scene } is a Mochi event (src/segments/MochiSegment.js):
-// one at every act break, worst last. { type: "play" } / { type: "round" }
-// are Act I's moments with Mochi (src/segments/MochiPlay.js).
+
+const CALM = { beats: false, darkness: false, unblink: false, creep: false, figure: false, room: false, voice: false };
 
 export const STAGES = [
   {
     id: "hello",
     act: 1,
+    look: 1,
     card: "stage",
     title: "I. HELLO ♡",
     subtitle: "a getting-to-know-you quiz with mochi",
-    features: { beats: false, darkness: false, unblink: false, creep: false, figure: false, room: false, voice: false },
+    features: CALM,
     steps: [
       { type: "play", kind: "greet" },
       { type: "round", title: "round one ♡", sub: "favourite things!" },
@@ -49,16 +59,41 @@ export const STAGES = [
   {
     id: "bonus",
     act: 2,
+    look: 1,
     card: "none",
     title: "II. BONUS ROUND ♡",
+    subtitle: "",
+    // After the fake ending she bursts back in, and... it's just more fun.
+    // Nothing is wrong here, on purpose: it proves the post-credits bit is
+    // harmless, so the player lets their guard down a second time. The only
+    // seeds are things they choose (her outfit, their dessert) that come back.
+    features: CALM,
+    steps: [
+      { type: "talk", lines: "bonus" },
+      { type: "round", title: "bonus round ♡", sub: "just for you!" },
+      { type: "play", kind: "dressup" },
+      { type: "round", title: "which dessert are you? ♡", sub: "a very serious personality test" },
+      "d1", "d2", "d3",
+      { type: "play", kind: "catch" },
+      "d4", "d5",
+      { type: "play", kind: "dessert" },
+      { type: "talk", lines: "bonusDone" }
+    ]
+  },
+  {
+    id: "birthday",
+    act: 4,
+    look: 2,
+    card: "none",
+    title: "IV. BIRTHDAY ♡",
     subtitle: "",
     // still pink, still cute. Underneath: a heartbeat, a 19 Hz hum, the song
     // drifting flat, single frames of a hurt Mochi, breathing behind the music.
     features: { beats: false, darkness: false, unblink: false, creep: false, figure: false, room: false, voice: false, subliminal: 1 },
     drift: true,
     steps: [
-      { type: "talk", lines: "bonus" },
-      { type: "round", title: "bonus round ♡", sub: "just for you!" },
+      // placeholder until the Birthday act is built: the old bonus questions
+      { type: "round", title: "round five ♡", sub: "a little more about you~" },
       "b1", "b2",
       { type: "repeat", of: "m2" },
       "b3", "b4", "b5", "b6",
@@ -68,16 +103,17 @@ export const STAGES = [
   },
   {
     id: "where",
-    act: 3,
+    act: 5,
+    look: 3,
     card: "none",
-    title: "III. WHERE WERE WE ♡",
+    title: "V. WHERE WERE WE ♡",
     subtitle: "",
     // she's back, cute, and acts like nothing happened. The colour's gone out
     // of everything and the song is broken. Blink, and she has stitches.
     features: { beats: false, darkness: false, unblink: true, creep: true, figure: false, room: false, voice: false, subliminal: 2, hostHurt: true },
     steps: [
       { type: "pause", ms: 4200 },
-      { type: "round", title: "round fi\u0335ve ♡", sub: "where were we?", glitch: true },
+      { type: "round", title: "round si\u0335x ♡", sub: "where were we?", glitch: true },
       { type: "talk", lines: "whereWereWe", mood: "off", flicker: "/mochi/stitches.webp" },
       "q6", "q7", "q8",
       // and now it stops being subtle
@@ -90,28 +126,22 @@ export const STAGES = [
     ]
   },
   {
-    id: "mirror",
-    act: 4,
-    card: "stage",
-    title: "IV. THE MIRROR",
-    subtitle: "she can't see you anymore. so you look.",
-    features: { beats: false, darkness: false, unblink: false, creep: true, figure: false, room: false, voice: true },
-    steps: [{ type: "mirror", durationMs: 60000 }, { type: "mochi", scene: "ears" }]
-  },
-  {
     id: "presence",
-    act: 5,
+    act: 8,
+    look: 5,
     card: "stage",
-    title: "V. PRESENCE",
+    title: "VIII. PRESENCE",
     subtitle: "you are not the only thing in this room.",
     features: { beats: true, darkness: true, unblink: true, creep: true, figure: true, room: true, voice: true, playerVoice: true, smileClip: true, faceGore: true },
-    steps: ["q13", "q14", "q15", { type: "task", task: "closeEyes" }, "q16", "q17", "q18", "q19"]
+    // the ears scene lived after the mirror; parked here until act V is rebuilt
+    steps: [{ type: "mochi", scene: "ears" }, "q13", "q14", "q15", { type: "task", task: "closeEyes" }, "q16", "q17", "q18", "q19"]
   },
   {
     id: "interview",
-    act: 6,
+    act: 9,
+    look: 6,
     card: "stage",
-    title: "VI. INTERVIEW",
+    title: "IX. INTERVIEW",
     subtitle: "answer out loud.",
     features: { beats: true, darkness: true, unblink: true, creep: true, figure: true, room: true, voice: true, playerVoice: true, smileClip: true, faceGore: true },
     steps: [

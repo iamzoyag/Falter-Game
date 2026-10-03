@@ -1,4 +1,5 @@
 import { settings } from "../settings.js";
+import { outfitParts, accessoryHtml } from "../mochi/outfit.js";
 const $ = (sel) => document.querySelector(sel);
 
 export function showScreen(id) {
@@ -21,7 +22,7 @@ export function showCalibSample(show) {
 /** Renders a question. Buttons carry data-index (CursorTracker needs it). Returns the options container. */
 export function renderQuestion(question, index, total, stage, onSelect) {
   // while it's still "a cute quiz", don't show how much game is left (it would give the fake ending away)
-  $("#question-index").textContent = (stage?.act ?? 1) <= 2
+  $("#question-index").textContent = (stage?.look ?? stage?.act ?? 1) <= 2
     ? `question ${index + 1} ♡`
     : `${stage ? stage.title.split(".")[0] + " · " : ""}${index + 1} / ${total}`;
   $("#question-prompt").textContent = question.prompt;
@@ -67,6 +68,14 @@ export function showStageCard(title, subtitle, ms = 3200, imageUrl = null) {
 /** Colour script: body[data-act] switches the palette (pink I -> black/red V). */
 export function setAct(act) {
   document.body.dataset.act = String(act);
+}
+
+/** The outfit the player picked in Act II, worn by the host avatar from then on. */
+export function setHostOutfit(outfit) {
+  const host = $("#mochi-host .mochi-host-figure");
+  if (!host) return;
+  host.querySelectorAll(".mochi-acc").forEach((n) => n.remove());
+  for (const a of outfitParts(outfit)) host.insertAdjacentHTML("beforeend", accessoryHtml(a));
 }
 
 /** Act I host: Mochi beside the question, with a speech bubble. */
