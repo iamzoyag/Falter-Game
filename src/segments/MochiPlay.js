@@ -496,10 +496,12 @@ export async function runCatch(ctx) {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       sim += dt;
-      bx = Math.max(40, Math.min(innerWidth - 40, bx));
+      bx = Math.max(60, Math.min(innerWidth - 60, bx));
       basket.style.transform = `translate(${bx}px, 0) translateX(-50%)`;
       if (sim >= nextSpawn) spawn();
-      const by = innerHeight - innerHeight * 0.1;
+      // the basket's mouth, from its real size on screen
+      const bb = basket.getBoundingClientRect();
+      const by = bb.top + bb.height * 0.35, half = bb.width * 0.42, reach = bb.height * 0.3;
       for (let i = items.length - 1; i >= 0; i--) {
         const it = items[i];
         it.vy += 520 * dt;
@@ -508,7 +510,7 @@ export async function runCatch(ctx) {
         it.rot += it.spin * dt;
         if (it.x < 20 || it.x > innerWidth - 20) it.vx *= -0.8; // bounce off the sides
         it.node.style.transform = `translate(${it.x}px, ${it.y}px) translate(-50%, -50%) rotate(${it.rot}deg)`;
-        if (it.vy > 0 && Math.abs(it.y - by) < 34 && Math.abs(it.x - bx) < 56) {
+        if (it.vy > 0 && Math.abs(it.y - by) < reach && Math.abs(it.x - bx) < half) {
           caught += it.star ? 3 : 1;
           scoreEl.textContent = Math.min(caught, CATCH_GOAL);
           ctx.sfx?.boop(1 + Math.min(caught, CATCH_GOAL) * 0.03);
