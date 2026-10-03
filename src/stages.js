@@ -14,7 +14,7 @@
 //   ★ I    HELLO           the quiz, pet, feed, polaroid, a fake ending
 //   ★ II   BONUS ROUND     nothing is wrong at all. dress-up, strawberry catch, "which dessert are you?"
 //   ★ III  MOCHI'S ROOM    decorate, "what kind of friend are you?", hide-and-seek. wrong in a way you can't name
-//     IV   BIRTHDAY        (old bonus act for now) pink drains -> stitches
+//   ★ IV   BIRTHDAY        cake + candles, invites (nobody comes), pin the bow, a sewing kit -> stitches
 //     V    WHERE WERE WE   (old act III for now) memory match, the "proper" test -> ears
 //     VI   LIGHTS OUT      (to build) flashlight, falling things -> eyes
 //     VII  PHOTO BOOTH     (to build) 1-bit; the strip prints wrong
@@ -112,17 +112,24 @@ export const STAGES = [
     card: "none",
     title: "IV. BIRTHDAY ♡",
     subtitle: "",
-    // still pink, still cute. Underneath: a heartbeat, a 19 Hz hum, the song
-    // drifting flat, single frames of a hurt Mochi, breathing behind the music.
-    features: { beats: false, darkness: false, unblink: false, creep: false, figure: false, room: false, voice: false, subliminal: 1 },
+    // Her party. The pink drains a little with every step, the song keeps
+    // slowing, and the first subliminals arrive (single frames, a breath).
+    // Everything odd has an innocent explanation: she can't remember her age,
+    // a trick candle, guests who got lost, a game where she moves. The present
+    // she bought herself is a sewing kit -> stitches.
+    features: { ...CALM, subliminal: 1 },
     drift: true,
     steps: [
-      // placeholder until the Birthday act is built: the old bonus questions
-      { type: "round", title: "round five ♡", sub: "a little more about you~" },
-      "b1", "b2",
+      { type: "talk", lines: "birthdayHello" },
+      { type: "play", kind: "cake" },
       { type: "repeat", of: "m2" },
-      "b3", "b4", "b5", "b6",
-      { type: "talk", lines: "quiet", mood: "off" },
+      { type: "round", title: "party round ♡", sub: "birthday questions!!" },
+      "g1", "b2", "g2",
+      { type: "play", kind: "invite" },
+      "g4", "b5",
+      { type: "play", kind: "pinbow" },
+      "g3",
+      { type: "play", kind: "gift" },
       { type: "mochi", scene: "stitches" }
     ]
   },
@@ -140,6 +147,8 @@ export const STAGES = [
       { type: "pause", ms: 4200 },
       { type: "round", title: "round si\u0335x ♡", sub: "where were we?", glitch: true },
       { type: "talk", lines: "whereWereWe", mood: "off", flicker: "/mochi/stitches.webp" },
+      // placeholder until act V is rebuilt: the old bonus round's sharpest questions
+      "b3", "b4", "b6",
       "q6", "q7", "q8",
       // and now it stops being subtle
       { type: "features", set: { beats: true, voice: true, scriptedGlitch: true, smileClip: true } },

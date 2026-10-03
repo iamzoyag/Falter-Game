@@ -62,10 +62,17 @@ are older acts parked in the slot they'll be replaced in.
    are off: her song slows a hair over the act, and in the last round she
    isn't hiding behind anything. She's standing in the corner, facing the
    wall. "found you ♡"
-4. **IV. BIRTHDAY ♡** (to build; for now the old bonus round: the pink
-   drains, she knows your real time and room, counts your lies) → **stitches**.
+4. ★ **IV. BIRTHDAY ♡** her party, full screen, the pink draining step by
+   step. Frost and decorate her cake (she can't remember how old she is),
+   blow out the candles into your mic (one relights: "trick candles!!"),
+   invite your friends by name and wait at the table while the clock spins
+   and the balloons sink (nobody comes: "mochi has you ♡"), pin the bow on
+   her blindfolded (she moves; then "boo!!"), and open the present she got
+   herself: a sewing kit. "mochi should be quiet now ♡" → **stitches**, with
+   the outfit you dressed her in still on.
 5. **V. WHERE WERE WE? ♡** (to rebuild; for now the old act III: faded
-   colours, broken song, city/battery, stitches when you blink) → **eyes**.
+   colours, broken song, city/battery, stitches when you blink, plus the old
+   "do you live alone? / is anyone in the room?" questions) → **eyes**.
 6. **VI. LIGHTS OUT** (to build).
 7. **VII. PHOTO BOOTH** (to build; replaces the mirror).
 8. **VIII. TEA PARTY** (for now: the old presence act, with **ears** at its start).
