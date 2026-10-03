@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 170" width="120" height="170">
+<clipPath id="c"><path d="M60 14 L106 150 H14 Z"/></clipPath>
+<path d="M60 14 L106 150 H14 Z" fill="#ff9cc8" stroke="#b0688a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<g clip-path="url(#c)"><rect x="0" y="30" width="120" height="12" fill="#fff" opacity="0.8" transform="rotate(-18 60 36)"/><rect x="0" y="60" width="120" height="12" fill="#fff" opacity="0.8" transform="rotate(-18 60 66)"/><rect x="0" y="90" width="120" height="12" fill="#fff" opacity="0.8" transform="rotate(-18 60 96)"/><rect x="0" y="120" width="120" height="12" fill="#fff" opacity="0.8" transform="rotate(-18 60 126)"/><rect x="0" y="150" width="120" height="12" fill="#fff" opacity="0.8" transform="rotate(-18 60 156)"/></g>
+<path d="M60 14 L106 150 H14 Z" fill="none" stroke="#b0688a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="60" cy="152" rx="50" ry="10" fill="#ffd76e" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="60" cy="14" r="13" fill="#ffd76e" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

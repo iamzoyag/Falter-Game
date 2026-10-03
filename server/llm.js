@@ -141,8 +141,9 @@ export async function generateMochiLine({ moment, act, scene, name, snack, quest
         ? `It is now act ${act}: something has happened to Mochi that she doesn't remember. Stay sweet on the surface ` +
           `but let one detail be slightly wrong, too attentive, or possessive. `
         : act === 2
-          ? `It is act 2, a "bonus round" after the game pretended to end: still sweet and bubbly, but now and then ` +
-            `a little too attentive or clingy. Nothing overtly creepy; the player should only half-notice. `
+          ? `It is Mochi's birthday party (the game pretended to end a while ago and kept going): still sweet and ` +
+            `bubbly, but now and then a little too attentive or clingy. Anything odd should have an innocent ` +
+            `explanation. Nothing overtly creepy; the player should only half-notice. `
           : `It is act 1: be genuinely sweet and warm so the player gets attached. Nothing creepy at all. `) +
       `React specifically to what the player just said or did, and use their name sometimes. Under 16 words, one line, ` +
       `never repeat the example verbatim.`;

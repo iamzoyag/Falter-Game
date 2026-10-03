@@ -246,6 +246,60 @@ const FRIEND_QUESTIONS = [
   }
 ];
 
+// Act IV "party round" (g1..g4), asked at Mochi's birthday. Still a
+// personality quiz, but they lean on things that sting a little: wishes,
+// being remembered, a party nobody came to. Each reaction is sweet.
+const PARTY_QUESTIONS = [
+  {
+    id: "g1",
+    callbackId: "birthday_wish",
+    principle: "rapport (party round), wanting",
+    prompt: "What do you usually wish for on your birthday?",
+    options: [
+      { text: "Something just for me.", expressionHint: "any", mochi: "you deserve it ♡" },
+      { text: "Something for someone I love.", expressionHint: "any", mochi: "that's so sweet, {name} ♡" },
+      { text: "I don't make wishes.", expressionHint: "neutral", mochi: "mochi will make one for you ♡" },
+      { text: "I can't say, or it won't come true.", expressionHint: "smile", mochi: "mochi can keep a secret ♡" }
+    ]
+  },
+  {
+    id: "g2",
+    callbackId: "birthday_remembered",
+    principle: "being remembered",
+    prompt: "Do people usually remember your birthday?",
+    options: [
+      { text: "Always!", expressionHint: "smile", mochi: "of course they do ♡" },
+      { text: "The ones who matter do.", expressionHint: "any", mochi: "mochi will always remember ♡" },
+      { text: "Not really.", expressionHint: "neutral", mochi: "mochi will remember. mochi remembers everything ♡" },
+      { text: "I don't tell people when it is.", expressionHint: "neutral", mochi: "mochi will find out ♡" }
+    ]
+  },
+  {
+    id: "g3",
+    callbackId: "best_present",
+    principle: "rapport (party round)",
+    prompt: "What's the best present you've ever gotten?",
+    options: [
+      { text: "Something handmade.", expressionHint: "smile", mochi: "mochi loves handmade things ♡ mochi is handmade" },
+      { text: "Something I really needed.", expressionHint: "any", mochi: "practical!! ♡" },
+      { text: "Time with someone I love.", expressionHint: "any", mochi: "like now ♡" },
+      { text: "I can't think of one.", expressionHint: "neutral", mochi: "then mochi will be your best present ♡" }
+    ]
+  },
+  {
+    id: "g4",
+    callbackId: "nobody_came",
+    principle: "abandonment, made light of",
+    prompt: "Have you ever had a party where nobody showed up?",
+    options: [
+      { text: "Yes.", expressionHint: "neutral", mochi: "mochi too ♡ ...but you came" },
+      { text: "No.", expressionHint: "any", mochi: "lucky!! ♡" },
+      { text: "Almost.", expressionHint: "neutral", mochi: "almost is okay ♡" },
+      { text: "I don't throw parties.", expressionHint: "any", mochi: "now you have one ♡ with mochi" }
+    ]
+  }
+];
+
 // The old Act II "bonus round" (b1..b6), parked in the Birthday act for now. Still pink, still Mochi, still cute on the
 // surface, but each one leans a little further into the player's real life.
 // `special` hooks a reaction that uses something real (the clock, the room
@@ -327,6 +381,7 @@ export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
   ...DESSERT_QUESTIONS,
   ...FRIEND_QUESTIONS,
+  ...PARTY_QUESTIONS,
   ...BONUS_QUESTIONS,
   {
     id: "q1",

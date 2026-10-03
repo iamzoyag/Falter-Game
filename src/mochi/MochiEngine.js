@@ -155,9 +155,54 @@ export class MochiEngine {
     this._loading = null;
   }
 
+  /**
+   * Bake the outfit the player picked (src/mochi/outfit.js parts) into every
+   * Mochi image, so she's still wearing it while she's hurt. The images all
+   * share one framing, so one set of positions fits them all. Safe to call
+   * before the engine has loaded.
+   */
+  setOutfit(parts) {
+    this._outfit = parts?.length ? parts : null;
+    if (this.ready) this._applyOutfit();
+  }
+
+  _applyOutfit() {
+    if (!this._outfit || !this._plain) return;
+    const dressed = this._plain.map((im) => {
+      const c = document.createElement("canvas");
+      c.width = im.naturalWidth || im.width;
+      c.height = im.naturalHeight || im.height;
+      const g = c.getContext("2d");
+      g.drawImage(im, 0, 0);
+      for (const a of this._outfit) {
+        g.save();
+        g.translate(a.x * c.width, a.y * c.height);
+        g.rotate((a.rot * Math.PI) / 180);
+        g.font = `${Math.round(a.size * c.height)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+        g.textAlign = "center";
+        g.textBaseline = "middle";
+        g.shadowColor = "rgba(120, 40, 80, 0.25)";
+        g.shadowOffsetY = 2;
+        g.shadowBlur = 3;
+        g.fillText(a.glyph, 0, 0);
+        g.restore();
+      }
+      return c;
+    });
+    this.images = dressed;
+    const gl = this.gl;
+    if (gl && this.tex) {
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+      dressed.forEach((c, i) => {
+        gl.bindTexture(gl.TEXTURE_2D, this.tex[i]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+      });
+    }
+  }
+
   /** Loads everything once; safe to call repeatedly. Resolves false if assets are missing. */
   load() {
-    this._loading ??= this._load().then(() => (this.ready = true)).catch((e) => {
+    this._loading ??= this._load().then(() => { this.ready = true; this._applyOutfit(); }).catch((e) => {
       console.warn("[mochi] assets failed to load", e);
       return false;
     });
@@ -172,6 +217,7 @@ export class MochiEngine {
       load(BASE + SPRITE)
     ]);
     this.images = imgs;
+    this._plain = imgs;
     const gl = this.canvas.getContext("webgl", { alpha: true, premultipliedAlpha: true, antialias: false });
     this.gl = gl;
     if (!gl) {
@@ -182,8 +228,9 @@ export class MochiEngine {
         const W = this.canvas.width, H = this.canvas.height, S = mochiBoxCss() * this._dpr;
         const x = (W - S) / 2, y = (H - S) / 2;
         g.clearRect(0, 0, W, H);
-        g.globalAlpha = 1 - t; g.drawImage(imgs[s.a === 3 ? 0 : s.a], x, y, S, S);
-        g.globalAlpha = t; g.drawImage(imgs[s.b], x, y, S, S);
+        const im = this.images;
+        g.globalAlpha = 1 - t; g.drawImage(im[s.a === 3 ? 0 : s.a], x, y, S, S);
+        g.globalAlpha = t; g.drawImage(im[s.b], x, y, S, S);
         g.globalAlpha = 1;
       };
       return;

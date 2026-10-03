@@ -26,6 +26,8 @@ import { runEnding } from "./segments/Ending.js";
 import { runMochiEvent } from "./segments/MochiSegment.js";
 import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeEnd, runDressUp, runCatch, runDessertResult, tally } from "./segments/MochiPlay.js";
 import { runDecorate, runHideAndSeek } from "./segments/MochiRoom.js";
+import { outfitParts } from "./mochi/outfit.js";
+import { runCake, runInvite, runPinBow, runGift } from "./segments/MochiParty.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
@@ -79,8 +81,9 @@ new NoiseOverlay(document.getElementById("noise-overlay"));
 const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
 const faceGore = new FaceGore(document.getElementById("face-gore"));
 // What the player tells Mochi in Act I. It all comes back later.
-// outfit, caught and dessert come from Act II; room, friend and cornerFound from Act III
-const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null };
+// outfit, caught and dessert come from Act II; room, friend and cornerFound from Act III;
+// frosting, guests and blewOut from Act IV
+const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null, frosting: null, guests: null, blewOut: null };
 
 const reduceFlashBox = document.getElementById("reduce-flash-checkbox");
 reduceFlashBox.checked = settings.reduceFlashing;
@@ -362,11 +365,19 @@ async function runGame() {
         else if (step.kind === "pet") await runPet(ctx);
         else if (step.kind === "feed") await runFeed(ctx);
         else if (step.kind === "polaroid") await runPolaroid(ctx);
-        else if (step.kind === "dressup") { await runDressUp(ctx); ui.setHostOutfit(player.outfit); }
+        else if (step.kind === "dressup") {
+          await runDressUp(ctx);
+          ui.setHostOutfit(player.outfit);
+          mochi.setOutfit(outfitParts(player.outfit)); // she keeps it on in the gore scenes
+        }
         else if (step.kind === "catch") await runCatch(ctx);
         else if (step.kind === "dessert") await runDessertResult(ctx, quiz.getDossier());
         else if (step.kind === "decorate") await runDecorate(ctx);
         else if (step.kind === "hide") await runHideAndSeek(ctx);
+        else if (step.kind === "cake") await runCake(ctx);
+        else if (step.kind === "invite") await runInvite(ctx);
+        else if (step.kind === "pinbow") await runPinBow(ctx);
+        else if (step.kind === "gift") await runGift(ctx);
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");
