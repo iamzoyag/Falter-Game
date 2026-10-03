@@ -299,6 +299,8 @@ async function runGame() {
   if (lateBaseline) faceTracker.beginBaselineCapture();
   // dev only: ?act=2 starts at that act, for playtesting one act at a time
   const startAct = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("act")) || 1 : 1;
+  // dev only: &step=N also skips the first N steps of that act
+  let startStep = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("step")) || 0 : 0;
   if (startAct > 1) player.name ||= "friend";
   for (const stage of STAGES) {
     if ((stage.act ?? 1) < startAct) continue;
@@ -316,7 +318,9 @@ async function runGame() {
     }
 
     driftBase = { ...(cuteTheme?.warp || { tempo: 1, cents: 0, wobble: 0, muffle: 0 }) };
-    for (let si = 0; si < stage.steps.length; si++) {
+    const firstStep = startStep;
+    startStep = 0;
+    for (let si = firstStep; si < stage.steps.length; si++) {
       const step = stage.steps[si];
       const p = si / Math.max(1, stage.steps.length - 1);
       if (stage.drift) applyDrift(p);

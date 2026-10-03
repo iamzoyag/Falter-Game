@@ -202,7 +202,7 @@ export class MochiEngine {
 
   /** Loads everything once; safe to call repeatedly. Resolves false if assets are missing. */
   load() {
-    this._loading ??= this._load().then(() => { this.ready = true; this._applyOutfit(); }).catch((e) => {
+    this._loading ??= this._load().then(() => { this.ready = true; this._applyOutfit(); return true; }).catch((e) => {
       console.warn("[mochi] assets failed to load", e);
       return false;
     });
