@@ -16,6 +16,7 @@
 import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
 import { LINES, fillName, aiMochiLine } from "../mochi/MochiLines.js";
 import { settings } from "../settings.js";
+import { giggle } from "../mochi/Giggle.js";
 import { HEAD_ITEMS, NECK_ITEMS, outfitParts, accessoryHtml, describeOutfit } from "../mochi/outfit.js";
 import { QUESTIONS } from "../quiz/questions.js";
 
@@ -62,6 +63,8 @@ async function hide(v) {
 function say(v, text) {
   v.bubble.textContent = text || "";
   v.bubble.classList.toggle("show", !!text);
+  // now and then, when she's talking to you, she giggles
+  if (text && text !== "..." && !text.startsWith("(")) giggle.maybe(0.16);
 }
 
 /** Show the local line now; swap in the AI's if it arrives within `windowMs`. */

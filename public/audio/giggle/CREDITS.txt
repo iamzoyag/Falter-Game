@@ -1,0 +1,9 @@
+Mochi's giggles are short cuts from:
+
+"Cute Anime Girl Laughing Giggling (Many Variations) Free Sound Effect [Voiced By MagicalMysticVA]"
+by magicalmysticva, https://freesound.org/people/magicalmysticva/sounds/734049/
+licensed under Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+Changes: cut into seven short giggles (giggle-1 .. giggle-7), faded, loudness-normalised. In the game
+they're also slowed, pitched down, filtered, echoed, reversed and panned more and more as the acts go on
+(src/mochi/Giggle.js).

@@ -15,8 +15,8 @@
 //   ★ II   BONUS ROUND     nothing is wrong at all. dress-up, strawberry catch, "which dessert are you?"
 //   ★ III  MOCHI'S ROOM    decorate, "what kind of friend are you?", hide-and-seek. wrong in a way you can't name
 //   ★ IV   BIRTHDAY        cake + candles, invites (nobody comes), pin the bow, a sewing kit -> stitches
-//     V    WHERE WERE WE   (old act III for now) memory match, the "proper" test -> ears
-//     VI   LIGHTS OUT      (to build) flashlight, falling things -> eyes
+//   ★ V    WHERE WERE WE   memory (one pair never matches), a test she misquotes, your results, mochi says -> ears
+//     VI   LIGHTS OUT      (rest of the old act III for now) flashlight, falling things -> eyes
 //     VII  PHOTO BOOTH     (to build) 1-bit; the strip prints wrong
 //     VIII TEA PARTY       (old presence act for now)
 //     IX   RESULTS         (old interview for now) -> unzip -> ending
@@ -140,18 +140,41 @@ export const STAGES = [
     card: "none",
     title: "V. WHERE WERE WE ♡",
     subtitle: "",
-    // she's back, cute, and acts like nothing happened. The colour's gone out
-    // of everything and the song is broken. Blink, and she has stitches.
-    features: { beats: false, darkness: false, unblink: true, creep: true, figure: false, room: false, voice: false, subliminal: 2, hostHurt: true },
+    // After the stitches she's back, chirpy, as if nothing happened. The
+    // colour has gone out of everything and the song is broken. Blink, and
+    // her avatar has stitches. She plays memory (one pair is you; one pair
+    // never matches), gives you a "proper" personality test and repeats each
+    // answer back slightly wrong, shows you your results, then plays mochi
+    // says with your face. At the end she can't hear you -> ears.
+    features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true },
     steps: [
       { type: "pause", ms: 4200 },
       { type: "round", title: "round si\u0335x ♡", sub: "where were we?", glitch: true },
       { type: "talk", lines: "whereWereWe", mood: "off", flicker: "/mochi/stitches.webp" },
-      // placeholder until act V is rebuilt: the old bonus round's sharpest questions
-      "b3", "b4", "b6",
+      "b3", "b4",
+      { type: "play", kind: "memory" },
+      { type: "round", title: "a proper test ♡", sub: "mochi wants to know the real you" },
+      "p1", "p2", "p3", "p4", "p5",
+      { type: "play", kind: "results" },
+      "b6",
+      { type: "play", kind: "simon" },
+      { type: "talk", lines: "cantHear", mood: "off", flicker: "/mochi/stitches.webp" },
+      { type: "mochi", scene: "ears" }
+    ]
+  },
+  {
+    id: "lights",
+    act: 6,
+    look: 3,
+    card: "none",
+    title: "VI. LIGHTS OUT",
+    subtitle: "",
+    // placeholder until Lights Out is built: the rest of the old act III
+    // (the director wakes up, then the dark) -> eyes
+    features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, beats: true, voice: true, scriptedGlitch: true, smileClip: true },
+    steps: [
+      { type: "talk", lines: "lightsHello", mood: "off", flicker: "/mochi/ears.webp" },
       "q6", "q7", "q8",
-      // and now it stops being subtle
-      { type: "features", set: { beats: true, voice: true, scriptedGlitch: true, smileClip: true } },
       "q9", "q10",
       { type: "features", set: { darkness: true } },
       "q11", "q12",
@@ -167,8 +190,7 @@ export const STAGES = [
     title: "VIII. PRESENCE",
     subtitle: "you are not the only thing in this room.",
     features: { beats: true, darkness: true, unblink: true, creep: true, figure: true, room: true, voice: true, playerVoice: true, smileClip: true, faceGore: true },
-    // the ears scene lived after the mirror; parked here until act V is rebuilt
-    steps: [{ type: "mochi", scene: "ears" }, "q13", "q14", "q15", { type: "task", task: "closeEyes" }, "q16", "q17", "q18", "q19"]
+    steps: ["q13", "q14", "q15", { type: "task", task: "closeEyes" }, "q16", "q17", "q18", "q19"]
   },
   {
     id: "interview",

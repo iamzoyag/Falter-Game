@@ -1401,3 +1401,69 @@ body[data-act="3"] .mochi-acc { filter: saturate(0.55) drop-shadow(0 2px 2px rgb
 @keyframes pt-rattle { 0%, 70%, 100% { rotate: 0deg; } 76% { rotate: -3deg; } 84% { rotate: 3deg; } 92% { rotate: -1.5deg; } }
 .pt-present.open .pt-lid { translate: 40% -150%; rotate: 32deg; opacity: 0; }
 .pt-present.open .pt-sewing { opacity: 1; translate: 0 -62%; }
+
+/* ======================================================================
+   Act V: where were we (src/segments/MochiFaded.js), full screen, faded.
+   Dusty rose: the same shapes as before, the colour gone out of them.
+   ====================================================================== */
+.mochi-play.faded { padding: 3vh 4vw; color: #4a2a36; }
+.mochi-play.faded > .mp-bubble { font-size: clamp(1.2rem, 3.2vh, 2rem); max-width: min(860px, 86vw); }
+.mochi-play.memory, .mochi-play.simon, .mochi-play.results {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto 1fr;
+  align-items: center; justify-items: center; column-gap: 3vw;
+}
+.mochi-play.faded > .mp-bubble { grid-column: 1 / -1; align-self: start; }
+.mochi-play.faded > .mp-mochi-wrap { grid-column: 1; grid-row: 2; }
+.mochi-play.faded > .fd-grid, .mochi-play.faded > .fd-simon, .mochi-play.faded > .fd-result { grid-column: 2; grid-row: 2; }
+.mochi-play.faded > .mp-controls { display: none; }
+.mochi-play.memory .mp-mochi-body { --mochi-h: min(36vh, 24vw); }
+.mochi-play.results .mp-mochi-body { --mochi-h: min(48vh, 30vw); }
+.mochi-play.simon .mp-mochi-body { --mochi-h: min(58vh, 36vw); }
+
+/* memory */
+.fd-grid { display: grid; grid-template-columns: repeat(4, min(17vh, 12.5vw)); gap: min(1.8vh, 1.2vw); }
+.fd-card { aspect-ratio: 3 / 4; padding: 0; border: none; background: none; cursor: pointer; perspective: 900px; }
+.fd-inner { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.45s cubic-bezier(.4,1.3,.5,1); }
+.fd-card.up .fd-inner { transform: rotateY(180deg); }
+.fd-back, .fd-front {
+  position: absolute; inset: 0; border-radius: 1.6vh; backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border: 3px solid #9b6e7f; box-shadow: 0 0.6vh 0 #8a5d6e;
+}
+.fd-back { background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0 0.4vh, transparent 0.5vh) 0 0 / 2.4vh 2.4vh, #b98a9b; }
+.fd-back span { font-size: 6vh; color: #ead9de; }
+.fd-card:hover:not(.up) .fd-back { filter: brightness(1.06); }
+.fd-front { background: #f1e5e9; transform: rotateY(180deg); }
+.fd-front img { width: 100%; height: 100%; object-fit: cover; }
+.fd-front img.fd-mochi { object-fit: contain; padding: 8%; filter: saturate(0.55); }
+.fd-glyph { font-size: min(8vh, 6vw); filter: saturate(0.6); }
+.fd-card.matched .fd-front { box-shadow: 0 0 0 3px #f1e5e9, 0 0 2vh rgba(199, 106, 142, 0.6); }
+
+/* results */
+.fd-result {
+  width: min(680px, 52vw); padding: 3.4vh 3vw; border-radius: 3vh; background: #f1e5e9;
+  border: 4px solid #9b6e7f; box-shadow: 0 1vh 0 #8a5d6e;
+  opacity: 0; transform: scale(0.92); transition: opacity 0.4s, transform 0.5s cubic-bezier(.3,1.4,.5,1);
+}
+.fd-result.show { opacity: 1; transform: none; }
+.fd-result-top { text-align: center; font-size: clamp(1rem, 2.4vh, 1.35rem); color: #8a5d6e; }
+.fd-result-name { text-align: center; font-weight: 700; font-size: clamp(1.8rem, 6vh, 3.2rem); color: #b5617f; margin-bottom: 2vh; }
+.fd-row { display: grid; grid-template-columns: 12em 1fr 3.4em; align-items: center; gap: 1vw; margin: 1.3vh 0; font-size: clamp(0.95rem, 2.4vh, 1.35rem); }
+.fd-bar { height: 2.2vh; border-radius: 99px; background: #dcc7cf; overflow: hidden; }
+.fd-bar i { display: block; height: 100%; width: 0; background: #b5617f; border-radius: 99px; }
+.fd-result.show .fd-bar i { animation: fd-fill 1s cubic-bezier(.3,1,.5,1) var(--d) forwards; }
+@keyframes fd-fill { to { width: calc(var(--n) * 1%); } }
+.fd-row b { text-align: right; color: #8a3d5c; }
+.fd-result-note { text-align: center; margin: 2.4vh 0 0; color: #8a5d6e; font-size: clamp(0.9rem, 2.1vh, 1.15rem); }
+
+/* mochi says */
+.fd-simon { display: flex; flex-direction: column; align-items: center; gap: 2.4vh; position: relative; z-index: 4; }
+.fd-says { font-size: clamp(1.1rem, 3vh, 1.8rem); color: #8a5d6e; min-height: 1.4em; }
+.fd-cmd { font-weight: 700; font-size: clamp(2rem, 7vh, 4.4rem); color: #7a2f4f; text-align: center; min-height: 1.3em; text-shadow: 0 3px 0 #ead9de; }
+.fd-cmd.pop { animation: mp-hop 0.5s cubic-bezier(.3,1.6,.5,1); }
+.fd-cam { position: relative; width: min(30vh, 22vw); aspect-ratio: 1; }
+.fd-cam canvas { width: 100%; height: 100%; border-radius: 50%; display: block; filter: saturate(0.5) sepia(0.15); border: 4px solid #9b6e7f; box-sizing: border-box; }
+.fd-cam svg { position: absolute; inset: -6%; width: 112%; height: 112%; transform: rotate(-90deg); }
+.fd-cam circle { fill: none; stroke: #b5617f; stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 295.3; stroke-dashoffset: calc(295.3 * (1 - var(--p, 0))); transition: stroke-dashoffset 0.1s; }
+.mochi-play.simon .mp-mochi-wrap { transition: none; }
+.mochi-play.simon .mp-mochi-wrap.fd-closer { scale: 1.55; translate: 12vw 6vh; z-index: 3; }

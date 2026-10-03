@@ -70,10 +70,16 @@ are older acts parked in the slot they'll be replaced in.
    her blindfolded (she moves; then "boo!!"), and open the present she got
    herself: a sewing kit. "mochi should be quiet now ♡" → **stitches**, with
    the outfit you dressed her in still on.
-5. **V. WHERE WERE WE? ♡** (to rebuild; for now the old act III: faded
-   colours, broken song, city/battery, stitches when you blink, plus the old
-   "do you live alone? / is anyone in the room?" questions) → **eyes**.
-6. **VI. LIGHTS OUT** (to build).
+5. ★ **V. WHERE WERE WE? ♡** after the stitches she's back, chirpy, as if
+   nothing happened. The colour has gone out of everything (dusty rose).
+   Memory match: one pair is you (photos taken the moment you flip them);
+   one pair, Mochi and Mochi-with-stitches, never matches until the cute one
+   isn't cute anymore. A "proper" personality test she repeats back to you
+   slightly wrong ("so you're lonely ♡"), then your results. Mochi says, with
+   your face: when you close your eyes she has her stitches and comes closer.
+   At the end she asks you to say something, and she can't hear you → **ears**.
+6. **VI. LIGHTS OUT** (to build; for now the rest of the old act III: the
+   director wakes up, then the dark) → **eyes**.
 7. **VII. PHOTO BOOTH** (to build; replaces the mirror).
 8. **VIII. TEA PARTY** (for now: the old presence act, with **ears** at its start).
 9. **IX. RESULTS** (for now: the old interview) → **unzip**, then the ending.
@@ -104,12 +110,19 @@ behaviour mid-act), `pause`, `card: "none"`, `drift: true`, `songDrift`
   each event from them), and the polaroid, which returns at the very end
   with Mochi unzipped and your own face mutilated.
 - **Mochi events** (`src/segments/MochiSegment.js`) sit at every act break,
-  worst last: stitches (end of IV), eyes (end of V), ears (for now at the start of VIII), unzip (end of IX).
+  worst last: stitches (end of IV), ears (end of V), eyes (end of VI), unzip (end of IX).
+  The stitches scene only changes her mouth and cheek (`stitches-local.webp`,
+  masked in the shader); the rest of her stays exactly as she was.
   Each starts from cute Mochi + her song, then one wound plays out
   (`src/mochi/MochiEngine.js`, WebGL, Mochi is a cut-out on a full-screen
   transparent canvas) and only advances while the webcam says you're
   looking. Look away and it freezes and the drone swells. The finished
   wound holds ~5 s, then hard cut to black.
+- **Her giggle** (`src/mochi/Giggle.js`): now and then when she talks to
+  you, she giggles. The same few giggles all game; a slow "creep" value that
+  follows the acts makes them gradually slower, lower, duller, echoing, then
+  backwards underneath and behind you. Recordings CC BY 4.0, credited in
+  `public/audio/giggle/CREDITS.txt`.
 - **Injury sounds** are recorded CC0 foley from freesound.org
   (`public/audio/sfx/`, credits in `CREDITS.txt` there), played through
   `src/core/SampleBank.js`; the synthesised versions are the fallback.

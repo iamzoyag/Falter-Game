@@ -28,6 +28,8 @@ import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeE
 import { runDecorate, runHideAndSeek } from "./segments/MochiRoom.js";
 import { outfitParts } from "./mochi/outfit.js";
 import { runCake, runInvite, runPinBow, runGift } from "./segments/MochiParty.js";
+import { giggle } from "./mochi/Giggle.js";
+import { runMemory, runResults, runSimon } from "./segments/MochiFaded.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
@@ -168,6 +170,7 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
   await cuteTheme.load();
   cuteTheme.play({ fade: 2.5 });
   cuteSfx = new CuteSfx(audio.ctx, audio.master);
+  giggle.init(audio.ctx, audio.master); // her giggle; creepier, very slowly, as the acts go on
   samples = new SampleBank(audio.ctx, audio.master);
   samples.load(); // recorded gore sfx, in the background (synth fallback until they arrive)
   mochiAudio = new MochiAudio(audio.ctx, audio.master, cuteTheme, samples);
@@ -323,6 +326,7 @@ async function runGame() {
     for (let si = firstStep; si < stage.steps.length; si++) {
       const step = stage.steps[si];
       const p = si / Math.max(1, stage.steps.length - 1);
+      giggle.setProgress(stage.act ?? 1, p);
       if (stage.drift) applyDrift(p);
       else if (stage.songDrift) applySongDrift(stage.songDrift, p);
 
@@ -382,6 +386,9 @@ async function runGame() {
         else if (step.kind === "invite") await runInvite(ctx);
         else if (step.kind === "pinbow") await runPinBow(ctx);
         else if (step.kind === "gift") await runGift(ctx);
+        else if (step.kind === "memory") await runMemory(ctx);
+        else if (step.kind === "results") await runResults(ctx, quiz.getDossier(), QUESTIONS);
+        else if (step.kind === "simon") await runSimon(ctx);
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");
@@ -410,14 +417,16 @@ async function mochiReacts(question, entry, act, ctx, previous = null) {
   const dossier = director.getSummary().compactDossier;
   const special = previous
     ? repeatReaction(previous.chosenText, entry?.chosenText, player)
-    : act <= 2 ? specialReaction(question, optionIndex, { player, room: roomScanner, dossier }) : null;
+    : act <= 3 ? specialReaction(question, optionIndex, { player, room: roomScanner, dossier }) : null;
+  const quoted = !special && !!question.options?.[optionIndex]?.misquote;
   const local = special || answerReaction(question, optionIndex, act, player);
   ui.setMochiHostLine(local);
   cuteSfx?.[act <= 2 ? "pop" : "tick"]();
+  giggle.maybe(0.1);
   if (special === "...") ui.flickerHost("/mochi/stitches.webp", 70); // "would you miss her?" "probably not."
-  const hold = sleep(special ? 2600 : act <= 2 ? 1700 : 1100);
-  // the special lines are already personal; only the plain reactions go to the AI
-  const ai = special ? null : await Promise.race([
+  const hold = sleep(special || quoted ? 2800 : act <= 2 ? 1700 : 1100);
+  // the special lines (and the misquotes) are already personal; only the plain reactions go to the AI
+  const ai = special || quoted ? null : await Promise.race([
     aiMochiLine(ctx.aiClient, ctx.aiEnabled, act === 1 ? "answer" : "host", {
       act, name: player.name, snack: player.snack, question: question.prompt, answer: entry?.chosenText,
       localFallbackText: local, dossier: dossier.slice(-8)

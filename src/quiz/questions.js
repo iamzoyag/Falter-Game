@@ -300,6 +300,72 @@ const PARTY_QUESTIONS = [
   }
 ];
 
+// Act V's "proper" personality test (p1..p5): Big Five style statements.
+// After each answer she repeats it back to you, slightly wrong (`misquote`).
+// The results card (MochiFaded.runResults) reads p1..p3 too.
+const TEST_QUESTIONS = [
+  {
+    id: "p1",
+    callbackId: "talkative",
+    principle: "misquote: she restates your answer, slightly wrong",
+    prompt: "I see myself as someone who is talkative.",
+    options: [
+      { text: "Agree a lot.", expressionHint: "any", misquote: "so you talk a lot so it's never quiet ♡" },
+      { text: "Agree a little.", expressionHint: "any", misquote: "so you only talk to mochi ♡" },
+      { text: "Disagree a little.", expressionHint: "any", misquote: "so you don't have anyone to talk to ♡" },
+      { text: "Disagree a lot.", expressionHint: "any", misquote: "so you're lonely ♡" }
+    ]
+  },
+  {
+    id: "p2",
+    callbackId: "trusting",
+    principle: "misquote: she restates your answer, slightly wrong",
+    prompt: "I see myself as someone who is generally trusting.",
+    options: [
+      { text: "Agree a lot.", expressionHint: "any", misquote: "so you'd let anyone in ♡ even mochi" },
+      { text: "Agree a little.", expressionHint: "any", misquote: "so you trust mochi ♡" },
+      { text: "Disagree a little.", expressionHint: "any", misquote: "so you think someone's lying to you ♡" },
+      { text: "Disagree a lot.", expressionHint: "any", misquote: "so you think someone's watching you ♡" }
+    ]
+  },
+  {
+    id: "p3",
+    callbackId: "worries",
+    principle: "misquote: she restates your answer, slightly wrong",
+    prompt: "I see myself as someone who worries a lot.",
+    options: [
+      { text: "Agree a lot.", expressionHint: "any", misquote: "so you're scared right now ♡" },
+      { text: "Agree a little.", expressionHint: "any", misquote: "so you're a little scared of mochi ♡" },
+      { text: "Disagree a little.", expressionHint: "any", misquote: "so you're not scared of mochi ♡ good" },
+      { text: "Disagree a lot.", expressionHint: "any", misquote: "so nothing scares you ♡ ...yet" }
+    ]
+  },
+  {
+    id: "p4",
+    callbackId: "calm",
+    principle: "misquote: she restates your answer, slightly wrong",
+    prompt: "I see myself as someone who stays calm under pressure.",
+    options: [
+      { text: "Agree a lot.", expressionHint: "any", misquote: "so you're calm ♡ you blink a lot for someone so calm" },
+      { text: "Agree a little.", expressionHint: "any", misquote: "so you're mostly calm ♡ mostly" },
+      { text: "Disagree a little.", expressionHint: "any", misquote: "so you panic ♡ mochi will remember that" },
+      { text: "Disagree a lot.", expressionHint: "any", misquote: "so you'd run ♡ where would you go?" }
+    ]
+  },
+  {
+    id: "p5",
+    callbackId: "secrets",
+    principle: "misquote: she restates your answer, slightly wrong",
+    prompt: "I see myself as someone who keeps things to myself.",
+    options: [
+      { text: "Agree a lot.", expressionHint: "any", misquote: "so you have secrets ♡ mochi will find them" },
+      { text: "Agree a little.", expressionHint: "any", misquote: "so there's something you haven't told mochi ♡" },
+      { text: "Disagree a little.", expressionHint: "any", misquote: "so you'd tell mochi anything ♡" },
+      { text: "Disagree a lot.", expressionHint: "any", misquote: "so you'd tell mochi everything ♡ you already did" }
+    ]
+  }
+];
+
 // The old Act II "bonus round" (b1..b6), parked in the Birthday act for now. Still pink, still Mochi, still cute on the
 // surface, but each one leans a little further into the player's real life.
 // `special` hooks a reaction that uses something real (the clock, the room
@@ -382,6 +448,7 @@ export const QUESTIONS = [
   ...DESSERT_QUESTIONS,
   ...FRIEND_QUESTIONS,
   ...PARTY_QUESTIONS,
+  ...TEST_QUESTIONS,
   ...BONUS_QUESTIONS,
   {
     id: "q1",

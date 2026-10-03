@@ -140,6 +140,42 @@ export const LINES = {
   giftFix: "now mochi can fix anything ♡",
   giftTalkative: "mochi has been talking a lot today, hasn't she?",
   giftQuiet: "mochi should be quiet now ♡",
+  // Act V: where were we? (she's fine. mochi is fine.)
+  memAsk: "let's play a game!! a memory game ♡ mochi loves memories",
+  memRules: "find the pairs!! ♡",
+  memMatch: ["a match!! ♡", "you remembered ♡", "good memory, {name} ♡"],
+  memYou: "it's you!! ♡ mochi took those just now",
+  memMochiEarly: "not those ones. not yet ♡",
+  memMochiNo: ["hmm? those should match ♡", "try again ♡ they're the same. look closer"],
+  memMochiMatch: "there ♡ now they match",
+  resTitle: "your results ♡",
+  resDrum: "mochi added everything up...",
+  resNote: "based on everything you've told mochi. and everything you didn't ♡",
+  resSay: "mochi knows you better than you know yourself, {name} ♡",
+  resNotAlone: "...are you sure? ♡",
+  simonAsk: "let's play mochi says!! ♡",
+  simonRules: "only do it if mochi says so ♡ mochi is watching your face",
+  simonSays: "mochi says...",
+  simonSmile: "smile!! ♡",
+  simonSmileNo: "a real smile, {name} ♡ ...okay, that one's fine",
+  simonCantSee: "mochi can't see you very well ♡ that's okay",
+  simonGood: "so cute ♡",
+  simonTurn: "turn your head!!",
+  simonGood2: "good!! ♡",
+  simonClose: "close your eyes.",
+  simonGotcha: "hehe!! mochi didn't say ♡",
+  simonNotFooled: "good!! mochi didn't say ♡",
+  simonCloseReal: "close your eyes. and keep them closed ♡",
+  simonCount: ["one...", "two...", "three...", "four..."],
+  simonPeeked: "you peeked ♡ mochi saw",
+  simonOpen: "okay ♡ you can open them",
+  simonBlink: "don't blink ♡",
+  simonBlinked: "you blinked ♡ mochi saw that",
+  simonNoBlink: "wow!! ♡ your eyes must be so dry",
+  simonSpeak: "say \"i love you, mochi\" ♡",
+  simonLouder: "hm? mochi can't hear you...",
+  simonQuiet: "say it, {name}... mochi can't hear you",
+  simonLouderCmd: "louder ♡",
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
   // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
   hostAct3: [
@@ -163,6 +199,10 @@ export const TALK = {
   bonus: ["wait wait wait!!", "don't go yet, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
   // end of Act II (the bonus round): nothing's wrong, she just wants to keep playing
   bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
+  // start of Act VI (after the ears)
+  lightsHello: ["...", "hi {name} ♡", "mochi can't hear very well anymore. it's okay!! mochi can still see you ♡"],
+  // end of Act V, before the ears
+  cantHear: ["{name}?", "mochi can't hear you...", "why can't mochi hear you? ♡"],
   // start of Act IV, the birthday
   birthdayHello: ["it's mochi's birthday!! ♡", "you came, {name}!! mochi knew you would ♡"],
   // end of Act III (mochi's room), into the birthday
@@ -279,6 +319,7 @@ export function eventAfter(scene, player, dossier, { lookAways = 0, flinch = 0 }
 /** Mochi's reaction to an answer. */
 export function answerReaction(question, optionIndex, act, player) {
   const opt = question?.options?.[optionIndex];
+  if (opt?.misquote) return fill(opt.misquote, player); // Act V's test: she gets it slightly wrong
   if (act >= 3) return fill(pick(LINES.answerAct3), player);
   return fill(opt?.mochi || pick(LINES.answerGeneric), player);
 }
