@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 360" width="220" height="360">
+<rect x="26" y="338" width="30" height="18" rx="6" fill="#e3ab86" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="164" y="338" width="30" height="18" rx="6" fill="#e3ab86" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="12" y="34" width="196" height="308" rx="18" fill="#ffe1ec" stroke="#b0688a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="188" y="40" width="16" height="296" rx="8" fill="#f8c9dc"/>
+<rect x="2" y="14" width="216" height="34" rx="14" fill="#ffc4dc" stroke="#b0688a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="26" y="60" width="80" height="264" rx="12" fill="#fff2f7" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="114" y="60" width="80" height="264" rx="12" fill="#fff2f7" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="38" y="74" width="56" height="94" rx="10" fill="none" stroke="#f3b5cd" stroke-width="3"/>
+<rect x="126" y="74" width="56" height="94" rx="10" fill="none" stroke="#f3b5cd" stroke-width="3"/>
+<rect x="38" y="214" width="56" height="94" rx="10" fill="none" stroke="#f3b5cd" stroke-width="3"/>
+<rect x="126" y="214" width="56" height="94" rx="10" fill="none" stroke="#f3b5cd" stroke-width="3"/>
+<path d="M66 133.7 C45.2 120.7 54.3 107.05 66 116.15 C77.7 107.05 86.8 120.7 66 133.7 Z" fill="#ff9cc8" /><path d="M154 133.7 C133.2 120.7 142.3 107.05 154 116.15 C165.7 107.05 174.8 120.7 154 133.7 Z" fill="#ff9cc8" />
+<circle cx="98" cy="196" r="7" fill="#ffd76e" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="122" cy="196" r="7" fill="#ffd76e" stroke="#b0688a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M30 52 H190" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+</svg>

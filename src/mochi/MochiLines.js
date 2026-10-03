@@ -66,17 +66,19 @@ export const LINES = {
   },
   // Act III: mochi's room
   roomAsk: "this is mochi's room!! it's a little empty... help make it cosy? ♡",
-  roomHint: "(drag things into her room, or just tap them)",
+  roomHint: "drag things into her room, or just tap them ♡",
   roomReact: {
+    wardrobe: "so much room for bows!! ♡",
+    bookshelf: "mochi loves stories ♡",
     bed: "a bed!! nap time ♡",
     couch: "so squishy!! ♡",
+    toybox: "all mochi's toys!! ♡",
     plant: "mochi will water it every day ♡",
-    teddy: "a friend for mochi!! ♡",
-    gift: "ooh!! mochi's saving that one for later ♡",
-    frame: "so fancy ♡",
-    frameUs: "it's us!! from our picture ♡",
-    clock: "tick tock ♡",
-    books: "mochi loves stories ♡"
+    lamp: "so cosy ♡",
+    rug: "soft for mochi's paws ♡",
+    picture: "so fancy ♡",
+    pictureUs: "it's us!! from our picture ♡",
+    clock: "it has ears like mochi!! ♡"
   },
   roomMore: "mochi brought some of her toys too!! ♡",
   roomDone: ["it's perfect!! mochi loves it sooo much ♡", "best room ever!! thank you, {name} ♡"],

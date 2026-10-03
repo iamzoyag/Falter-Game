@@ -1004,7 +1004,6 @@ body[data-act="3"] .mochi-acc { filter: saturate(0.55) drop-shadow(0 2px 2px rgb
   will-change: transform; pointer-events: none; filter: drop-shadow(0 6px 6px rgba(120, 40, 80, 0.25));
 }
 .mp-basket.got { animation: mp-basket-got 0.22s ease-out; }
-@keyframes mp-basket-got { 50% { font-size: clamp(62px, 8.8vw, 92px); } }
 .mp-score {
   position: absolute; top: 18px; right: 22px; padding: 8px 16px; border-radius: 999px;
   background: #fff; border: 3px solid #ffb3d6; box-shadow: 0 4px 0 #ffb3d6; font-size: 1.2rem; color: #6b1d45;
@@ -1026,128 +1025,195 @@ body[data-act="3"] .mochi-acc { filter: saturate(0.55) drop-shadow(0 2px 2px rgb
 .mp-result-match b { color: #ff5fa8; }
 
 /* ======================================================================
-   Act III: Mochi's room (src/segments/MochiRoom.js)
+   Act III: Mochi's room (src/segments/MochiRoom.js), full screen.
    A pastel dollhouse: back wall, two side walls in perspective, a floor.
-   The back corners are a touch shadowed from the start, so the corner she
-   stands in during the last round of hide-and-seek was always that dim.
+   Sizes are in cqh (the room is a size container), so the furniture keeps
+   its proportions on any screen. The back-right corner is a touch shadowed
+   from the start, so the corner she stands in later was always that dim.
    ====================================================================== */
-.mochi-play.room { gap: 1.6vh; padding-top: 2vh; padding-bottom: 2vh; }
-.mr-bubble-slot {
-  flex: none; display: flex; align-items: flex-end; justify-content: center; width: 100%;
-  height: calc(clamp(1.1rem, 2.6vw, 1.6rem) * 2.6 + 30px);
-}
+@property --mochi-h { syntax: "<length>"; inherits: true; initial-value: 300px; }
+
+.mochi-play.room { padding: 0; gap: 0; --tray-h: clamp(120px, 19vh, 170px); }
 .mochi-play.room > .mp-mochi-wrap { display: none; }
 .mr-room {
-  position: relative;
-  width: min(820px, 94vw, calc((100vh - 320px) * 1.6));
-  aspect-ratio: 16 / 10;
-  container-type: inline-size;
-  border-radius: 22px;
+  position: absolute; inset: 0;
+  container-type: size;
   overflow: hidden;
-  border: 4px solid #ffb3d6;
-  box-shadow: 0 8px 0 #ffb3d6, 0 16px 30px rgba(180, 60, 120, 0.15);
   background: #ffe3ef;
-  flex: none;
   touch-action: none;
 }
-.mr-room > div { position: absolute; inset: 0; }
-.mr-ceiling { clip-path: polygon(0 0, 100% 0, 86% 8%, 14% 8%); background: #ffd3e6; }
+.mr-room { transition: bottom 0.6s cubic-bezier(.4,1.1,.5,1); }
+.mochi-play.decorate .mr-room { bottom: var(--tray-h); }
+.mochi-play.decorated .mr-item:not(.mr-fixed) { cursor: default; }
+.mr-room > .mr-ceiling, .mr-room > .mr-back, .mr-room > .mr-left, .mr-room > .mr-right, .mr-room > .mr-floor,
+.mr-room > .mr-lines, .mr-room > .mr-slots, .mr-room > .mr-things { position: absolute; inset: 0; }
+.mr-ceiling { clip-path: polygon(0 0, 100% 0, 88% 9%, 12% 9%); background: #ffd3e6; }
 .mr-back {
-  inset: 8% 14% 38% 14% !important;
+  inset: 9% 12% 36% 12% !important;
   background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.75) 0 0.45cqw, transparent 0.5cqw) 0 0 / 4.2cqw 4.2cqw,
-    repeating-linear-gradient(90deg, #ffe9f2 0 3cqw, #ffdcea 3cqw 6cqw);
+    radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 0.55cqh, transparent 0.6cqh) 0 0 / 5.4cqh 5.4cqh,
+    repeating-linear-gradient(90deg, #ffe9f2 0 3.6cqh, #ffdcea 3.6cqh 7.2cqh);
 }
 .mr-back::after { /* skirting board */
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.6cqw; background: #fff4f8; border-top: 0.3cqw solid #ffc4dd;
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2.2cqh; background: #fff4f8; border-top: 0.4cqh solid #ffc4dd;
 }
-.mr-left {
-  clip-path: polygon(0 0, 14% 8%, 14% 62%, 0 100%);
-  background: linear-gradient(90deg, #ffd9e8 0%, #ffd0e3 11%, #f4c0d5 14%), #ffd9e8;
+.mr-back::before { /* the back-right corner, always a little dim */
+  content: ""; position: absolute; right: 0; top: 30%; bottom: 0; width: 14%;
+  background: linear-gradient(270deg, rgba(150, 80, 110, 0.13), transparent);
 }
-.mr-right {
-  clip-path: polygon(100% 0, 86% 8%, 86% 62%, 100% 100%);
-  background: linear-gradient(270deg, #ffd9e8 0%, #ffd0e3 11%, #f4c0d5 14%), #ffd9e8;
-}
+.mr-left { clip-path: polygon(0 0, 12% 9%, 12% 64%, 0 100%); background: linear-gradient(90deg, #ffd9e8 0%, #ffd0e3 9%, #f4c0d5 12%); }
+.mr-right { clip-path: polygon(100% 0, 88% 9%, 88% 64%, 100% 100%); background: linear-gradient(270deg, #ffd9e8 0%, #ffd0e3 9%, #f1bbd1 12%); }
 .mr-floor {
-  clip-path: polygon(14% 62%, 86% 62%, 100% 100%, 0 100%);
+  clip-path: polygon(12% 64%, 88% 64%, 100% 100%, 0 100%);
   background:
-    radial-gradient(ellipse 9% 7% at 15% 63%, rgba(150, 80, 110, 0.16), transparent 100%),
-    radial-gradient(ellipse 9% 7% at 85% 63%, rgba(150, 80, 110, 0.16), transparent 100%),
-    repeating-linear-gradient(0deg, #f7d6c9 0 3.2cqw, #efc8ba 3.2cqw 3.4cqw),
+    radial-gradient(ellipse 8% 6% at 87% 64.5%, rgba(150, 80, 110, 0.16), transparent 100%),
+    repeating-linear-gradient(0deg, #f7d6c9 0 4.4cqh, #efc8ba 4.4cqh 4.7cqh),
     #f7d6c9;
 }
-.mr-things { z-index: 2; }
-.mr-window {
-  position: absolute; left: 56%; top: 14%; width: 22%; height: 40%;
-  background: linear-gradient(180deg, #bfe6ff, #e6f6ff);
-  border: 0.8cqw solid #fff; border-radius: 6cqw 6cqw 0.6cqw 0.6cqw;
-  box-shadow: 0 0.4cqw 0 #ffc4dd;
-}
-.mr-window span { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 47%, #fff 47% 53%, transparent 53%), linear-gradient(0deg, transparent 47%, #fff 47% 53%, transparent 53%); }
-.mr-window::before, .mr-window::after { /* curtains */
-  content: ""; position: absolute; top: -1.2cqw; bottom: -1.6cqw; width: 30%;
-  background: repeating-linear-gradient(90deg, #ff9cc8 0 1cqw, #ffb3d6 1cqw 2cqw);
-  border-radius: 0 0 2cqw 2cqw;
-}
-.mr-window::before { left: -1.6cqw; }
-.mr-window::after { right: -1.6cqw; }
+.mr-lines { width: 100%; height: 100%; pointer-events: none; }
+.mr-lines polyline { fill: none; stroke: #f0b6cc; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.mr-door { fill: #f3cdb3; stroke: #b0688a; stroke-width: 3; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.mr-door-panel { fill: #f8dccb; stroke: #d9a383; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.mr-knob { fill: #ffd76e; stroke: #b0688a; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 
+/* furniture */
+.mr-things { z-index: 2; }
 .mr-item {
   position: absolute;
-  transform: translate(-50%, -88%);
-  font-size: calc(var(--s) * var(--d) * 1cqw);
-  line-height: 1;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: grab;
+  height: calc(var(--h) * 100cqh);
+  transform: translate(-50%, -100%);
+  transform-origin: 50% 100%;
+  transition: left 0.35s cubic-bezier(.3,1.3,.5,1), top 0.35s cubic-bezier(.3,1.3,.5,1), height 0.35s, opacity 0.25s, scale 0.25s;
+  filter: drop-shadow(0 0.9cqh 0.7cqh rgba(140, 60, 100, 0.18));
   user-select: none;
   touch-action: none;
-  filter: drop-shadow(0 0.4cqw 0.3cqw rgba(120, 50, 80, 0.2));
 }
-.mr-item.fixed { cursor: default; }
+.mr-item.flat { transform: translate(-50%, -50%); filter: none; }
+.mr-item > img { display: block; height: 100%; width: auto; pointer-events: none; }
+.mr-item > .mr-photo { position: absolute; object-fit: cover; }
+.mochi-play.decorate .mr-item:not(.mr-fixed) { cursor: grab; }
+.mochi-play.decorate .mr-item:not(.mr-fixed):hover { scale: 1.03; }
 .mochi-play.hideseek .mr-item { cursor: pointer; }
-.mr-item.dragging { cursor: grabbing; filter: drop-shadow(0 1.4cqw 1cqw rgba(120, 50, 80, 0.3)); transform: translate(-50%, -94%) scale(1.06); z-index: 500 !important; }
-.mr-glyph { display: block; }
-.mr-photo { display: block; width: 1em; height: 0.82em; background: #fff; padding: 0.06em; border: 0.05em solid #e9b2c9; box-sizing: border-box; border-radius: 0.04em; }
-.mr-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.mr-drop { animation: mr-drop 0.35s cubic-bezier(.3,1.6,.5,1); }
-@keyframes mr-drop { 0% { transform: translate(-50%, -100%) scale(1.12); } 100% { transform: translate(-50%, -88%); } }
+.mochi-play.hideseek .mr-valance, .mochi-play.hideseek .mr-window { cursor: default; }
+.mr-item.lifted { opacity: 0.3; }
+.mr-item.mr-leaving { opacity: 0; scale: 0.6; }
+.mr-ghost { z-index: 900 !important; pointer-events: none; opacity: 0.9; filter: drop-shadow(0 2.4cqh 1.6cqh rgba(140, 60, 100, 0.3)); transition: none; }
+.mr-pop { animation: mr-pop 0.45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes mr-pop { 0% { scale: 0.55; } 100% { scale: 1; } }
 .mr-wiggle { animation: mr-wiggle 0.45s ease-in-out; }
-@keyframes mr-wiggle { 25% { transform: translate(-50%, -88%) rotate(-7deg); } 75% { transform: translate(-50%, -88%) rotate(7deg); } }
+@keyframes mr-wiggle { 25% { rotate: -4deg; } 75% { rotate: 4deg; } }
 
-.mr-mochi { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
-.mr-mochi .mp-mochi { filter: drop-shadow(0 0.8cqw 0.8cqw rgba(160, 60, 110, 0.22)); }
+/* the window and curtains */
+.mr-curtain { transform-origin: 50% 0; transition: scale 0.5s cubic-bezier(.3,1.3,.5,1), translate 0.5s cubic-bezier(.3,1.3,.5,1); }
+.mr-curtain.r.bulge { scale: 1.15 1; }
+.mr-curtain.r.open { scale: 0.5 1; translate: 32% 0; }
+.mr-sway { animation: mr-sway 1.1s ease-in-out; }
+@keyframes mr-sway { 25% { rotate: 1.6deg; } 60% { rotate: -1.2deg; } }
+
+/* spots, shown while dragging */
+.mr-slot {
+  position: absolute; width: 22cqh; height: 6cqh; transform: translate(-50%, -50%);
+  border: 0.45cqh dashed #ff8cc2; border-radius: 50%; background: rgba(255, 255, 255, 0.35);
+  opacity: 0; transition: opacity 0.2s, scale 0.2s, background 0.2s; pointer-events: none; z-index: 1;
+}
+.mr-slot.wall { width: 14cqh; height: 14cqh; border-radius: 2cqh; transform: translate(-50%, -100%); }
+.mr-slot.on { opacity: 1; animation: mr-slot-pulse 1.2s ease-in-out infinite; }
+.mr-slot.on.taken { border-color: #b9a3ea; }
+.mr-slot.on.near { background: rgba(255, 140, 194, 0.35); scale: 1.12; animation: none; }
+@keyframes mr-slot-pulse { 50% { scale: 1.06; } }
+
+/* Mochi in the room */
+.mr-mochi {
+  position: absolute; transform: translate(-50%, -100%); pointer-events: none;
+  transition: left 0.9s cubic-bezier(.4,1.2,.5,1), top 0.9s cubic-bezier(.4,1.2,.5,1), --mochi-h 0.9s cubic-bezier(.4,1.2,.5,1);
+}
+.mr-mochi .mp-mochi-body { --mochi-h: inherit; }
+.mr-mochi .mp-mochi { filter: drop-shadow(0 1cqh 1cqh rgba(160, 60, 110, 0.22)); }
 .mr-hop .mp-mochi-body { animation: mp-hop 0.5s cubic-bezier(.3,1.6,.5,1), mochi-bob 2.6s ease-in-out 0.5s infinite; }
-.mr-popout { animation: mr-popout 0.45s cubic-bezier(.3,1.6,.5,1); }
-@keyframes mr-popout { from { transform: translate(-50%, -40%) scale(0.5); opacity: 0; } }
-.mr-corner { pointer-events: auto; cursor: pointer; }
+.mr-hiding { pointer-events: auto; cursor: pointer; }
+.mr-hiding.side .mp-mochi-body { animation: none; rotate: 7deg; transform-origin: 20% 100%; }
+.mr-hiding.feet .mp-mochi-body { animation: none; }
+.mr-fidget .mp-mochi { animation: mr-wiggle 0.5s ease-in-out; transform-origin: 50% 100%; }
+.mr-corner { pointer-events: auto; cursor: pointer; transition: none; }
 .mr-corner .mp-mochi-body { animation: none; } /* she doesn't bob. she just stands there */
-.mr-corner .mp-mochi { filter: brightness(0.95) drop-shadow(0 0.4cqw 0.5cqw rgba(120, 50, 80, 0.2)); }
-.mr-peek { position: absolute; transform: translateX(-50%); clip-path: inset(0 0 70% 0); pointer-events: auto; cursor: pointer; animation: mr-peek 2.2s ease-in-out infinite; }
-@keyframes mr-peek { 0%, 100% { translate: 0 0; } 50% { translate: 0 6%; } }
+.mr-corner .mp-mochi { filter: brightness(0.96) drop-shadow(0 0.6cqh 0.6cqh rgba(120, 50, 80, 0.2)); }
 
+/* the speech bubble floats over the top of the room */
+.mochi-play.room .mr-bubble {
+  position: absolute; top: 2.4cqh; left: 50%; translate: -50% 0; z-index: 800;
+  font-size: clamp(1.2rem, 4.2cqh, 2.1rem); max-width: min(760px, 80vw); padding: 0.55em 1.1em;
+}
+
+/* hide-and-seek countdown */
 .mr-cover {
-  position: absolute !important; inset: 0; z-index: 600;
+  position: absolute; inset: 0; z-index: 950;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: radial-gradient(circle at 50% 45%, #ffc9e0, #ff9cc8);
   color: #fff; opacity: 0; transition: opacity 0.4s;
 }
 .mr-cover.on { opacity: 1; }
-.mr-count { font-size: 14cqw; font-weight: 700; text-shadow: 0 0.6cqw 0 #ff5fa8; line-height: 1; }
-.mr-cover small { font-size: 2.4cqw; margin-top: 1cqw; }
+.mr-count { font-size: 30vh; font-weight: 700; text-shadow: 0 1vh 0 #ff5fa8; line-height: 1; }
+.mr-cover small { font-size: 3.4vh; margin-top: 1vh; }
 .mr-count-pop { animation: mp-hop 0.5s cubic-bezier(.3,1.6,.5,1); }
 .mr-float {
-  position: absolute; z-index: 700; transform: translate(-50%, -100%);
-  font: 600 2.2cqw 'Fredoka', system-ui, sans-serif; color: #ff5fa8; text-shadow: 0 2px 0 #fff;
+  position: absolute; z-index: 850; transform: translate(-50%, -100%);
+  font: 700 3.6cqh 'Fredoka', system-ui, sans-serif; color: #ff5fa8; text-shadow: 0 2px 0 #fff, 0 0 8px #fff;
   pointer-events: none; animation: mr-float 1.2s ease-out forwards; white-space: nowrap;
 }
 @keyframes mr-float { to { transform: translate(-50%, -260%); opacity: 0; } }
 
-.mr-tray { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: min(820px, 96vw); }
-.mr-tray-item { padding: 4px 10px; min-width: 70px; touch-action: none; }
-.mr-tray-item span { font-size: 1.6rem; }
-.mr-tray-item.used { opacity: 0.35; box-shadow: none; transform: none; }
-.mochi-play.room .mp-controls { gap: 8px; min-height: 0; }
-.mochi-play.room .mp-hint { font-size: 0.85rem; }
+/* the tray along the bottom while decorating */
+.mochi-play .mp-controls.mr-tray-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--tray-h);
+  flex-direction: row; align-items: center; justify-content: center; gap: 2vw;
+  padding: 0 2vw; background: #fff6fa; border-top: 4px solid #ffb3d6; box-shadow: 0 -6px 0 rgba(255, 179, 214, 0.35);
+  z-index: 5;
+}
+.mr-tray { display: flex; gap: 0.6vw; align-items: stretch; overflow-x: auto; padding: 6px 2px; }
+.mr-card {
+  flex: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px;
+  width: min(calc(var(--tray-h) * 0.64), calc((100vw - 380px) / 10.8)); height: calc(var(--tray-h) * 0.78);
+  background: #fff; border: 3px solid #ffb3d6; border-radius: 18px; box-shadow: 0 4px 0 #ffb3d6;
+  padding: 8px 6px 6px; cursor: grab; touch-action: none; user-select: none;
+  font: 600 clamp(0.75rem, 1.6vh, 0.95rem) 'Fredoka', system-ui, sans-serif; color: #6b1d45;
+  transition: transform 0.15s, opacity 0.2s;
+}
+.mr-card img { flex: 1; min-height: 0; max-width: 100%; object-fit: contain; pointer-events: none; }
+.mr-card:hover { transform: translateY(-4px) rotate(-2deg); }
+.mr-card.used { opacity: 0.38; box-shadow: none; }
+.mr-tray-side { flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.mr-tray-side .mp-hint { font-size: clamp(0.85rem, 1.8vh, 1.05rem); max-width: 16em; text-align: center; }
+.mr-tray-side .btn-primary { font-size: clamp(1.05rem, 2.4vh, 1.35rem); padding: 14px 30px; }
+.mr-done:disabled { opacity: 0.5; box-shadow: none; }
+body[data-act="3"] .mochi-acc { filter: saturate(0.55) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3)); }
+
+/* ======================================================================
+   Act II, bigger: the bonus-round games use the whole screen
+   ====================================================================== */
+.mochi-play.dressup, .mochi-play.dessert {
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr;
+  align-items: center; justify-items: center; column-gap: 3vw; padding: 4vh 5vw;
+}
+.mochi-play.dressup > .mp-bubble, .mochi-play.dessert > .mp-bubble { grid-column: 1 / -1; font-size: clamp(1.2rem, 3vh, 2rem); max-width: min(820px, 86vw); }
+.mochi-play.dressup > .mp-mochi-wrap, .mochi-play.dessert > .mp-mochi-wrap { grid-column: 1; grid-row: 2; }
+.mochi-play.dressup > .mp-controls, .mochi-play.dessert > .mp-controls { grid-column: 2; grid-row: 2; }
+.mochi-play.dressup .mp-mochi-body { --mochi-h: min(68vh, 44vw); }
+.mochi-play.dessert .mp-mochi-body { --mochi-h: min(58vh, 40vw); }
+.mochi-play.dressup .mp-controls { gap: 2.4vh; }
+.mp-dress-row { max-width: 44vw; gap: 1vw; }
+.mp-dress-label { font-size: clamp(1rem, 2.4vh, 1.4rem); }
+.mp-dress { padding: 1vh 1.2vw; min-width: min(9vw, 130px); border-radius: 22px; }
+.mp-dress span { font-size: clamp(2rem, 5.4vh, 3.4rem); }
+.mp-dress small { font-size: clamp(0.85rem, 1.9vh, 1.1rem); }
+.mp-dress-done { font-size: clamp(1.1rem, 2.6vh, 1.5rem) !important; padding: 1.6vh 2.6vw !important; }
+.mochi-play.catch .mp-mochi-body { --mochi-h: min(30vh, 40vw); }
+.mochi-play.catch > .mp-bubble { font-size: clamp(1.2rem, 3vh, 2rem); }
+.mp-berry { font-size: clamp(42px, 6.4vh, 72px); }
+.mp-basket { font-size: clamp(90px, 15vh, 160px); bottom: 3vh; }
+@keyframes mp-basket-got { 50% { scale: 1.12; } }
+.mp-score { font-size: clamp(1.3rem, 3.4vh, 2rem); padding: 10px 22px; }
+.mochi-play.dessert .mp-result { width: min(640px, 42vw); padding: 3vh 2.4vw 2.6vh; }
+.mochi-play.dessert .mp-result-top, .mochi-play.dessert .mp-result-you, .mochi-play.dessert .mp-result-match { font-size: clamp(1rem, 2.3vh, 1.35rem); }
+.mochi-play.dessert .mp-result-glyph { font-size: clamp(4rem, 13vh, 8rem); }
+.mochi-play.dessert .mp-result-name { font-size: clamp(2rem, 6.6vh, 3.6rem); }
+.mochi-play.dessert .mp-result-blurb { font-size: clamp(1rem, 2.4vh, 1.4rem); }
