@@ -178,6 +178,74 @@ const DESSERT_QUESTIONS = [
   }
 ];
 
+// Act III "what kind of friend are you?" (f1..f5), asked in Mochi's room.
+// Each option counts towards a friend type (protector / listener /
+// sunshine / wanderer); MochiPlay.tally() picks the winner for her line at
+// the end of the act. One reaction (f4, "we'd be fine") is a hair too
+// attached. That's as far as Act III goes.
+const FRIEND_QUESTIONS = [
+  {
+    id: "f1",
+    callbackId: "three_am_call",
+    principle: "rapport (friend quiz)",
+    prompt: "Your friend calls you at 3am. You...",
+    options: [
+      { text: "Pick up on the first ring.", friend: "protector", expressionHint: "any", mochi: "mochi knew you would ♡" },
+      { text: "Pick up and just listen.", friend: "listener", expressionHint: "any", mochi: "that's the best thing you can do ♡" },
+      { text: "Pick up and make them laugh.", friend: "sunshine", expressionHint: "any", mochi: "hehe!! even at 3am ♡" },
+      { text: "Call back in the morning.", friend: "wanderer", expressionHint: "any", mochi: "sleep is important too ♡" }
+    ]
+  },
+  {
+    id: "f2",
+    callbackId: "show_love",
+    principle: "rapport (friend quiz)",
+    prompt: "How do you show someone you love them?",
+    options: [
+      { text: "I just show up. Always.", friend: "protector", expressionHint: "any", mochi: "that's the best kind of love ♡" },
+      { text: "Quality time. Phones away.", friend: "listener", expressionHint: "any", mochi: "mochi loves quality time with you ♡" },
+      { text: "Silly gifts and memes.", friend: "sunshine", expressionHint: "any", mochi: "send mochi memes!! ♡" },
+      { text: "Giving them space to be themselves.", friend: "wanderer", expressionHint: "any", mochi: "so thoughtful, {name} ♡" }
+    ]
+  },
+  {
+    id: "f3",
+    callbackId: "group_photo",
+    principle: "rapport (friend quiz)",
+    prompt: "In a group photo, where are you?",
+    options: [
+      { text: "Next to whoever looks left out.", friend: "protector", expressionHint: "any", mochi: "aww, {name} ♡" },
+      { text: "I'm the one taking it.", friend: "listener", expressionHint: "any", mochi: "the photographer!! ♡" },
+      { text: "Front and centre, pulling a face.", friend: "sunshine", expressionHint: "any", mochi: "hehe!! mochi wants to see ♡" },
+      { text: "I wandered off. Nobody noticed.", friend: "wanderer", expressionHint: "any", mochi: "mochi would notice ♡" }
+    ]
+  },
+  {
+    id: "f4",
+    callbackId: "friend_moves_away",
+    principle: "rapport (friend quiz), one hair too attached",
+    prompt: "Your best friend moves far away. You...",
+    options: [
+      { text: "Visit as often as I can.", friend: "protector", expressionHint: "any", mochi: "road trip!! ♡" },
+      { text: "Call them every night.", friend: "listener", expressionHint: "any", mochi: "every single night ♡" },
+      { text: "Send a care package with a hundred notes.", friend: "sunshine", expressionHint: "any", mochi: "a hundred!! mochi wants one ♡" },
+      { text: "We'd be fine. Real friends don't need to talk every day.", friend: "wanderer", expressionHint: "any", mochi: "mochi wouldn't be fine ♡ but okay!!" }
+    ]
+  },
+  {
+    id: "f5",
+    callbackId: "bracelet",
+    principle: "rapport (friend quiz)",
+    prompt: "Last one!! Pick a friendship bracelet colour.",
+    options: [
+      { text: "Red.", friend: "protector", expressionHint: "any", mochi: "red!! mochi's making you one ♡" },
+      { text: "Blue.", friend: "listener", expressionHint: "any", mochi: "blue!! mochi's making you one ♡" },
+      { text: "Pink. Obviously.", friend: "sunshine", expressionHint: "any", mochi: "pink!! the best colour ♡" },
+      { text: "Green.", friend: "wanderer", expressionHint: "any", mochi: "green!! mochi's making you one ♡" }
+    ]
+  }
+];
+
 // The old Act II "bonus round" (b1..b6), parked in the Birthday act for now. Still pink, still Mochi, still cute on the
 // surface, but each one leans a little further into the player's real life.
 // `special` hooks a reaction that uses something real (the clock, the room
@@ -258,6 +326,7 @@ const BONUS_QUESTIONS = [
 export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
   ...DESSERT_QUESTIONS,
+  ...FRIEND_QUESTIONS,
   ...BONUS_QUESTIONS,
   {
     id: "q1",

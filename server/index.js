@@ -59,7 +59,7 @@ app.post("/api/beat", async (req, res) => {
 app.post("/api/mochi", async (req, res) => {
   try {
     const b = req.body || {};
-    const moments = ["answer", "greet", "pet", "feed", "polaroid", "dressup", "catch", "dessert", "event-before", "event-after", "host"];
+    const moments = ["answer", "greet", "pet", "feed", "polaroid", "dressup", "catch", "dessert", "decorate", "hide", "event-before", "event-after", "host"];
     if (!moments.includes(b.moment)) return res.status(400).json({ error: "bad moment" });
     const result = await generateMochiLine({
       moment: b.moment,

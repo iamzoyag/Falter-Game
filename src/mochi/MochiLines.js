@@ -5,7 +5,17 @@
 // (it sees their name, snack, answers so far) and it replaces the local line
 // only if it comes back in time. Nothing ever waits on the network.
 
-const fill = (text, player) => text.replace(/\{name\}/g, player?.name || "friend");
+// what kind of friend the Act III quiz says they are (f1..f5, see questions.js)
+export const FRIEND_LABELS = {
+  protector: "the protector friend",
+  listener: "the listener friend",
+  sunshine: "the sunshine friend",
+  wanderer: "the free-spirit friend"
+};
+
+const fill = (text, player) => text
+  .replace(/\{name\}/g, player?.name || "friend")
+  .replace(/\{friend\}/g, FRIEND_LABELS[player?.friend] || "the best kind of friend");
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
 // ---------------------------------------------------------------- local lines
@@ -54,6 +64,31 @@ export const LINES = {
     cinnamon: "warm and sweet!! mochi could tell from the start ♡",
     brulee: "crème brûlée!! so fancy, {name} ♡"
   },
+  // Act III: mochi's room
+  roomAsk: "this is mochi's room!! it's a little empty... help make it cosy? ♡",
+  roomHint: "(drag things into her room, or just tap them)",
+  roomReact: {
+    bed: "a bed!! nap time ♡",
+    couch: "so squishy!! ♡",
+    plant: "mochi will water it every day ♡",
+    teddy: "a friend for mochi!! ♡",
+    gift: "ooh!! mochi's saving that one for later ♡",
+    frame: "so fancy ♡",
+    frameUs: "it's us!! from our picture ♡",
+    clock: "tick tock ♡",
+    books: "mochi loves stories ♡"
+  },
+  roomMore: "mochi brought some of her toys too!! ♡",
+  roomDone: ["it's perfect!! mochi loves it sooo much ♡", "best room ever!! thank you, {name} ♡"],
+  hideAsk: "let's play hide-and-seek!! mochi hides, you find her ♡",
+  hideClose: "close your eyes and count!! ♡",
+  hideReady: "ready or not!! ♡",
+  hideWhere: "where's mochi? ♡",
+  hideNot: ["not here~ ♡", "nope!! ♡", "hehe~ ♡", "cold, cold!! ♡"],
+  hideFound: ["you found me!! one more ♡", "you're too good at this!! last one ♡"],
+  hideCall: "...{name}?",
+  hideFoundYou: "found you ♡",
+  hideAfter: ["hehe!! mochi is the best at hide-and-seek ♡", "okay!! a few more questions ♡"],
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
   // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
   hostAct3: [
@@ -76,7 +111,9 @@ export const TALK = {
   // start of Act II, after the fake ending
   bonus: ["wait wait wait!!", "don't go yet, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
   // end of Act II (the bonus round): nothing's wrong, she just wants to keep playing
-  bonusDone: ["that was the best bonus round ever!! ♡", "okay okay... mochi has just a few more questions. is that okay? ♡", "yay!! ♡"],
+  bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
+  // end of Act III (mochi's room), into the birthday
+  roomBye: ["you're {friend}, {name}!! mochi could tell ♡", "oh!! oh!! and guess what...", "it's mochi's birthday soon!! you'll come to her party, right? ♡"],
   // end of the Birthday act, right before the stitches
   quiet: ["mochi has been talking a lot, hasn't she?", "...", "mochi should be quiet now ♡"],
   // start of Act III: as if nothing happened
