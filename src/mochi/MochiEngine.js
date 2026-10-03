@@ -11,9 +11,10 @@
 // src/segments/MochiSegment.js.
 
 const BASE = "/mochi/";
-const IMAGES = ["cute.webp", "stitches.webp", "ears.webp", "cute-noears.webp", "eyes.webp", "unzip.webp"]; // 3 = cute with ears painted out
+// stitches-local = cute Mochi with only the stitched mouth, cheek and blood mark (from stitches.webp)
+const IMAGES = ["cute.webp", "stitches-local.webp", "ears.webp", "cute-noears.webp", "eyes.webp", "unzip.webp"]; // 3 = cute with ears painted out
 const FLOWS = ["stitches", "ears", "eyes", "unzip"].flatMap((n) => [`flow-${n}-ab.png`, `flow-${n}-ba.png`]);
-const MASKS = ["mask-stitches.png", "mask-ears.png", "mask-eyes.png", "mask-unzip.png"];
+const MASKS = ["mask-stitches-local.png", "mask-ears.png", "mask-eyes.png", "mask-unzip.png"];
 const SPRITE = "ear-sprite.webp";
 const EARS = { R: { p: [0.6725, 0.2793], a: [0.7887, -0.6148] }, L: { p: [0.3913, 0.2839], a: [-0.7506, -0.6608] } };
 
@@ -37,6 +38,8 @@ const VS = "attribute vec2 p;varying vec2 vr;void main(){vr=p*.5+.5;vr.y=1.-vr.y
 // All colours are premultiplied by alpha.
 // kinds: 1 stitches (needle sweep), 2 ears (rip sprite), 3 eyes (sockets bleed outward), 4 unzip (hole tears open)
 // Masks for kinds 3 and 4: R = wound, G = reveal order (0 first .. 1 last).
+// Mask for kind 1: R = where she changes (mouth, cheek, blood mark), feathered.
+// Nothing outside it moves or changes colour.
 const FS = `precision highp float;varying vec2 vr;
 uniform float zoom;uniform vec2 ctr;uniform vec2 box;
 uniform sampler2D A,B,FAB,FBA,SP,DM;
@@ -74,7 +77,8 @@ void main(){
   float g=kind<1.5?smoothstep(.15,1.,t):(kind<2.5?smoothstep(.55,1.,t):t);
   vec2 fab=(texture2D(FAB,v).rg-.5)*400./768.;
   vec2 fba=(texture2D(FBA,v).rg-.5)*400./768.;
-  vec2 ua=uv+g*fba, ub=uv+(1.-g)*fab;
+  float loc=kind<1.5?texture2D(DM,v).r:1.;
+  vec2 ua=uv+g*fba*loc, ub=uv+(1.-g)*fab*loc;
   if(kind>2.5) ub=uv;
   vec4 a=texture2D(A,ua)*inside(ua), b=texture2D(B,ub)*inside(ub);
   float d=texture2D(DM,v).r;
@@ -84,7 +88,7 @@ void main(){
     float tt=clamp((t-.12)/.8,0.,1.)*1.08;
     float q=floor(o*10.)/10.;
     wr=1.-smoothstep(0.,.025,q-tt);
-    d*=smoothstep(.36,.42,v.x)*(1.-smoothstep(.76,.80,v.x))*smoothstep(.44,.5,v.y)*(1.-smoothstep(.70,.76,v.y));
+    d=1.;
   } else if(kind<2.5){
     float o=clamp((v.y-.25)/.45,0.,1.)+(n(v*11.)-.5)*.16;
     float tt=clamp((t-.55)/.45,0.,1.)*1.2;
@@ -100,7 +104,7 @@ void main(){
     d=smoothstep(.2,.55,mk.r);
     rimK=rim*d;
   }
-  float w=mix(g,wr,d);
+  float w=kind<1.5?wr*loc:mix(g,wr,d);
   vec4 c=mix(a,b,w);
   c.rgb=mix(c.rgb,vec3(.42,.015,.04)*c.a,clamp(rimK,0.,1.)*.75);
   if(rip>.5){
@@ -108,7 +112,7 @@ void main(){
     vec4 sr=ear(v,pR,aR,1.); c=sr+c*(1.-sr.a);
     c.rgb=mix(c.rgb,c.rgb*vec3(1.,.55,.55),snap*.5);
   }
-  c.rgb=mix(c.rgb,c.rgb*vec3(1.0,.72,.74),prog*.6);
+  c.rgb=mix(c.rgb,c.rgb*vec3(1.0,.72,.74),prog*(kind<1.5?0.:.6));
   c.rgb+=(h(vr*700.+time)-.5)*.05*(.3+prog)*c.a;
   gl_FragColor=clamp(c,0.,1.);
 }`;
