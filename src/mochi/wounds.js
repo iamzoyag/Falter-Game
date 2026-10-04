@@ -1,27 +1,33 @@
-// What Mochi looks like by now. Her wounds stay on her (see
-// tools/make_wound_images.py): each image is cute Mochi plus every wound so
-// far. Scenes: stitches end act IV, ears end act V, eyes end act VI, unzip
-// is the last (act IX).
+// Mochi's injuries happen one at a time (each scene starts from cute Mochi).
+// Scenes: stitches ends act IV, ears ends act V, eyes ends act VI, unzip is
+// the last (act IX). These pick the right single-wound image for a moment in
+// the story; WOUNDS_ALL has every injury at once (the flash at the end of
+// each scene, and the ending's polaroid).
 
-const W = (n) => `/mochi/wounds-${n}.webp`;
-const STATES = [
-  { after: 4, url: W("stitches") }, // from act V on
-  { after: 5, url: W("ears") },     // from act VI on
-  { after: 6, url: W("eyes") },     // from act VII on
-  { after: 9, url: W("unzip") }     // only at the very end
+const IMG = {
+  stitches: "/mochi/stitches-local.webp",
+  ears: "/mochi/wounds-ears.webp",
+  eyes: "/mochi/wounds-eyes.webp",
+  unzip: "/mochi/wounds-unzip.webp"
+};
+const ORDER = [
+  { after: 4, url: IMG.stitches },
+  { after: 5, url: IMG.ears },
+  { after: 6, url: IMG.eyes },
+  { after: 9, url: IMG.unzip }
 ];
 
-/** Her injuries as of `act` (null before the first one). */
+/** Her most recent injury as of `act` (null before the first). */
 export function woundsNow(act) {
   let url = null;
-  for (const s of STATES) if (act > s.after) url = s.url;
+  for (const s of ORDER) if (act > s.after) url = s.url;
   return url;
 }
 
-/** Her injuries as of `act`, plus the next one: for single-frame flashes (a glimpse of what's coming). */
+/** The injury that's coming next: for single-frame flashes (a glimpse of it). */
 export function woundsNext(act) {
-  for (const s of STATES) if (act <= s.after) return s.url;
-  return STATES[STATES.length - 1].url;
+  for (const s of ORDER) if (act <= s.after) return s.url;
+  return ORDER[ORDER.length - 1].url;
 }
 
-export const WOUNDS_FINAL = W("unzip");
+export const WOUNDS_ALL = "/mochi/wounds-all.webp";

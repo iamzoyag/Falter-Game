@@ -6,7 +6,7 @@
 // Files: public/audio/sfx/ (CC0 recordings from freesound.org, see CREDITS.txt there).
 
 export const SFX_GROUPS = {
-  stitch: 6, thread: 2, tear: 7, squelch: 10, splat: 1, snap: 3, crack: 3, drip: 7, gush: 1
+  stitch: 6, thread: 2, tear: 7, squelch: 10, splat: 1, snap: 3, crack: 3, drip: 7, gush: 1, screech: 1
 };
 
 export class SampleBank {

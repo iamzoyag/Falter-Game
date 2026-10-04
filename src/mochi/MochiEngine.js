@@ -11,10 +11,11 @@
 // src/segments/MochiSegment.js.
 
 const BASE = "/mochi/";
-// Her wounds stay on her. Each image is cute Mochi plus every wound so far
-// (built by tools/make_wound_images.py from the original gore art):
-//   0 cute   1 + stitches   2 + ear stumps   3 no ears + stitches (the ears are a sprite)   4 + eyes   5 + belly
-const IMAGES = ["cute.webp", "wounds-stitches.webp", "wounds-ears.webp", "wounds-noears.webp", "wounds-eyes.webp", "wounds-unzip.webp"];
+// One injury at a time. Each end image is cute Mochi with only that wound
+// (built by tools/make_stitches_local.py and tools/make_wound_images.py from
+// the original gore art), so only the wound changes:
+//   0 cute   1 stitches   2 ear stumps   3 cute with the ears painted out (they're a sprite)   4 eyes   5 belly
+const IMAGES = ["cute.webp", "stitches-local.webp", "wounds-ears.webp", "cute-noears.webp", "wounds-eyes.webp", "wounds-unzip.webp"];
 const FLOWS = ["stitches", "ears", "eyes", "unzip"].flatMap((n) => [`flow-${n}-ab.png`, `flow-${n}-ba.png`]);
 // R/G as before; for ears/eyes/unzip B = where that scene may change at all
 const MASKS = ["mask-stitches-local.png", "mask-ears-local.png", "mask-eyes-local.png", "mask-unzip-local.png"];
@@ -27,8 +28,8 @@ export const MOCHI_CUTE_URL = BASE + IMAGES[0];
 export const MOCHI_SCENES = {
   stitches: { a: 0, b: 1, fl: 0, dm: 0, kind: 1 },
   ears: { a: 3, b: 2, fl: 1, dm: 1, kind: 2 },
-  eyes: { a: 2, b: 4, fl: 2, dm: 2, kind: 3 },   // starts stitched, without ears
-  unzip: { a: 4, b: 5, fl: 3, dm: 3, kind: 4 }   // starts with everything so far
+  eyes: { a: 0, b: 4, fl: 2, dm: 2, kind: 3 },
+  unzip: { a: 0, b: 5, fl: 3, dm: 3, kind: 4 }
 };
 
 /** On-screen size of Mochi (CSS px) when the camera isn't zoomed. */
@@ -239,7 +240,7 @@ export class MochiEngine {
         const x = (W - S) / 2, y = (H - S) / 2;
         g.clearRect(0, 0, W, H);
         const im = this.images;
-        g.globalAlpha = 1 - t; g.drawImage(im[s.a === 3 ? 1 : s.a], x, y, S, S); // no ear sprite here: start from the stitched one
+        g.globalAlpha = 1 - t; g.drawImage(im[s.a === 3 ? 0 : s.a], x, y, S, S); // no ear sprite here: start from cute
         g.globalAlpha = t; g.drawImage(im[s.b], x, y, S, S);
         g.globalAlpha = 1;
       };

@@ -1,17 +1,18 @@
-"""Build Mochi's cumulative wound images, so each injury stays on her in later scenes.
+"""Build Mochi's wound images.
 
-Every wound image is "cute Mochi + only that wound", transplanted from the
-original gore art (colour-matched, feathered), then stacked in story order:
-
-  stitches (IV) -> ears (V) -> eyes (VI) -> unzip (IX)
+Each injury happens on its own: every wound image is "cute Mochi + only that
+wound", transplanted from the original gore art (colour-matched outside the
+wound, feathered), so a scene changes only the wound and nothing else about her.
+There's also one image with every wound at once, for the flash at the end of
+each injury scene (and the ending's polaroid).
 
 Outputs (public/mochi/):
-  wounds-stitches.webp     cute + stitches                (end of the stitches scene)
-  wounds-noears.webp       cute-noears + stitches         (start of the ears scene; the ears are a sprite)
-  wounds-ears.webp         + ear stumps and their blood   (end of ears / start of eyes)
-  wounds-eyes.webp         + eyes                         (end of eyes / start of unzip)
-  wounds-unzip.webp        + the belly                    (end of unzip)
-  mask-*-local.png         the scene masks again, with B = where that scene may change (feathered)
+  wounds-ears.webp     cute-noears + ear stumps and their blood   (end of the ears scene)
+  wounds-eyes.webp     cute + eyes                                (end of the eyes scene)
+  wounds-unzip.webp    cute + the belly                           (end of the unzip scene)
+  wounds-all.webp      stitches + ears + eyes + belly, all at once
+  mask-*-local.png     the scene masks again, with B = where that scene may change (feathered)
+(the stitches scene uses stitches-local.webp, from tools/make_stitches_local.py)
 
 Run from the repo root: python3 tools/make_wound_images.py
 Needs numpy, opencv-python, pillow. Re-run it if any of the source art changes.
@@ -102,12 +103,16 @@ R_unzip = feather(np.maximum(wound_u, bl_u), 4, 3) * no_ears
 R_prev = np.maximum(R_prev, R_eyes)
 unzip_end = transplant(eyes_end, unzip_src, R_unzip, core_u, prev=eyes_end, prev_R=R_prev)
 
+# one wound at a time, on otherwise cute Mochi
+ears_only = transplant(noears, ears_src, R_ears, core_e)
+eyes_only = transplant(cute, eyes_src, R_eyes, core_y)
+unzip_only = transplant(cute, unzip_src, R_unzip, core_u)
+
 save = lambda a, n: Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), "RGBA").save(D + n, quality=92, method=6)
-save(st_local, "wounds-stitches.webp")
-save(noears_st, "wounds-noears.webp")
-save(ears_end, "wounds-ears.webp")
-save(eyes_end, "wounds-eyes.webp")
-save(unzip_end, "wounds-unzip.webp")
+save(ears_only, "wounds-ears.webp")
+save(eyes_only, "wounds-eyes.webp")
+save(unzip_only, "wounds-unzip.webp")
+save(unzip_end, "wounds-all.webp")   # the stack built above: everything at once
 
 # masks: keep R/G from the originals, B = where this scene is allowed to change
 for src_png, R, out in [("mask-ears.png", R_ears, "mask-ears-local.png"),

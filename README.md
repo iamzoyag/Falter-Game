@@ -111,14 +111,16 @@ behaviour mid-act), `pause`, `card: "none"`, `drift: true`, `songDrift`
   with Mochi unzipped and your own face mutilated.
 - **Mochi events** (`src/segments/MochiSegment.js`) sit at every act break,
   worst last: stitches (end of IV), ears (end of V), eyes (end of VI), unzip (end of IX).
-  **Her wounds stay on her.** Each scene starts from everything done to her
-  so far and only the new wound changes (masked in the shader): the ears scene
-  starts stitched, the eyes scene stitched and without ears, the belly scene
-  with all of it. The images are `public/mochi/wounds-*.webp`, built from the
-  original gore art by `tools/make_stitches_local.py` then
-  `tools/make_wound_images.py` (re-run them if the art changes). Single-frame
-  flashes of a hurt Mochi show her current wounds plus the next one, and the
-  ending's polaroid shows all of them (`src/mochi/wounds.js`).
+  **One injury at a time:** each scene starts from cute Mochi and only that
+  wound changes (masked in the shader), so her face never shifts colour. At
+  the very end of every injury scene, just before the cut to black, Mochi
+  with **all** of her injuries at once lunges at the screen for under a
+  second, with a screech and her giggle under it (`allWoundsFlash`; with
+  "reduce flashing" there's no white frame or shake). The single-wound images
+  and `wounds-all.webp` are built from the original gore art by
+  `tools/make_stitches_local.py` then `tools/make_wound_images.py` (re-run
+  them if the art changes); `src/mochi/wounds.js` picks the right one for a
+  moment in the story, and the ending's polaroid uses `wounds-all`.
   Each starts from cute Mochi + her song, then one wound plays out
   (`src/mochi/MochiEngine.js`, WebGL, Mochi is a cut-out on a full-screen
   transparent canvas) and only advances while the webcam says you're

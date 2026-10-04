@@ -150,7 +150,7 @@ export const STAGES = [
     steps: [
       { type: "pause", ms: 4200 },
       { type: "round", title: "round si\u0335x ♡", sub: "where were we?", glitch: true },
-      { type: "talk", lines: "whereWereWe", mood: "off", flicker: "/mochi/wounds-stitches.webp" },
+      { type: "talk", lines: "whereWereWe", mood: "off", flicker: "/mochi/stitches-local.webp" },
       "b3", "b4",
       { type: "play", kind: "memory" },
       { type: "round", title: "a proper test ♡", sub: "mochi wants to know the real you" },
@@ -158,7 +158,7 @@ export const STAGES = [
       { type: "play", kind: "results" },
       "b6",
       { type: "play", kind: "simon" },
-      { type: "talk", lines: "cantHear", mood: "off", flicker: "/mochi/wounds-stitches.webp" },
+      { type: "talk", lines: "cantHear", mood: "off", flicker: "/mochi/stitches-local.webp" },
       { type: "mochi", scene: "ears" }
     ]
   },

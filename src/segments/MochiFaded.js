@@ -17,7 +17,7 @@ import { LINES, fillName } from "../mochi/MochiLines.js";
 import { build, show, hide, say, bounce, heart, sleep, pick, DESSERTS } from "./MochiPlay.js";
 import { headItem } from "../mochi/outfit.js";
 
-const STITCHED_URL = "/mochi/wounds-stitches.webp";
+const STITCHED_URL = "/mochi/stitches-local.webp";
 
 function setup(ctx, mode) {
   const v = build(ctx);

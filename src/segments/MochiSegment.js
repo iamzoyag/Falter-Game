@@ -12,6 +12,9 @@
 import { eventBefore, eventAfter, aiMochiLine } from "../mochi/MochiLines.js";
 import { FEAR_CHANNELS } from "../vision/FaceTracker.js";
 import { settings } from "../settings.js";
+import { WOUNDS_ALL } from "../mochi/wounds.js";
+import { giggle } from "../mochi/Giggle.js";
+import { headItem, accessoryHtml } from "../mochi/outfit.js";
 
 const WATCHING = (face) => !!face && face.faceVisible && !face.lookingAway && !face.blinkTooLong;
 
@@ -27,7 +30,7 @@ const CUT_BLACK_MS = 1300;
  *          mochiAudio: import('../mochi/MochiAudio').MochiAudio, getFace: () => object,
  *          ui: object, director: object, voice?: object}} ctx
  */
-export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, ui, director, voice, player, aiClient, aiEnabled }) {
+export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, ui, director, voice, player, aiClient, aiEnabled, samples }) {
   const ok = await engine.load();
   if (!ok) return { skipped: true };
   engine.calm = settings.reduceFlashing;
@@ -84,7 +87,10 @@ export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, u
     mochiAudio?.update(scene, t, dt, watching, awayMs / 1000);
   }
 
-  // ---- 4. sudden cut-away
+  // ---- 4. the flash: every injury at once, lunging at you. a screech, her giggle under it.
+  await allWoundsFlash({ samples, player });
+
+  // ---- 5. sudden cut-away
   mochiAudio?.cutAway();
   ui.setMochiWatchText("");
   ui.hideMochiEvent({ instant: true });
@@ -101,6 +107,30 @@ export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, u
   director?.say(upgraded || after);
   if (director) director.stats.mochiLookAways = (director.stats.mochiLookAways || 0) + lookAways;
   return { lookAways, completed: P >= 1 };
+}
+
+/**
+ * After each injury scene: for under a second, Mochi with ALL of her
+ * injuries (stitches, ears, eyes, belly) lunges at the screen. A screech,
+ * and her giggle underneath. Then the usual cut to black.
+ */
+const FLASH_MS = 850;
+export async function allWoundsFlash({ samples, player }) {
+  const calm = settings.reduceFlashing;
+  const head = headItem(player?.outfit?.head);
+  const el = document.createElement("div");
+  el.className = "mochi-flash" + (calm ? " calm" : "");
+  el.innerHTML = `<div class="mf-white"></div><div class="mf-mochi"><img src="${WOUNDS_ALL}" alt="" />${head ? accessoryHtml(head) : ""}</div>`;
+  document.body.appendChild(el);
+  // make sure the picture is ready, so the flash never shows an empty frame
+  const img = el.querySelector("img");
+  if (!img.complete) await Promise.race([new Promise((r) => (img.onload = r)), sleep(400)]);
+  samples?.play("screech", { gain: 0.9, jitter: 0.03 });
+  giggle.play({ creep: Math.max(giggle.creep, 0.8), gain: 0.9, wait: 0.12 });
+  void el.offsetWidth;
+  el.classList.add("go");
+  await sleep(FLASH_MS);
+  el.remove();
 }
 
 function nextFrame() {
