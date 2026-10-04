@@ -181,7 +181,7 @@ export async function runRoundCard(ctx, title, sub, { glitch = false, ms = 2400 
   show(v);
   if (glitch) {
     ctx.sfx?.tick();
-    v.mochi.src = "/mochi/stitches.webp"; // for one frame
+    v.mochi.src = "/mochi/wounds-stitches.webp"; // for one frame
     setTimeout(() => { if (v.mochi.isConnected) v.mochi.src = MOCHI_CUTE_URL; }, 60);
   } else {
     bounce(v, "wiggle");

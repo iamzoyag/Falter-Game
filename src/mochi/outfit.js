@@ -26,7 +26,8 @@ export function neckItem(id) { return NECK_ITEMS.find((i) => i.id === id && i.gl
 /** The pieces she's wearing, as positioned items. */
 export function outfitParts(outfit) {
   if (!outfit) return [];
-  return [headItem(outfit.head), neckItem(outfit.neck)].filter(Boolean);
+  const h = headItem(outfit.head), n = neckItem(outfit.neck);
+  return [h && { ...h, slot: "head" }, n && { ...n, slot: "neck" }].filter(Boolean);
 }
 
 /** One accessory, positioned over a Mochi image that fills its parent. */
