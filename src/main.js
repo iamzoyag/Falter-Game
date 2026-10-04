@@ -29,6 +29,7 @@ import { runDecorate, runHideAndSeek } from "./segments/MochiRoom.js";
 import { outfitParts } from "./mochi/outfit.js";
 import { runCake, runInvite, runPinBow, runGift } from "./segments/MochiParty.js";
 import { giggle } from "./mochi/Giggle.js";
+import { woundsNow, woundsNext } from "./mochi/wounds.js";
 import { runMemory, runResults, runSimon } from "./segments/MochiFaded.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
@@ -423,7 +424,7 @@ async function mochiReacts(question, entry, act, ctx, previous = null) {
   ui.setMochiHostLine(local);
   cuteSfx?.[act <= 2 ? "pop" : "tick"]();
   giggle.maybe(0.1);
-  if (special === "...") ui.flickerHost("/mochi/stitches.webp", 70); // "would you miss her?" "probably not."
+  if (special === "...") ui.flickerHost(woundsNext(currentStage?.act ?? 1), 70); // "would you miss her?" "probably not."
   const hold = sleep(special || quoted ? 2800 : act <= 2 ? 1700 : 1100);
   // the special lines (and the misquotes) are already personal; only the plain reactions go to the AI
   const ai = special || quoted ? null : await Promise.race([
@@ -485,7 +486,7 @@ function applySongDrift(to, p) {
 /** One deniable thing. The player shouldn't be sure anything happened. */
 function subliminal(kind, level) {
   const act = currentStage?.act ?? 1;
-  if (kind === "host") ui.flickerHost(act >= 3 ? "/mochi/eyes.webp" : "/mochi/stitches.webp", 45);
+  if (kind === "host") ui.flickerHost(woundsNext(currentStage?.act ?? 1), 45); // a glimpse of what's coming
   else if (kind === "breath") audio.breatheBehind(level >= 2 ? 0.16 : 0.1);
   else if (kind === "prompt") ui.glitchPrompt(player.name);
   else if (kind === "feed" && feed?.isLive()) feed.startGlitch(0.6, 380);
@@ -557,7 +558,8 @@ function loop() {
   feed.update(videoHidden, now, { face: latestFace, mask: latestMask, motion: latestEnv?.inMotion, levels: latestEnv?.levels });
 
   // Act III: she has her stitches whenever your eyes are closed
-  ui.setHostHurt(!!(currentStage?.features?.hostHurt && director?.features?.hostHurt !== false && latestFace?.blinking));
+  ui.setHostHurt(!!(currentStage?.features?.hostHurt && director?.features?.hostHurt !== false && latestFace?.blinking),
+    woundsNow(currentStage?.act ?? 1) || woundsNext(currentStage?.act ?? 1));
 
   const behind = feed.mode === "delayed" || feed.mode === "replay";
   ui.setFeedStatus(behind ? "● …" : "● live", behind); // frozen/clip modes still claim to be live

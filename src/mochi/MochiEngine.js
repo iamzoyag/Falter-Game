@@ -11,10 +11,14 @@
 // src/segments/MochiSegment.js.
 
 const BASE = "/mochi/";
-// stitches-local = cute Mochi with only the stitched mouth, cheek and blood mark (from stitches.webp)
-const IMAGES = ["cute.webp", "stitches-local.webp", "ears.webp", "cute-noears.webp", "eyes.webp", "unzip.webp"]; // 3 = cute with ears painted out
+// One injury at a time. Each end image is cute Mochi with only that wound
+// (built by tools/make_stitches_local.py and tools/make_wound_images.py from
+// the original gore art), so only the wound changes:
+//   0 cute   1 stitches   2 ear stumps   3 cute with the ears painted out (they're a sprite)   4 eyes   5 belly
+const IMAGES = ["cute.webp", "stitches-local.webp", "wounds-ears.webp", "cute-noears.webp", "wounds-eyes.webp", "wounds-unzip.webp"];
 const FLOWS = ["stitches", "ears", "eyes", "unzip"].flatMap((n) => [`flow-${n}-ab.png`, `flow-${n}-ba.png`]);
-const MASKS = ["mask-stitches-local.png", "mask-ears.png", "mask-eyes.png", "mask-unzip.png"];
+// R/G as before; for ears/eyes/unzip B = where that scene may change at all
+const MASKS = ["mask-stitches-local.png", "mask-ears-local.png", "mask-eyes-local.png", "mask-unzip-local.png"];
 const SPRITE = "ear-sprite.webp";
 const EARS = { R: { p: [0.6725, 0.2793], a: [0.7887, -0.6148] }, L: { p: [0.3913, 0.2839], a: [-0.7506, -0.6608] } };
 
@@ -39,7 +43,7 @@ const VS = "attribute vec2 p;varying vec2 vr;void main(){vr=p*.5+.5;vr.y=1.-vr.y
 // kinds: 1 stitches (needle sweep), 2 ears (rip sprite), 3 eyes (sockets bleed outward), 4 unzip (hole tears open)
 // Masks for kinds 3 and 4: R = wound, G = reveal order (0 first .. 1 last).
 // Mask for kind 1: R = where she changes (mouth, cheek, blood mark), feathered.
-// Nothing outside it moves or changes colour.
+// Kinds 2-4: B = where she changes. Nothing outside it moves or changes colour.
 const FS = `precision highp float;varying vec2 vr;
 uniform float zoom;uniform vec2 ctr;uniform vec2 box;
 uniform sampler2D A,B,FAB,FBA,SP,DM;
@@ -77,7 +81,7 @@ void main(){
   float g=kind<1.5?smoothstep(.15,1.,t):(kind<2.5?smoothstep(.55,1.,t):t);
   vec2 fab=(texture2D(FAB,v).rg-.5)*400./768.;
   vec2 fba=(texture2D(FBA,v).rg-.5)*400./768.;
-  float loc=kind<1.5?texture2D(DM,v).r:1.;
+  float loc=kind<1.5?texture2D(DM,v).r:texture2D(DM,v).b;
   vec2 ua=uv+g*fba*loc, ub=uv+(1.-g)*fab*loc;
   if(kind>2.5) ub=uv;
   vec4 a=texture2D(A,ua)*inside(ua), b=texture2D(B,ub)*inside(ub);
@@ -112,7 +116,7 @@ void main(){
     vec4 sr=ear(v,pR,aR,1.); c=sr+c*(1.-sr.a);
     c.rgb=mix(c.rgb,c.rgb*vec3(1.,.55,.55),snap*.5);
   }
-  c.rgb=mix(c.rgb,c.rgb*vec3(1.0,.72,.74),prog*(kind<1.5?0.:.6));
+  c.rgb=mix(c.rgb,c.rgb*vec3(1.0,.72,.74),prog*(kind<1.5?0.:.22));
   c.rgb+=(h(vr*700.+time)-.5)*.05*(.3+prog)*c.a;
   gl_FragColor=clamp(c,0.,1.);
 }`;
@@ -172,13 +176,16 @@ export class MochiEngine {
 
   _applyOutfit() {
     if (!this._outfit || !this._plain) return;
-    const dressed = this._plain.map((im) => {
+    // the neck piece is lost to the belly wound (image 5): it fades into the hole as it opens
+    const skip = (i, a) => i === 5 && a.slot === "neck";
+    const dressed = this._plain.map((im, idx) => {
       const c = document.createElement("canvas");
       c.width = im.naturalWidth || im.width;
       c.height = im.naturalHeight || im.height;
       const g = c.getContext("2d");
       g.drawImage(im, 0, 0);
       for (const a of this._outfit) {
+        if (skip(idx, a)) continue;
         g.save();
         g.translate(a.x * c.width, a.y * c.height);
         g.rotate((a.rot * Math.PI) / 180);
@@ -233,7 +240,7 @@ export class MochiEngine {
         const x = (W - S) / 2, y = (H - S) / 2;
         g.clearRect(0, 0, W, H);
         const im = this.images;
-        g.globalAlpha = 1 - t; g.drawImage(im[s.a === 3 ? 0 : s.a], x, y, S, S);
+        g.globalAlpha = 1 - t; g.drawImage(im[s.a === 3 ? 0 : s.a], x, y, S, S); // no ear sprite here: start from cute
         g.globalAlpha = t; g.drawImage(im[s.b], x, y, S, S);
         g.globalAlpha = 1;
       };

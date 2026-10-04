@@ -86,7 +86,7 @@ export async function cursedPolaroid(player, faceGore, samples) {
     g.drawImage(gore, 0, 0, 640, 480);
     g.restore();
   }
-  root.querySelector(".mp-sticker").src = "/mochi/unzip.webp";
+  root.querySelector(".mp-sticker").src = "/mochi/wounds-all.webp"; // everything she went through
   root.querySelector(".mp-caption").textContent = "best friends forever";
   root.querySelector(".mp-polaroid").classList.add("ruined");
   samples?.play("splat", { gain: 0.8 });

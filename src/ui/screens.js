@@ -89,7 +89,7 @@ const HOST_CUTE = "/mochi/cute.webp";
 let hostHurt = false;
 
 /** One or two frames of a hurt Mochi in the host avatar. Too quick to be sure. */
-export function flickerHost(url = "/mochi/stitches.webp", ms = 45) {
+export function flickerHost(url = "/mochi/stitches-local.webp", ms = 45) {
   const img = $("#mochi-host img");
   if (!img || hostHurt) return;
   img.src = url;
@@ -97,7 +97,7 @@ export function flickerHost(url = "/mochi/stitches.webp", ms = 45) {
 }
 
 /** Act III: while the player's eyes are closed, Mochi has her stitches. */
-export function setHostHurt(on, url = "/mochi/stitches.webp") {
+export function setHostHurt(on, url = "/mochi/stitches-local.webp") {
   if (on === hostHurt) return;
   hostHurt = on;
   const img = $("#mochi-host img");

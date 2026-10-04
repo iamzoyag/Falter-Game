@@ -1467,3 +1467,26 @@ body[data-act="3"] .mochi-acc { filter: saturate(0.55) drop-shadow(0 2px 2px rgb
 .fd-cam circle { fill: none; stroke: #b5617f; stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 295.3; stroke-dashoffset: calc(295.3 * (1 - var(--p, 0))); transition: stroke-dashoffset 0.1s; }
 .mochi-play.simon .mp-mochi-wrap { transition: none; }
 .mochi-play.simon .mp-mochi-wrap.fd-closer { scale: 1.55; translate: 12vw 6vh; z-index: 3; }
+
+/* ======================================================================
+   The flash at the end of each injury scene (MochiSegment.allWoundsFlash):
+   Mochi with every injury at once, lunging at the screen.
+   ====================================================================== */
+.mochi-flash {
+  position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 50%, #3a0006 0%, #0a0001 70%);
+}
+.mf-white { position: absolute; inset: 0; background: #fff; opacity: 1; }
+.mochi-flash.go .mf-white { animation: mf-white 0.12s steps(1) forwards; }
+@keyframes mf-white { 0% { opacity: 1; } 50% { opacity: 0.6; background: #ff2a35; } 100% { opacity: 0; } }
+.mf-mochi { position: relative; height: 92vh; aspect-ratio: 1; --mochi-h: 92vh; transform: scale(0.45); }
+.mf-mochi img { height: 100%; width: 100%; display: block; filter: drop-shadow(-0.6vh 0 0 rgba(255, 0, 40, 0.75)) drop-shadow(0.6vh 0 0 rgba(0, 220, 255, 0.45)) contrast(1.15) saturate(1.2); }
+.mochi-flash.go .mf-mochi { animation: mf-lunge 0.85s cubic-bezier(.55,0,.9,.6) forwards, mf-shake 0.06s linear infinite; }
+@keyframes mf-lunge { 0% { transform: scale(0.45); } 70% { transform: scale(1.55); } 100% { transform: scale(3.2); } }
+@keyframes mf-shake { 0% { translate: 0 0; } 25% { translate: 0.8vh -0.6vh; } 50% { translate: -0.7vh 0.5vh; } 75% { translate: 0.5vh 0.7vh; } 100% { translate: 0 0; } }
+/* reduce flashing: no white frame, no shake; she still comes at you */
+.mochi-flash.calm .mf-white { display: none; }
+.mochi-flash.calm.go .mf-mochi { animation: mf-lunge 0.85s cubic-bezier(.55,0,.9,.6) forwards; }
+.mochi-flash.calm { animation: mf-fade 0.15s ease-out; }
+@keyframes mf-fade { from { opacity: 0; } }
