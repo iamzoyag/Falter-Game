@@ -129,7 +129,12 @@ export async function allWoundsFlash({ samples, player }) {
   giggle.play({ creep: Math.max(giggle.creep, 0.8), gain: 0.9, wait: 0.12 });
   void el.offsetWidth;
   el.classList.add("go");
-  await sleep(FLASH_MS);
+  // wait for the lunge itself to finish (a busy machine may start it late), but never hang
+  const mochi = el.querySelector(".mf-mochi");
+  await Promise.race([
+    new Promise((r) => mochi.addEventListener("animationend", (e) => { if (e.animationName === "mf-lunge") r(); })),
+    sleep(FLASH_MS * 2.2)
+  ]);
   el.remove();
 }
 
