@@ -91,7 +91,17 @@ are older acts parked in the slot they'll be replaced in.
    caught: strawberries, wet ones, buttons and thread from her sewing kit, her
    ears, and last an eye (`src/segments/MochiDark.js`; the ears and eye are
    built from her art by `tools/make_dark_items.py`) → **eyes**.
-7. **VII. PHOTO BOOTH** (to build; replaces the mirror).
+7. ★ **VII. PHOTO BOOTH** after the eyes, the world goes 1-bit (black and
+   white, and Mochi with it). She's cute again, but she can't see, so she
+   wants pictures of you: a four-frame photo booth strip. The live preview
+   never shows anything wrong; the prints do. Frame by frame something is
+   standing behind you, closer each time (the director's figure, the same one
+   that comes for you later), developing on the strip while you pose for the
+   next one; once the last one develops, for a moment it's your face, ruined.
+   "how did they come out? mochi can't see them." Then stickers for the strip,
+   which won't stick to the thing behind you, and she puts it on the fridge
+   next to your Act I polaroid, where, faintly, it was behind you too
+   (`src/segments/MochiBooth.js`).
 8. **VIII. TEA PARTY** (for now: the old presence act, with **ears** at its start).
 9. **IX. RESULTS** (for now: the old interview) → **unzip**, then the ending.
 

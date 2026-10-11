@@ -5,7 +5,7 @@
 // `act` is the act's place in the story (I..IX). `look` is how far gone the
 // world is, and it's what the colour script (body[data-act]), the music, the
 // webcam filter and Mochi's AI voice all key off:
-//   1 pink and honest   2 pink, quietly draining   3 dusty rose
+//   1 pink and honest   2 pink, quietly draining   3 dusty rose   4 1-bit black and white
 //   5 black + dark red  6 black + blood red
 // Several acts can share a look; the slow acts early on do.
 //
@@ -17,7 +17,7 @@
 //   ★ IV   BIRTHDAY        cake + candles, invites (nobody comes), pin the bow, a sewing kit -> stitches
 //   ★ V    WHERE WERE WE   memory (one pair never matches), a test she misquotes, your results, mochi says -> ears
 //   ★ VI   LIGHTS OUT      a sleepover in your room: flashlight (she moves closer), a midnight catch -> eyes
-//     VII  PHOTO BOOTH     (to build) 1-bit; the strip prints wrong
+//   ★ VII  PHOTO BOOTH     1-bit. a four-frame strip with something behind you, then stickers that won't stick to it
 //     VIII TEA PARTY       (old presence act for now)
 //     IX   RESULTS         (old interview for now) -> unzip -> ending
 //
@@ -190,6 +190,31 @@ export const STAGES = [
       "n6",
       { type: "talk", lines: "cantSee", mood: "dark" },
       { type: "mochi", scene: "eyes" }
+    ]
+  },
+  {
+    id: "booth",
+    act: 7,
+    look: 4,
+    card: "none",
+    title: "VII. PHOTO BOOTH",
+    subtitle: "",
+    // After the eyes the world goes 1-bit. Mochi is cute again but can't see,
+    // so she wants pictures of you. The strip shows, frame by frame, something
+    // behind you; the last frame is your face, ruined, for a moment. Then
+    // stickers, which won't stick to it, and it was in your first polaroid
+    // too. From the booth on, the director's figure is allowed to come.
+    features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, beats: true, voice: true, scriptedGlitch: true, smileClip: true, darkness: true },
+    steps: [
+      { type: "talk", lines: "photoHello", mood: "off", flicker: "/mochi/wounds-eyes.webp" },
+      { type: "round", title: "photo round ♡", sub: "say cheese!" },
+      "ph1", "ph2",
+      { type: "play", kind: "booth" },
+      { type: "features", set: { figure: true } },
+      "ph3", "ph4",
+      { type: "play", kind: "stickers" },
+      "ph5",
+      { type: "talk", lines: "photoBye", mood: "off" }
     ]
   },
   {

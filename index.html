@@ -125,6 +125,17 @@
     <div id="stage-card-sub" class="stage-card-sub"></div>
   </div>
   <!-- Act I moments with Mochi: name, head pats, snack, polaroid (src/segments/MochiPlay.js) -->
+  <!-- Act VII's 1-bit look for Mochi: luminance, then a hard threshold at 0.7 -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="onebit" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0" />
+      <feComponentTransfer>
+        <feFuncR type="discrete" tableValues="0 0 0 0 0 0 0 1 1 1" />
+        <feFuncG type="discrete" tableValues="0 0 0 0 0 0 0 1 1 1" />
+        <feFuncB type="discrete" tableValues="0 0 0 0 0 0 0 1 1 1" />
+      </feComponentTransfer>
+    </filter>
+  </svg>
   <div id="mochi-play" class="mochi-play"></div>
   <!-- Mochi events (src/segments/MochiSegment.js): she's a cut-out on a full-screen transparent canvas -->
   <div id="mochi-event" class="mochi-event">

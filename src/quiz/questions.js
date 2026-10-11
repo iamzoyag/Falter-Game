@@ -524,6 +524,65 @@ const NIGHT_QUESTIONS = [
   }
 ];
 
+// Act VII's photo questions (ph1..ph5), in the 1-bit photo booth.
+const PHOTO_QUESTIONS = [
+  {
+    id: "ph1",
+    callbackId: "likes_photos",
+    principle: "rapport (photo round)",
+    prompt: "Do you like having your picture taken?",
+    options: [
+      { text: "I love it.", expressionHint: "smile", dark: "mochi too!! ♡ say cheese" },
+      { text: "Not really.", expressionHint: "neutral", dark: "mochi will make it fun ♡" },
+      { text: "Only if I see it first.", expressionHint: "any", dark: "mochi won't look ♡ mochi can't" }
+    ]
+  },
+  {
+    id: "ph2",
+    callbackId: "good_side",
+    principle: "rapport (photo round), self-image",
+    prompt: "Which is your good side?",
+    options: [
+      { text: "Left.", expressionHint: "any", dark: "mochi will remember ♡" },
+      { text: "Right.", expressionHint: "any", dark: "mochi will stand on the other one ♡" },
+      { text: "I don't have one.", expressionHint: "neutral", dark: "every side is mochi's side ♡" }
+    ]
+  },
+  {
+    id: "ph3",
+    callbackId: "someone_in_background",
+    principle: "callback: the strip, minutes ago",
+    prompt: "Have you ever found someone in the background of a photo that you didn't notice when you took it?",
+    options: [
+      { text: "No.", expressionHint: "neutral", dark: "you will ♡" },
+      { text: "Once.", expressionHint: "surprise", dark: "were they looking at you? ♡" },
+      { text: "I don't look at the backgrounds.", expressionHint: "any", dark: "mochi did ♡ ...back when she could" }
+    ]
+  },
+  {
+    id: "ph4",
+    callbackId: "deletes_photos",
+    principle: "self-image, what's kept",
+    prompt: "Do you delete photos of yourself you don't like?",
+    options: [
+      { text: "Always.", expressionHint: "any", dark: "mochi keeps all of them ♡" },
+      { text: "Sometimes.", expressionHint: "any", dark: "mochi has copies ♡" },
+      { text: "Never.", expressionHint: "any", dark: "good ♡ mochi likes every one" }
+    ]
+  },
+  {
+    id: "ph5",
+    callbackId: "sleeping_photos",
+    principle: "being watched, end of the act",
+    prompt: "If someone had pictures of you sleeping, would you want to see them?",
+    options: [
+      { text: "Yes.", expressionHint: "any", dark: "okay ♡ later" },
+      { text: "No.", expressionHint: "frown", dark: "that's okay ♡ mochi will keep them" },
+      { text: "Who has them?", expressionHint: "surprise", dark: "...♡" }
+    ]
+  }
+];
+
 export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
   ...DESSERT_QUESTIONS,
@@ -532,6 +591,7 @@ export const QUESTIONS = [
   ...TEST_QUESTIONS,
   ...BONUS_QUESTIONS,
   ...NIGHT_QUESTIONS,
+  ...PHOTO_QUESTIONS,
   // Round three of Act I ("the deep questions~"): deep the way a magazine
   // quiz is deep. Still sweet, nothing pointed; the creepy versions of these
   // themes (the dark, being alone, being watched) wait for the later acts.

@@ -1671,3 +1671,130 @@ body[data-act="3"].lights-off {
   transition: background 1.2s;
 }
 body[data-act="3"].lights-off .mochi-play { background: radial-gradient(ellipse at center, #2c1f24 0%, #0d0709 75%); }
+
+/* ======================================================================
+   Act VII: photo booth (src/segments/MochiBooth.js), look 4: the 1-bit
+   world. Mochi goes 1-bit too (#onebit in index.html: luminance, then a
+   hard threshold), which keeps her cute: a white sticker with black lines.
+   ====================================================================== */
+body[data-act="4"] .mochi-host { display: flex; }
+body[data-act="4"] .mochi-host img,
+body[data-act="4"] .mochi-play .mp-mochi,
+body[data-act="4"] .mochi-play .mochi-acc,
+body[data-act="4"] .pb-pick img, body[data-act="4"] .pb-stuck img { filter: url(#onebit) !important; }
+body[data-act="4"] .mochi-play { background: #000; color: #f2f2f2; }
+body[data-act="4"] .mochi-bubble { background: #fff; color: #000; border-color: #fff; box-shadow: 0 4px 0 #6a6a6a; }
+body[data-act="4"] .mp-round-title { color: #fff; text-shadow: 0 4px 0 #000, 0 7px 0 #6a6a6a; }
+body[data-act="4"] .mp-round-sub, body[data-act="4"] .mp-hint { color: #9a9a9a; }
+body[data-act="4"] .mochi-play .btn-primary { background: #fff; color: #000; border-color: #fff; box-shadow: 0 4px 0 #6a6a6a; }
+body[data-act="4"] .mochi-play .btn-primary:disabled { opacity: 0.35; }
+body[data-act="4"] .mp-heart { color: #fff; text-shadow: 0 2px 0 #000; }
+
+@property --P { syntax: "<length>"; inherits: true; initial-value: 500px; }
+.mochi-play.booth { padding: 0; --P: min(72vh, 64vw); }
+.mochi-play.booth > .mp-bubble { position: absolute; top: 2.6vh; left: 50%; translate: -50% 0; z-index: 6; font-size: clamp(1.1rem, 3.2vh, 1.9rem); max-width: min(820px, 86vw); }
+.mochi-play.booth .mp-controls { position: absolute; left: 50%; bottom: 5vh; translate: -50% 0; z-index: 6; }
+
+/* the booth: big live preview + the strip */
+.pb-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 11vh 3vw 5vh; transition: padding 0.6s; }
+.pb-booth { display: flex; align-items: center; gap: 3vw; }
+.pb-preview {
+  position: relative; flex: none; height: var(--P); width: calc(var(--P) * 4 / 3);
+  background: #000; border: 0.7vh solid #fff; box-shadow: 0 0 0 0.6vh #000, 0 0 0 1.1vh #fff;
+  transition: width 0.7s cubic-bezier(.5,0,.3,1), opacity 0.4s, border-width 0.7s, box-shadow 0.7s;
+}
+.pb-preview > canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.pb-count {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;
+  font: 700 22vh 'Fredoka', system-ui, sans-serif; color: #fff; text-shadow: 0 0.8vh 0 #000, 0 0 3vh #000;
+}
+.pb-count.pop { animation: mp-hop 0.5s cubic-bezier(.3,1.6,.5,1); }
+.pb-pose {
+  position: absolute; left: 50%; bottom: 4%; translate: -50% 0; padding: 0.25em 0.9em; border-radius: 99px;
+  font: 600 3.4vh 'Fredoka', system-ui, sans-serif; background: #fff; color: #000; white-space: nowrap;
+}
+.pb-pose:empty { display: none; }
+.pb-preview > .mp-mochi-wrap { position: absolute; left: -9%; bottom: -8%; rotate: -8deg; z-index: 2; }
+.pb-preview > .mp-mochi-wrap .mp-mochi-body { --mochi-h: calc(var(--P) * 0.36); }
+.pb-strip {
+  flex: none; width: calc(var(--P) * 0.27); padding: calc(var(--P) * 0.02); background: #fff;
+  display: flex; flex-direction: column; gap: calc(var(--P) * 0.016); box-shadow: 0.8vh 0.8vh 0 #444;
+  transition: scale 0.7s cubic-bezier(.4,1.2,.5,1), rotate 0.7s;
+}
+.pb-frame { position: relative; aspect-ratio: 4 / 3; background: #ececec; overflow: hidden; }
+.pb-frame canvas { display: block; width: 100%; height: 100%; opacity: 0; image-rendering: pixelated; }
+.pb-frame.dev canvas { animation: pb-develop 3s ease-out forwards; }
+@keyframes pb-develop { 0% { opacity: 0; filter: blur(6px) brightness(2.2); } 60% { opacity: 1; filter: blur(1px) brightness(1.3); } 100% { opacity: 1; filter: none; } }
+.pb-gore { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 1 !important; animation: none !important; z-index: 2; }
+.pb-strip-foot { font: 600 calc(var(--P) * 0.032) 'Fredoka', system-ui, sans-serif; color: #000; text-align: center; padding: 0.3em 0 0.1em; }
+/* printed: the preview folds away and the strip comes out big */
+.mochi-play.booth.printed .pb-stage { padding-bottom: 15vh; }
+.mochi-play.booth.printed .pb-preview { width: 0; opacity: 0; border-width: 0; box-shadow: none; }
+.mochi-play.booth.printed .pb-strip { scale: 1.16; rotate: -2deg; }
+.pb-answers { display: flex; gap: 1.2vw; flex-wrap: wrap; justify-content: center; }
+.pb-answers .btn-primary { font-size: clamp(1rem, 2.6vh, 1.4rem) !important; padding: 0.7em 1.4em !important; }
+
+/* stickers */
+@property --ph { syntax: "<length>"; inherits: true; initial-value: 200px; }
+.mochi-play.stickers { --tray-h: clamp(110px, 17vh, 160px); }
+.pb-deco {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 3vw;
+  padding: 11vh 3vw calc(var(--tray-h) + 2vh);
+  --ph: min(calc((100vh - 13vh - var(--tray-h) - 7vh) / 2), 31vw);
+  transition: --ph 0.8s cubic-bezier(.5,0,.3,1);
+}
+.mochi-play.stickers.fridge .pb-deco { --ph: min(calc((100vh - 20vh) / 4.4), 15vw); padding-bottom: 6vh; }
+.pb-grid {
+  display: grid; grid-template-columns: repeat(2, auto); gap: 1.2vh; padding: 1.2vh; background: #fff;
+  box-shadow: 0.8vh 0.8vh 0 #444; transition: rotate 0.8s;
+}
+.mochi-play.stickers.fridge .pb-grid { grid-template-columns: auto; rotate: -3deg; }
+.pb-photo { position: relative; height: var(--ph); width: calc(var(--ph) * 4 / 3); cursor: copy; }
+.pb-photo canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.pb-photo.near { outline: 0.5vh dashed #000; outline-offset: -0.9vh; }
+.pb-on { position: absolute; inset: 0; pointer-events: none; }
+.pb-stuck {
+  position: absolute; width: calc(var(--ph) * 0.3); aspect-ratio: 1; translate: -50% -50%; rotate: var(--r, 0deg);
+  filter: drop-shadow(0 0.35vh 0 rgba(0, 0, 0, 0.6)); animation: mr-pop 0.4s cubic-bezier(.3,1.6,.5,1);
+}
+.pb-stuck svg, .pb-stuck img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.pb-stuck.peel { animation: pb-peel 1.4s cubic-bezier(.5,0,.8,.6) forwards; }
+@keyframes pb-peel {
+  0% { rotate: var(--r); translate: -50% -50%; }
+  25% { rotate: calc(var(--r) + 25deg); translate: -40% -55%; }
+  100% { rotate: calc(var(--r) + 140deg); translate: -10% 60vh; opacity: 0; }
+}
+.mochi-play.stickers .mp-controls.pb-tray-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; translate: none; height: var(--tray-h);
+  flex-direction: row; align-items: center; justify-content: center; gap: 2vw; padding: 0 2vw;
+  background: #000; border-top: 0.5vh solid #fff;
+}
+.pb-tray { display: flex; gap: 0.8vw; overflow-x: auto; padding: 6px 2px; }
+.pb-pick {
+  flex: none; width: min(calc(var(--tray-h) * 0.66), calc((100vw - 26vw) / 10)); aspect-ratio: 1; padding: 0.8vh;
+  background: #1a1a1a; border: 0.35vh solid #fff; border-radius: 1.6vh; cursor: grab; touch-action: none;
+  transition: transform 0.15s, background 0.15s;
+}
+.pb-pick svg, .pb-pick img { width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; }
+.pb-pick:hover { transform: translateY(-4px) rotate(-3deg); }
+.pb-pick.on { background: #555; transform: translateY(-6px) scale(1.08); }
+.pb-tray-side { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 20vw; text-align: center; }
+.pb-ghost { position: fixed; z-index: 1000; width: 11vh; aspect-ratio: 1; translate: -50% -50%; pointer-events: none; opacity: 0.92; }
+.pb-ghost svg, .pb-ghost img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.mochi-play.stickers > .mp-mochi-wrap { position: absolute; left: 1.5vw; bottom: calc(var(--tray-h) + 0.5vh); z-index: 4; }
+.mochi-play.stickers > .mp-mochi-wrap .mp-mochi-body { --mochi-h: 22vh; }
+.mochi-play.stickers.fridge > .mp-mochi-wrap { bottom: 3vh; }
+.mochi-play.stickers > .mp-bubble { position: absolute; top: 2.6vh; left: 50%; translate: -50% 0; z-index: 6; font-size: clamp(1.1rem, 3.2vh, 1.9rem); max-width: min(820px, 86vw); }
+/* on the fridge, next to the Act I polaroid */
+.pb-fridge:empty { display: none; }
+.pb-pol {
+  position: relative; background: #fff; padding: 1.6vh 1.6vh 0; rotate: 3deg; box-shadow: 0.8vh 0.8vh 0 #444;
+  width: min(42vw, 62vh); opacity: 0; animation: pb-in 0.7s 0.3s cubic-bezier(.3,1.3,.5,1) forwards;
+}
+@keyframes pb-in { from { opacity: 0; translate: 6vw 0; } to { opacity: 1; translate: 0 0; } }
+.pb-pol canvas { display: block; width: 100%; height: auto; filter: grayscale(1) contrast(1.7) brightness(1.05); }
+.pb-pol .pb-pol-fig { position: absolute; left: 1.6vh; top: 1.6vh; width: calc(100% - 3.2vh); mix-blend-mode: multiply; opacity: 0; transition: opacity 2.6s ease-in; }
+.pb-fridge.haunt .pb-pol-fig { opacity: 0.7; }
+.pb-pol-cap { font: 600 2.6vh 'Fredoka', system-ui, sans-serif; color: #000; text-align: center; padding: 1.4vh 0 1.8vh; }
+.pb-booth > .mp-mochi-wrap { animation: mr-pop 0.5s cubic-bezier(.3,1.6,.5,1); }
+.pb-booth > .mp-mochi-wrap .mp-mochi-body { --mochi-h: 30vh; }
