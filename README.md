@@ -126,11 +126,17 @@ behaviour mid-act), `pause`, `card: "none"`, `drift: true`, `songDrift`
   transparent canvas) and only advances while the webcam says you're
   looking. Look away and it freezes and the drone swells. The finished
   wound holds ~5 s, then hard cut to black.
-- **Her giggle** (`src/mochi/Giggle.js`): now and then when she talks to
-  you, she giggles. The same few giggles all game; a slow "creep" value that
-  follows the acts makes them gradually slower, lower, duller, echoing, then
-  backwards underneath and behind you. Recordings CC BY 4.0, credited in
-  `public/audio/giggle/CREDITS.txt`.
+- **Her giggle** (`src/mochi/Giggle.js`): all game long she giggles,
+  cutely: sometimes when she talks to you (`maybe`), at happy moments (a
+  name, a finished outfit, all the strawberries, a found hiding spot, the
+  candles, a memory match: `happy`), and every minute or two for no reason,
+  quietly, off to one side (`startAmbient`). The cute giggles only very
+  faintly follow the acts' creep, so they stay hers and harmless. Every
+  injury scene starts with one, and ends (under the flash) with the same
+  giggle gone wrong (`evil`): dragged down as it plays, an octave under
+  itself, ring-modulated, crushed, backwards underneath, ringing in a big
+  dark room. The ending's last scare gets it too. Recordings CC BY 4.0,
+  credited in `public/audio/giggle/CREDITS.txt`.
 - **Injury sounds** are recorded CC0 foley from freesound.org
   (`public/audio/sfx/`, credits in `CREDITS.txt` there), played through
   `src/core/SampleBank.js`; the synthesised versions are the fallback.

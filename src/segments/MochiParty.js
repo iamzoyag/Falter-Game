@@ -13,6 +13,7 @@
 // chairs), player.blewOut (did they really blow, or press the button).
 
 import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
+import { giggle } from "../mochi/Giggle.js";
 import { LINES, fillName } from "../mochi/MochiLines.js";
 import { build, show, hide, say, sayPersonal, bounce, heart, sleep, pick } from "./MochiPlay.js";
 
@@ -208,6 +209,7 @@ export async function runCake(ctx) {
 }
 
 function heartsOver(v, el, n, glyph = "♡") {
+  giggle.happy(n >= 8 ? 0.85 : 0.35);
   const r = el.getBoundingClientRect();
   for (let i = 0; i < n; i++) setTimeout(() => heart(v, r.left + r.width * (0.15 + Math.random() * 0.7), r.top + r.height * 0.25, glyph), i * 70);
 }
@@ -264,6 +266,7 @@ async function blowOut(v, ctx, list) {
   removeEventListener("keydown", keyDown);
   removeEventListener("keyup", keyUp);
   v.controls.innerHTML = "";
+  giggle.happy(0.8, { wait: 0.3 });
   return { usedMic };
 }
 
@@ -428,6 +431,7 @@ export async function runPinBow(ctx) {
       await sleep(700);
       say(v, lines("pinMoved", player));
       bounce(v);
+      giggle.happy(0.9); // she moved it. hee.
       await sleep(2600);
       say(v, LINES.pinAgain);
       await sleep(2200);
@@ -439,6 +443,7 @@ export async function runPinBow(ctx) {
       mochi.style.setProperty("--by", at.y + "px");
       mochi.classList.remove("hidden");
       mochi.classList.add("boo");
+      giggle.happy(1, { wait: 0.25 }); // boo! (a game, to her)
       blind.classList.add("instant");
       blind.classList.remove("on");
       ctx.sfx?.chirp();

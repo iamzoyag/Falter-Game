@@ -16,6 +16,7 @@
 // (where its solid top/side starts), noted in HIDE below.
 
 import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
+import { giggle } from "../mochi/Giggle.js";
 import { LINES, fillName } from "../mochi/MochiLines.js";
 import { outfitParts, accessoryHtml, headItem } from "../mochi/outfit.js";
 import { build, show, hide, say, sayPersonal, heart, sleep, pick } from "./MochiPlay.js";
@@ -225,6 +226,7 @@ function floatText(v, el, text) {
 }
 
 function heartsAt(v, el, n = 6, glyph = "♡") {
+  giggle.happy(n >= 7 ? 0.85 : 0.3); // the big moments almost always; a placed lamp sometimes
   const r = el.getBoundingClientRect();
   for (let i = 0; i < n; i++) setTimeout(() => heart(v, r.left + r.width * (0.2 + Math.random() * 0.6), r.top + r.height * 0.2, glyph), i * 70);
 }

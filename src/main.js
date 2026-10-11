@@ -171,7 +171,8 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
   await cuteTheme.load();
   cuteTheme.play({ fade: 2.5 });
   cuteSfx = new CuteSfx(audio.ctx, audio.master);
-  giggle.init(audio.ctx, audio.master); // her giggle; creepier, very slowly, as the acts go on
+  giggle.init(audio.ctx, audio.master); // her giggle: cute all game (barely drifting), wrong only in the jumpscares
+  giggle.startAmbient(); // and now and then, for no reason, off to the side
   samples = new SampleBank(audio.ctx, audio.master);
   samples.load(); // recorded gore sfx, in the background (synth fallback until they arrive)
   mochiAudio = new MochiAudio(audio.ctx, audio.master, cuteTheme, samples);
@@ -409,6 +410,7 @@ async function runGame() {
   }
 
   playing = false;
+  giggle.stopAmbient();
   await runEnding(ctx);
 }
 
