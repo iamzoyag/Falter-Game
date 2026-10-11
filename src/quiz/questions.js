@@ -452,59 +452,62 @@ export const QUESTIONS = [
   ...PARTY_QUESTIONS,
   ...TEST_QUESTIONS,
   ...BONUS_QUESTIONS,
+  // Round three of Act I ("the deep questions~"): deep the way a magazine
+  // quiz is deep. Still sweet, nothing pointed; the creepy versions of these
+  // themes (the dark, being alone, being watched) wait for the later acts.
   {
     id: "q1",
     callbackId: "afraid_of_dark",
-    principle: "baseline / rapport",
-    prompt: "When you were a kid, were you afraid of the dark?",
+    principle: "baseline / rapport (option 0 = 'never scared'; Act V's results use it)",
+    prompt: "When you were little, did you sleep with a nightlight?",
     options: [
-      { text: "No, never bothered me.", expressionHint: "neutral" },
-      { text: "A little, but I grew out of it.", expressionHint: "neutral" },
-      { text: "Yes — badly.", expressionHint: "frown" }
+      { text: "No, never needed one.", expressionHint: "neutral", mochi: "so brave, even when you were tiny!! ♡" },
+      { text: "For a while, then I grew out of it.", expressionHint: "smile", mochi: "aww, mini you with a little nightlight ♡" },
+      { text: "Yes, and honestly I still would.", expressionHint: "smile", mochi: "nightlights are cosy!! mochi approves ♡" }
     ]
   },
   {
     id: "q2",
     callbackId: "alone_comfort",
-    principle: "isolation / reduced social safety",
-    prompt: "Right now, in this room, alone — how does that feel?",
+    principle: "rapport / later: isolation",
+    prompt: "What's your idea of a perfect evening?",
     options: [
-      { text: "Comfortable. I like being alone.", expressionHint: "neutral" },
-      { text: "Fine, I just hadn't thought about it.", expressionHint: "neutral" },
-      { text: "A little strange, actually.", expressionHint: "surprise" }
+      { text: "Curled up on my own with a good show.", expressionHint: "smile", mochi: "blanket, snacks, a show ♡ perfect" },
+      { text: "Out with my friends.", expressionHint: "smile", mochi: "fun!! mochi wants to come too ♡" },
+      { text: "Somewhere in between.", expressionHint: "neutral", mochi: "the best of both ♡ very wise" }
     ]
   },
   {
     id: "q3",
     callbackId: "trust_others",
-    principle: "social evaluation threat",
-    prompt: "Do you generally trust people, or assume the worst?",
+    principle: "social evaluation / later: trust",
+    prompt: "Do you trust people easily?",
     options: [
-      { text: "I trust people until they give me a reason not to.", expressionHint: "neutral" },
-      { text: "I keep my guard up.", expressionHint: "neutral" },
-      { text: "Depends who's watching.", expressionHint: "smile" }
+      { text: "Yes, I give everyone a chance.", expressionHint: "smile", mochi: "such a kind heart ♡" },
+      { text: "It takes me a little while.", expressionHint: "neutral", mochi: "that's okay!! mochi is very patient ♡" },
+      { text: "Only once they've earned it.", expressionHint: "neutral", mochi: "mochi will earn it, you'll see ♡" }
     ]
   },
   {
     id: "q4",
-    callbackId: "someone_behind",
-    principle: "hypervigilant threat-scanning",
-    prompt: "If you felt like someone was standing behind you right now, what would you do?",
+    callbackId: "nervous_habit",
+    principle: "self-report of nerves / later: the game reads them on your face",
+    prompt: "When you get nervous, what do you do?",
     options: [
-      { text: "Turn around immediately.", expressionHint: "neutral" },
-      { text: "Ignore it — it's nothing.", expressionHint: "neutral" },
-      { text: "I'd rather not think about that.", expressionHint: "frown" }
+      { text: "Talk a lot.", expressionHint: "smile", mochi: "chatty!! mochi does that too ♡" },
+      { text: "Go very quiet.", expressionHint: "neutral", mochi: "mochi will be quiet with you ♡" },
+      { text: "Laugh it off.", expressionHint: "smile", mochi: "hehe, giggling helps everything ♡" }
     ]
   },
   {
     id: "q5",
     callbackId: "lying_tell",
-    principle: "self-referential threat",
-    prompt: "Do you think you're good at hiding how you really feel?",
+    principle: "self-referential / later: the face-vs-answer reading",
+    prompt: "Are you good at hiding how you feel?",
     options: [
-      { text: "Yes, I have a good poker face.", expressionHint: "neutral" },
-      { text: "Not really — it shows.", expressionHint: "neutral" },
-      { text: "I've never had to find out.", expressionHint: "smile" }
+      { text: "Yes, I have a good poker face.", expressionHint: "neutral", mochi: "ooh, mysterious ♡" },
+      { text: "Not really, it shows on my face.", expressionHint: "smile", mochi: "that just means you're honest ♡" },
+      { text: "Depends on the feeling.", expressionHint: "neutral", mochi: "very fair ♡ mochi's the same" }
     ]
   },
   {
