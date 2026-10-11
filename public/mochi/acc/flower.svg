@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 110" width="130" height="110">
+<path d="M84 74 C100 70 112 80 118 94 C102 98 88 92 84 74 Z" fill="#a8e0a0" stroke="#b0688a" stroke-linejoin="round" stroke-linecap="round" stroke-width="3.5"/>
+<path d="M88 78 Q100 84 112 92" fill="none" stroke="#6fb46a" stroke-width="2.5" stroke-linecap="round"/>
+<g transform="translate(56 54)">
+<g id="p"><path d="M0 -6 C-14 -16 -16 -36 -6 -44 L0 -38 L6 -44 C16 -36 14 -16 0 -6 Z" fill="#ffc3dc" stroke="#b0688a" stroke-linejoin="round" stroke-linecap="round" stroke-width="3.5"/></g>
+<use href="#p" transform="rotate(72)"/><use href="#p" transform="rotate(144)"/><use href="#p" transform="rotate(216)"/><use href="#p" transform="rotate(288)"/>
+<path d="M-4 -30 Q-8 -22 -4 -14" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".8"/>
+<circle r="10" fill="#ffe27a" stroke="#b0688a" stroke-linejoin="round" stroke-linecap="round" stroke-width="3"/>
+<circle cx="-3" cy="-3" r="2.2" fill="#ff9cc8"/><circle cx="4" cy="-1" r="2.2" fill="#ff9cc8"/><circle cx="0" cy="4" r="2.2" fill="#ff9cc8"/>
+</g>
+<g transform="translate(104 34) scale(.42)"><use href="#p"/><use href="#p" transform="rotate(72)"/><use href="#p" transform="rotate(144)"/><use href="#p" transform="rotate(216)"/><use href="#p" transform="rotate(288)"/><circle r="10" fill="#ffe27a" stroke="#b0688a" stroke-linejoin="round" stroke-linecap="round" stroke-width="5"/></g>
+</svg>

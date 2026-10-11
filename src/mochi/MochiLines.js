@@ -45,7 +45,7 @@ export const LINES = {
     flower: "it smells so nice ♡",
     clip: "a strawberry!! mochi's favourite ♡",
     bell: "jingle jingle ♡ now you'll always hear mochi coming",
-    heart: "a locket!! mochi will keep you in it ♡",
+    heart: "a heart locket!! so shiny ♡ mochi loves it",
     ribbon: "so fancy!! ♡",
     none: "simple and cute. okay!! ♡"
   },
@@ -197,6 +197,8 @@ export const TALK = {
   goodbye: ["that's all the rounds!! you did sooo good, {name} ♡", "thank you for playing with mochi ♡ bye bye!"],
   // start of Act II, after the fake ending
   bonus: ["wait wait wait!!", "don't go yet, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
+  // ...or, if they pressed "play again" on the fake ending
+  bonusAgain: ["wait wait wait!!", "no need to start over, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
   // end of Act II (the bonus round): nothing's wrong, she just wants to keep playing
   bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
   // start of Act VI (after the ears)
@@ -298,8 +300,8 @@ export function eventAfter(scene, player, dossier, { lookAways = 0, flinch = 0 }
   const said = (id) => dossier.find((d) => d.questionId === id)?.chosenText || null;
   const options = [];
   const cry = said("m8");
-  if (cry?.startsWith("When an animal") && flinch < 2.5) options.push("you said an animal getting hurt makes you cry. you didn't.");
-  if (cry?.startsWith("Nothing") ) options.push("you said nothing makes you cry. good. watch the next one.");
+  if (cry?.startsWith("Anything with an animal") && flinch < 2.5) options.push("you said animals in movies make you cry. you didn't.");
+  if (cry?.startsWith("Nothing")) options.push("you said nothing makes you cry. good. watch the next one.");
   if (said("m7")?.includes("best friend")) options.push("you said she could be your best friend.");
   if (said("m3")?.includes("bunny")) options.push("you wanted a bunny.");
   if (player?.snack === "strawberry" && scene === "unzip") options.push("she still tastes like strawberries.");

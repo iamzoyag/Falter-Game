@@ -171,11 +171,20 @@ export class MochiEngine {
    */
   setOutfit(parts) {
     this._outfit = parts?.length ? parts : null;
+    // the accessories are SVG drawings: load them before baking them in
+    this._outfitArt = Promise.all((this._outfit || []).map((a) => new Promise((res) => {
+      const im = new Image();
+      im.onload = () => res([a.id, im]);
+      im.onerror = () => res([a.id, null]);
+      im.src = a.src;
+    }))).then((list) => Object.fromEntries(list));
     if (this.ready) this._applyOutfit();
   }
 
-  _applyOutfit() {
+  async _applyOutfit() {
     if (!this._outfit || !this._plain) return;
+    const outfit = this._outfit, art = await this._outfitArt;
+    if (outfit !== this._outfit) return; // changed while loading
     // the neck piece is lost to the belly wound (image 5): it fades into the hole as it opens
     const skip = (i, a) => i === 5 && a.slot === "neck";
     const dressed = this._plain.map((im, idx) => {
@@ -184,18 +193,17 @@ export class MochiEngine {
       c.height = im.naturalHeight || im.height;
       const g = c.getContext("2d");
       g.drawImage(im, 0, 0);
-      for (const a of this._outfit) {
-        if (skip(idx, a)) continue;
+      for (const a of outfit) {
+        const pic = art[a.id];
+        if (skip(idx, a) || !pic) continue;
+        const w = a.w * c.height, h = w * a.ratio;
         g.save();
         g.translate(a.x * c.width, a.y * c.height);
         g.rotate((a.rot * Math.PI) / 180);
-        g.font = `${Math.round(a.size * c.height)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-        g.textAlign = "center";
-        g.textBaseline = "middle";
         g.shadowColor = "rgba(120, 40, 80, 0.25)";
         g.shadowOffsetY = 2;
         g.shadowBlur = 3;
-        g.fillText(a.glyph, 0, 0);
+        g.drawImage(pic, -w / 2, -h / 2, w, h);
         g.restore();
       }
       return c;
@@ -213,7 +221,7 @@ export class MochiEngine {
 
   /** Loads everything once; safe to call repeatedly. Resolves false if assets are missing. */
   load() {
-    this._loading ??= this._load().then(() => { this.ready = true; this._applyOutfit(); return true; }).catch((e) => {
+    this._loading ??= this._load().then(async () => { this.ready = true; await this._applyOutfit(); return true; }).catch((e) => {
       console.warn("[mochi] assets failed to load", e);
       return false;
     });
