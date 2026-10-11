@@ -156,6 +156,8 @@ class GigglePlayer {
     pan.panningModel = "HRTF";
     pan.distanceModel = "inverse";
     const behind = sm(0.5, 0.95, c) * (Math.random() < 0.3 + 0.6 * c ? 1 : 0);
+    // the Mochi on screen laughs along (^^), unless the giggle is coming from somewhere else
+    if (!away) setTimeout(() => dispatchEvent(new CustomEvent("mochi-giggle")), (wait + 0.02) * 1000);
     if (away) {
       // somewhere to your left or right, a few steps off
       const a = (Math.random() < 0.5 ? -1 : 1) * (0.9 + Math.random() * 0.6);

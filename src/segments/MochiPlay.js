@@ -17,6 +17,7 @@ import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
 import { LINES, fillName, aiMochiLine } from "../mochi/MochiLines.js";
 import { settings } from "../settings.js";
 import { giggle } from "../mochi/Giggle.js";
+import { rigMochi, reactAll } from "../mochi/MochiRig.js";
 import { HEAD_ITEMS, NECK_ITEMS, outfitParts, accessoryHtml, accessoryIcon, describeOutfit } from "../mochi/outfit.js";
 import { QUESTIONS } from "../quiz/questions.js";
 
@@ -33,12 +34,14 @@ function build(ctx) {
     </div></div>
     <div class="mp-fx"></div>
     <div class="mp-controls"></div>`;
+  const mochi = root.querySelector(".mp-mochi");
   return {
     root,
     bubble: root.querySelector(".mp-bubble"),
     wrap: root.querySelector(".mp-mochi-wrap"),
     body: root.querySelector(".mp-mochi-body"),
-    mochi: root.querySelector(".mp-mochi"),
+    mochi,
+    rig: rigMochi(mochi), // she blinks, twitches her ears, leans toward you (src/mochi/MochiRig.js)
     fx: root.querySelector(".mp-fx"),
     controls: root.querySelector(".mp-controls")
   };
@@ -63,6 +66,7 @@ async function hide(v) {
 function say(v, text) {
   v.bubble.textContent = text || "";
   v.bubble.classList.toggle("show", !!text);
+  if (text && text !== "...") v.rig?.talk(text);
   // now and then, when she's talking to you, she giggles
   if (text && text !== "..." && !text.startsWith("(")) giggle.maybe(0.16);
 }
@@ -92,6 +96,7 @@ function heart(v, x, y, glyph = "♡") {
   h.style.setProperty("--dx", `${(Math.random() - 0.5) * 80}px`);
   v.fx.appendChild(h);
   setTimeout(() => h.remove(), 1200);
+  reactAll("happy"); // ^^
 }
 
 // ---------------------------------------------------------------- talk
@@ -192,27 +197,73 @@ export async function runRoundCard(ctx, title, sub, { glitch = false, ms = 2400 
   await hide(v);
 }
 
+// What kind of bunny are you? The Act I quiz's result, on the fake ending.
+// Every Act I answer is tagged `bun` (src/quiz/questions.js).
+export const BUNNIES = {
+  sunshine: { glyph: "☀️", name: "sunshine bunny", blurb: "bright, bouncy and impossible not to like. you make plans, you make friends, and you make everyone's day a little louder ♡" },
+  cloud: { glyph: "☁️", name: "cloud bunny", blurb: "soft, sleepy and the cosiest company. you know a blanket and a good show can fix almost anything ♡" },
+  moon: { glyph: "🌙", name: "moonlight bunny", blurb: "quiet, thoughtful and a little bit mysterious. people have to earn your trust, and the ones who do are lucky ♡" },
+  clover: { glyph: "🍀", name: "clover bunny", blurb: "warm, loyal and all heart. you'd share your last snack with a friend, and probably with a stranger too ♡" }
+};
+
+/** {top, mix: [[id, pct]...]} from the Act I answers. */
+export function bunnyFromDossier(dossier) {
+  const top = tally(dossier, "bun", "clover");
+  const counts = Object.fromEntries(Object.keys(BUNNIES).map((k) => [k, 0]));
+  let n = 0;
+  for (const d of dossier || []) {
+    const q = QUESTIONS.find((x) => x.id === d.questionId);
+    const t = q?.options?.find((o) => o.text === d.chosenText)?.bun;
+    if (t) { counts[t]++; n++; }
+  }
+  const mix = Object.entries(counts)
+    .map(([k, c]) => [k, n ? Math.round((c / n) * 100) : k === top ? 100 : 0])
+    .sort((a, b) => (b[0] === top) - (a[0] === top) || b[1] - a[1]);
+  return { top, mix };
+}
+
 /**
  * The fake ending after Act I: "thanks for playing ♡", the song resolves,
- * a play-again button that doesn't matter. The player relaxes. Two seconds
- * later Mochi bursts back in (Act II starts with "wait wait wait!!"). If they
- * press play again first, she bursts in straight away, and Act II opens with
- * her stopping them (player.pressedAgain).
+ * and the quiz's result: what kind of bunny you are. A play-again button
+ * that doesn't matter. The player relaxes and reads. A few seconds later
+ * Mochi bursts back in (Act II starts with "wait wait wait!!"). If they
+ * press play again first, she bursts in straight away, and Act II opens
+ * with her stopping them (player.pressedAgain).
  */
-const FAKE_END_MS = 2000;
-export async function runFakeEnd(ctx) {
+const FAKE_END_MS = 7000;
+export async function runFakeEnd(ctx, dossier = []) {
+  const { top, mix } = bunnyFromDossier(dossier);
+  const b = BUNNIES[top];
+  ctx.player.bunny = top;
   const v = build(ctx);
   v.root.classList.add("round", "fake-end");
   v.controls.innerHTML = `
     <div class="mp-round">
       <div class="mp-round-title">thanks for playing ♡</div>
       <div class="mp-round-sub">mochi had so much fun with you, ${ctx.player.name || "friend"}!</div>
+      <div class="mp-result fe-result">
+        <div class="mp-result-top">your results ♡ what kind of bunny are you?</div>
+        <div class="fe-row">
+          <div class="mp-result-glyph">${b.glyph}</div>
+          <div class="fe-main">
+            <div class="mp-result-you">you are a...</div>
+            <div class="mp-result-name">${b.name}</div>
+          </div>
+        </div>
+        <p class="mp-result-blurb">${b.blurb}</p>
+        <div class="fe-mix">${mix.map(([k, pct]) => `
+          <div class="fe-bar"><span class="fe-label">${BUNNIES[k].glyph} ${BUNNIES[k].name}</span>
+            <span class="fe-track"><span class="fe-fill" style="--w:${pct}%"></span></span><b>${pct}%</b></div>`).join("")}
+        </div>
+      </div>
       <p class="mp-hint">made with love by mochi</p>
       <button class="btn-primary mp-again">play again ♡</button>
     </div>`;
   show(v);
   bounce(v, "wiggle");
   ctx.sfx?.chirp();
+  const card = v.controls.querySelector(".fe-result");
+  setTimeout(() => { card.classList.add("show"); ctx.sfx?.sparkle(); }, 500);
   const again = v.controls.querySelector(".mp-again");
   ctx.player.pressedAgain = await new Promise((resolve) => {
     again.addEventListener("click", () => { again.disabled = true; resolve(true); }, { once: true });
@@ -268,6 +319,7 @@ export async function runPet(ctx) {
   } else {
     ctx.sfx?.sad();
     v.wrap.classList.add("sad");
+    v.rig?.react("sad", { ms: 2600 });
     await sayPersonal(v, ctx, "pet", LINES.petIgnored, { stats: { ignoredHeadPats: true } });
   }
   await sleep(2600);

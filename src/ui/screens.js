@@ -1,5 +1,6 @@
 import { settings } from "../settings.js";
 import { outfitParts, accessoryHtml } from "../mochi/outfit.js";
+import { rigMochi } from "../mochi/MochiRig.js";
 const $ = (sel) => document.querySelector(sel);
 
 export function showScreen(id) {
@@ -80,6 +81,9 @@ export function setHostOutfit(outfit) {
 
 /** Act I host: Mochi beside the question, with a speech bubble. */
 export function setMochiHostLine(text) {
+  const img = $("#mochi-host img");
+  const rig = img && (img._rig || rigMochi(img, { lean: 0.6 })); // the little quiz host is alive too
+  if (text) rig?.talk(text);
   const el = $("#mochi-host-bubble");
   el.textContent = text || "";
   el.classList.toggle("show", !!text);
