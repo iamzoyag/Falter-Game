@@ -67,7 +67,7 @@ export async function runMemory(ctx) {
   const faces = [
     SNACK_GLYPH[player.snack] || "🍓",
     DESSERTS[player.dessert]?.glyph || "🍰",
-    headItem(player.outfit?.head)?.glyph || "🎀",
+    headItem(player.outfit?.head)?.src || "🎀", // her accessory, as drawn
     "🎂"
   ];
   // de-duplicate (e.g. strawberry snack + strawberry clip)
@@ -101,7 +101,7 @@ export async function runMemory(ctx) {
       if (shot) player.selfies.push(shot);
       front(i).innerHTML = shot ? `<img src="${shot}" alt="" />` : `<span class="fd-glyph">🙂</span>`;
     } else if (c.mochi) front(i).innerHTML = `<img class="fd-mochi" src="${c.mochi === "cute" ? MOCHI_CUTE_URL : STITCHED_URL}" alt="" />`;
-    else front(i).innerHTML = `<span class="fd-glyph">${c.glyph}</span>`;
+    else front(i).innerHTML = c.glyph.startsWith("/") ? `<img class="fd-acc" src="${c.glyph}" alt="" />` : `<span class="fd-glyph">${c.glyph}</span>`;
     els[i].classList.add("up");
     ctx.sfx?.tick();
   };

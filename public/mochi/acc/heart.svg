@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140" width="240" height="140">
+<defs><linearGradient id="fade" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".09" stop-color="#fff"/><stop offset=".91" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="tuck" maskUnits="userSpaceOnUse" x="0" y="0" width="240" height="140"><rect width="240" height="140" fill="url(#fade)"/></mask></defs>
+<g mask="url(#tuck)">
+<path d="M10 12 Q120 82 230 12" fill="none" stroke="#c99a3e" stroke-width="5" stroke-linecap="round"/>
+<path d="M10 12 Q120 82 230 12" fill="none" stroke="#ffe08a" stroke-width="3" stroke-dasharray="5 4" stroke-linecap="round"/>
+<circle cx="120" cy="52" r="6" fill="none" stroke="#c99a3e" stroke-width="3.5"/>
+<path d="M120 132 C96 114 82 102 82 84 C82 70 92 62 104 62 C112 62 118 66 120 72 C122 66 128 62 136 62 C148 62 158 70 158 84 C158 102 144 114 120 132 Z" fill="#ffd978" stroke="#b0688a" stroke-linejoin="round" stroke-linecap="round" stroke-width="4"/>
+<path d="M120 122 C100 108 90 98 90 85 C90 75 97 70 105 70 C112 70 117 74 120 80 C123 74 128 70 135 70 C143 70 150 75 150 85 C150 98 140 108 120 122 Z" fill="#ff8fbf"/>
+<path d="M120 78 L120 120" stroke="#e86ea6" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M96 82 Q98 74 106 74" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".9"/>
+<circle cx="140" cy="96" r="2.5" fill="#fff" opacity=".8"/>
+</g>
+</svg>

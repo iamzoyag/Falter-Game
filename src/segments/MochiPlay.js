@@ -17,7 +17,7 @@ import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
 import { LINES, fillName, aiMochiLine } from "../mochi/MochiLines.js";
 import { settings } from "../settings.js";
 import { giggle } from "../mochi/Giggle.js";
-import { HEAD_ITEMS, NECK_ITEMS, outfitParts, accessoryHtml, describeOutfit } from "../mochi/outfit.js";
+import { HEAD_ITEMS, NECK_ITEMS, outfitParts, accessoryHtml, accessoryIcon, describeOutfit } from "../mochi/outfit.js";
 import { QUESTIONS } from "../quiz/questions.js";
 
 const el = () => document.getElementById("mochi-play");
@@ -401,7 +401,7 @@ export async function runDressUp(ctx) {
     <div class="mp-dress-row" data-slot="${slot}">
       <span class="mp-dress-label">${label}</span>
       ${items.map((i) => `<button class="mp-snack mp-dress" data-id="${i.id}" aria-label="${i.label}">
-        <span>${i.glyph || "✕"}</span><small>${i.label}</small></button>`).join("")}
+        <span>${i.src ? accessoryIcon(i) : "✕"}</span><small>${i.label}</small></button>`).join("")}
     </div>`;
   v.controls.innerHTML = `
     ${row("on her head", HEAD_ITEMS, "head")}

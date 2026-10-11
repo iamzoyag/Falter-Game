@@ -18,7 +18,9 @@
 // relax and get attached. `mochi` holds her reaction to each option (shown
 // in her speech bubble after they answer; the AI can personalise it).
 // m1-m4 claim nothing about feelings ("any"); m5-m8 quietly start the
-// face-vs-answer reading, and several of them pay off later.
+// face-vs-answer reading, and two of them pay off much later (m7's best
+// friend, m8's animals). Round two must read as plain, sweet small talk:
+// nothing in the questions or her replies should hint at what's coming.
 const MOCHI_QUESTIONS = [
   {
     id: "m1",
@@ -68,45 +70,45 @@ const MOCHI_QUESTIONS = [
   {
     id: "m5",
     callbackId: "night_person",
-    principle: "rapport / later: sleep and the dark",
-    prompt: "Are you a morning person or a night person?",
+    principle: "rapport (pure small talk; nothing to read into yet)",
+    prompt: "Are you a morning person or a night owl?",
     options: [
       { text: "Morning. Up with the sun.", expressionHint: "neutral", mochi: "early bunny gets the carrot ♡" },
-      { text: "Night. I'm up late.", expressionHint: "neutral", mochi: "mochi stays up late too. watching ♡" },
-      { text: "Neither, I'm always tired.", expressionHint: "smile", mochi: "aww. mochi will let you nap ♡" }
+      { text: "Night owl, definitely.", expressionHint: "neutral", mochi: "midnight snacks are the best snacks ♡" },
+      { text: "Neither, I'm always sleepy.", expressionHint: "smile", mochi: "same!! naps are mochi's favourite hobby ♡" }
     ]
   },
   {
     id: "m6",
-    callbackId: "sleep_light",
-    principle: "rapport / later: fear of the dark",
-    prompt: "How do you like to fall asleep?",
+    callbackId: "sleep_cuddle",
+    principle: "rapport / comfort",
+    prompt: "What do you cuddle when you sleep?",
     options: [
-      { text: "Lights off. Total dark.", expressionHint: "neutral", mochi: "so brave!! mochi likes the dark ♡" },
-      { text: "With a little light on.", expressionHint: "neutral", mochi: "a nightlight is nothing to be shy about ♡" },
-      { text: "With something playing.", expressionHint: "neutral", mochi: "so it's never too quiet? mochi gets it ♡" }
+      { text: "A big soft plushie.", expressionHint: "smile", mochi: "a plushie!! mochi is basically a plushie ♡" },
+      { text: "My pillow, all squished up.", expressionHint: "neutral", mochi: "squish squish ♡ very cosy" },
+      { text: "Nothing. I sleep like a starfish.", expressionHint: "smile", mochi: "a starfish!! hehe, mochi can picture it ♡" }
     ]
   },
   {
     id: "m7",
-    callbackId: "trust_most",
+    callbackId: "good_news",
     principle: "attachment / later: betrayal",
-    prompt: "Who's the person you trust the most?",
+    prompt: "Who do you tell first when something good happens?",
     options: [
-      { text: "My family.", expressionHint: "neutral", mochi: "that's so sweet ♡ mochi can be family too" },
-      { text: "My best friend.", expressionHint: "smile", mochi: "mochi can be your best friend!! ♡" },
-      { text: "Honestly? Just myself.", expressionHint: "neutral", mochi: "...that's okay. you have mochi now ♡" }
+      { text: "My family.", expressionHint: "neutral", mochi: "that's so sweet ♡ mochi loves a happy family" },
+      { text: "My best friend.", expressionHint: "smile", mochi: "mochi can be your best friend too!! ♡" },
+      { text: "Everyone, I can't keep it in.", expressionHint: "smile", mochi: "hehe, mochi would tell everyone too ♡" }
     ]
   },
   {
     id: "m8",
     callbackId: "cry_movie",
     principle: "empathy / later: Mochi gets hurt",
-    prompt: "What always makes you cry in a movie?",
+    prompt: "What always makes you a little teary in a movie?",
     options: [
-      { text: "When an animal gets hurt.", expressionHint: "frown", mochi: "mochi would never let anything hurt you ♡" },
-      { text: "When someone ends up all alone.", expressionHint: "frown", mochi: "you won't be alone. mochi's here ♡" },
-      { text: "Nothing. I don't cry at movies.", expressionHint: "neutral", mochi: "so tough!! mochi will remember that ♡" }
+      { text: "Anything with an animal in it.", expressionHint: "smile", mochi: "soft heart!! mochi is an animal too, you know ♡" },
+      { text: "A happy reunion at the end.", expressionHint: "smile", mochi: "the big hug at the end!! mochi cries too ♡" },
+      { text: "Nothing. I don't cry at movies.", expressionHint: "neutral", mochi: "so tough!! ♡" }
     ]
   }
 ];
