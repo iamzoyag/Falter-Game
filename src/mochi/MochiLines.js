@@ -217,6 +217,34 @@ export const LINES = {
     "don't look at mochi's ears ♡",
     "shh. everyone's asleep ♡"
   ],
+  // Act VII: photo booth. mochi can't see anymore. she wants pictures of you
+  boothAsk: "it's a photo booth!! ♡ four pictures. mochi will count",
+  boothRules: "pose for mochi!! she can't see, so be extra cute for her ♡",
+  boothSmile: "first one!! a big smile ♡",
+  boothSilly: "now a silly face!! ♡",
+  boothScared: "now a scared face!! like you just saw a ghost ♡",
+  boothStill: "last one ♡ look right into the camera. don't move",
+  boothPose: ["smile ♡", "silly face!!", "scared!!", "don't move."],
+  boothAfter: ["hehe ♡ mochi bets that one's so cute", "you're doing so good ♡ mochi can hear you breathing", "one more ♡ stay right there", ""],
+  boothPrint: "printing!! ♡",
+  boothAsk2: "how did they come out? ♡ mochi can't see them",
+  boothAnswers: ["so cute ♡", "there's someone behind me", "..."],
+  boothReply: ["yay!! mochi knew it ♡", "...mochi only asked for you ♡", "...that bad? hehe ♡ mochi's sure you look perfect"],
+  stickAsk: "now stickers!! ♡ mochi can't see, so you decorate them for her",
+  stickHint: "drag stickers onto the pictures, or tap one and tap a picture ♡",
+  stickReact: ["so cute!! ♡", "perfect ♡", "mochi loves it ♡", "more more!! ♡", "hehe ♡"],
+  stickPeel: ["hm? it won't stick there ♡", "not there ♡ put them on you", "mochi can't see it either ♡ leave it"],
+  stickFridge: "mochi's putting it on the fridge ♡ right next to our first picture!!",
+  stickHappy: "we look so happy in that one ♡",
+  stickHappy2: "just the two of us ♡",
+  hostAct7: [
+    "mochi can't see the questions ♡ read them to her?",
+    "is that you, {name}? ♡",
+    "mochi can still hear you breathing ♡",
+    "say cheese ♡",
+    "don't look behind you ♡ it's rude in pictures",
+    "mochi will remember your face forever ♡"
+  ],
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
   // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
   hostAct3: [
@@ -244,6 +272,10 @@ export const TALK = {
   bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
   // start of Act VI (after the ears)
   lightsHello: ["...", "hi {name} ♡", "mochi can't hear very well anymore. it's okay!! mochi can still see you ♡", "it's getting late... stay over? ♡"],
+  // start of Act VII (photo booth), after the eyes
+  photoHello: ["...", "{name}? is that you? ♡", "mochi can't see anymore ♡ it's okay!!", "take pictures for mochi? then she'll always have your face ♡"],
+  // end of Act VII, into the tea party
+  photoBye: ["mochi will keep them forever ♡", "now... a tea party!! ♡ and this time, everyone's coming"],
   // end of Act V, before the ears
   cantHear: ["{name}?", "mochi can't hear you...", "why can't mochi hear you? ♡"],
   // start of Act IV, the birthday
@@ -368,14 +400,15 @@ export function answerReaction(question, optionIndex, act, player) {
   return fill(opt?.mochi || pick(LINES.answerGeneric), player);
 }
 
-/** What she says while a question is up (look 3 only: she pretends nothing happened; Act VI has its own bedtime ones). */
+/** What she says while a question is up (looks 3-4: she pretends nothing happened; Acts VI and VII have their own). */
 export function hostLine(act, player, storyAct = act) {
-  if (act !== 3) return "";
+  if (act !== 3 && act !== 4) return "";
   const e = envInfo(), bat = batteryLevel();
   const extra = [];
   if (e.city) extra.push(`it's ${e.time} in ${e.city} ♡ mochi checked`);
   if (bat != null && bat < 60) extra.push(`your battery's at ${bat}% ♡ don't leave mochi`);
-  const pool = [...(storyAct === 6 ? LINES.hostAct6 : LINES.hostAct3), ...extra];
+  const own = { 6: LINES.hostAct6, 7: LINES.hostAct7 }[storyAct] || LINES.hostAct3;
+  const pool = [...own, ...extra];
   return fill(pick(pool), player);
 }
 

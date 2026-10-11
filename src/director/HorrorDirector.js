@@ -445,7 +445,8 @@ export class HorrorDirector {
       grain: 0.14 + c * 0.2,
       desat: 0.15 + c * 0.3,
       pixel: 2 + Math.round(c * 3),
-      cute: this.act === 3 ? Math.max(0, 0.3 - c * 1.5) : 0
+      cute: this.act === 3 ? Math.max(0, 0.3 - c * 1.5) : 0,
+      oneBit: this.act === 4 ? 1 : 0 // the photo booth act is 1-bit, and so is the feed
     });
   }
 
