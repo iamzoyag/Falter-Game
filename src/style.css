@@ -1899,31 +1899,15 @@ body[data-act="5"] .mp-heart { color: #ff5662; text-shadow: 0 2px 0 #1c0709; }
 }
 .tp-stream.on { opacity: 1; }
 
-/* your cup, from above */
-.tp-reflect {
-  position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
-  background: rgba(6, 0, 1, 0.66); opacity: 0; transition: opacity 0.9s;
-}
-.tp-reflect.on { opacity: 1; }
-.tp-rim {
-  position: relative; width: min(62vh, 80vw); aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #3a0508;
-  border: 3.5vh solid #efdcdf; box-shadow: inset 0 0 6vh 2vh rgba(0, 0, 0, 0.85), 0 0 0 1vh #3a0a0e, 0 3vh 6vh rgba(0, 0, 0, 0.7);
-  transition: scale 1.1s ease-in, opacity 1.1s ease-in;
-}
-.tp-rim canvas {
-  width: 100%; height: 100%; display: block;
-  filter: grayscale(1) contrast(1.35) brightness(0.95);
-  animation: tp-liquid 3.8s ease-in-out infinite alternate;
-}
-@keyframes tp-liquid { to { scale: 1.035; rotate: 1.4deg; } }
-.tp-rim::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; mix-blend-mode: multiply; background: radial-gradient(circle, #c4121f 0%, #8a0b16 60%, #3a0508 100%); }
-.tp-ripple { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1; }
-.tp-ripple.go { animation: tp-ripple 1.6s ease-out; }
-@keyframes tp-ripple {
-  0% { box-shadow: inset 0 0 0 0 rgba(255, 200, 200, 0.5); }
-  100% { box-shadow: inset 0 0 0 30vh rgba(255, 200, 200, 0); }
-}
-.tp-reflect.drink .tp-rim { scale: 0.15; opacity: 0; }
+/* while you pour yours, they look at you */
+.tp-eyes { position: absolute; translate: -50% -50%; display: flex; gap: 1.3vh; opacity: 0; transition: opacity 1.2s ease-in; z-index: 1; }
+.tp-eyes i { width: 0.9vh; height: 0.65vh; border-radius: 50%; background: #ffe2e4; box-shadow: 0 0 0.9vh 0.2vh rgba(255, 60, 70, 0.75); }
+.tp-seat .tp-guest { transition: translate 1.6s ease-in-out, scale 1.6s ease-in-out; }
+.tp-seat.watching .tp-guest { translate: -50% 2.2vh; scale: 1.09; }
+.tp-seat.watching .tp-eyes { opacity: 0.9; }
+.tp-seat:not(.watching) .tp-eyes { transition-duration: 0s; } /* gone the instant it's over */
+.tp-seat:not(.watching) .tp-guest { transition-duration: 0s; }
+.tp-seat.lean:not(.watching) .tp-guest { transition: translate 0.6s ease-in-out, scale 0.6s ease-in-out; }
 
 /* pass the parcel */
 .tp-parcel {

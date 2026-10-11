@@ -5,9 +5,10 @@
 //
 //   tea      pour tea for each guest: hold to pour, let go at the line. It's
 //            rosehip ("mochi's favourite ♡"), and it's very red. Each guest
-//            whispers something when they get theirs. Then one for you; look
-//            into it and there you are, and someone is standing behind you.
-//            "drink up ♡"
+//            whispers something when they get theirs. Then one for you, and
+//            while you watch the line, they turn to look at you: one by one,
+//            eyes open in the silhouettes and they lean in. The moment your
+//            cup is done, they're facing front again. "perfect ♡"
 //   parcel   pass the parcel, to her song (what's left of it). When the music
 //            stops, whoever has it unwraps a layer. The parcel waits for you
 //            to pass it on. The last layer is yours: scissors. "for later ♡"
@@ -18,7 +19,7 @@
 //
 // (Mochi has no cup. She isn't thirsty. Yours is in front of you.)
 //
-// Saved: player.tea = { poured: [{who, level}], drank, scissors }.
+// Saved: player.tea = { poured: [{who, level}], watched, scissors }.
 
 import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
 import { giggle } from "../mochi/Giggle.js";
@@ -31,6 +32,8 @@ const P = (n) => `/party/${n}.svg`;
 const frame = () => new Promise((r) => requestAnimationFrame(r));
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const LINE = 0.8; // the line on the cup
+// where each figure's head is in its (top-cropped) seat box, for when they look at you
+const FIG_EYES = [[0.5, 0.1], [0.5, 0.13], [0.47, 0.16], [0.52, 0.1], [0.5, 0.15]];
 
 // ---------------------------------------------------------------- art
 
@@ -104,7 +107,7 @@ function table(v, ctx) {
         <div class="tp-seat${s.mochi ? " mochi" : ""}" data-i="${i}" style="left:${s.x * 100}%">
           <img class="tp-chair" src="${P("chair")}" alt="" />
           ${s.mochi ? `<img class="tp-sitter" src="${MOCHI_CUTE_URL}" alt="" />`
-            : `<div class="tp-guest"><img src="${figs[s.fig % figs.length]}" alt="" draggable="false" /></div><div class="tp-whisper"></div>`}
+            : `<div class="tp-guest"><img src="${figs[s.fig % figs.length]}" alt="" draggable="false" /><span class="tp-eyes" style="left:${FIG_EYES[s.fig % FIG_EYES.length][0] * 100}%;top:${FIG_EYES[s.fig % FIG_EYES.length][1] * 100}%"><i></i><i></i></span></div><div class="tp-whisper"></div>`}
         </div>`).join("")}
       <div class="tp-table">
         <span class="tp-candle" style="left:${(seats[0].x + seats[1].x) * 50}%"><i></i></span>
@@ -197,6 +200,13 @@ export async function runTea(ctx) {
     else say(v, fillName(pick(LINES.teaFor), player).replace("{guest}", s.name === "?" ? LINES.teaNoName : s.name));
     ctx.sfx?.tick();
     await sleep(700);
+    // yours: the moment you start pouring, while you watch the line, they turn
+    // to look at you, one by one (your cup fills a little slower, so they can)
+    let turners = null;
+    const turn = () => guests.map((g, i) => setTimeout(() => {
+      g.seat.classList.add("watching");
+      if (i === guests.length - 1) ctx.audio?.breatheBehind?.(0.035);
+    }, 300 + i * 650));
 
     let level = 0, last = performance.now(), t0 = last, done = false, overflow = false, wasPouring = false, nagged = false;
     while (!done) {
@@ -204,7 +214,8 @@ export async function runTea(ctx) {
       const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       if (now - t0 > 25000) pouring = level < LINE; // nobody gets stuck: it fills itself
-      if (pouring) level += dt * 0.34;
+      if (pouring) level += dt * (s.you ? 0.24 : 0.34);
+      if (s.you && pouring && !turners) turners = turn();
       pot.classList.toggle("tilt", pouring);
       stream.classList.toggle("on", pouring);
       if (pouring) {
@@ -225,6 +236,14 @@ export async function runTea(ctx) {
     pot.classList.remove("tilt");
     stream.classList.remove("on");
     s.place.classList.remove("now");
+    let watched = 0;
+    if (s.you) {
+      // ...and the moment it's done, they're facing front again
+      (turners || []).forEach(clearTimeout);
+      watched = guests.filter((g) => g.seat.classList.contains("watching")).length;
+      guests.forEach((g) => g.seat.classList.remove("watching"));
+      player.tea = { ...(player.tea || {}), watched };
+    }
     poured.push({ who: s.you ? "you" : s.name, level: +level.toFixed(2) });
     if (overflow) {
       cupEl.classList.add("spill");
@@ -262,62 +281,9 @@ export async function runTea(ctx) {
   removeEventListener("keyup", up);
   v.controls.innerHTML = "";
 
-  // look into it
-  await reflection(v, ctx);
   T.stop();
   player.tea = { ...(player.tea || {}), poured };
   await hide(v);
-}
-
-/** Your cup, from above. You're in it. So is something behind you. */
-async function reflection(v, ctx) {
-  const player = ctx.player;
-  say(v, fillName(LINES.teaLook, player));
-  v.root.insertAdjacentHTML("beforeend", `<div class="tp-reflect"><div class="tp-rim"><canvas width="360" height="360"></canvas><div class="tp-ripple"></div></div></div>`);
-  const wrap = v.root.querySelector(".tp-reflect"), c = wrap.querySelector("canvas"), g = c.getContext("2d");
-  const feed = ctx.feed;
-  const fig = ctx.director?.prepareFigureImage?.() ? ctx.director.figureAt(4.4, ctx.getFace?.()) : null;
-  let live = true;
-  (async () => {
-    while (live) {
-      const src = feed?.canvas;
-      if (src?.width) {
-        const s = Math.min(src.width, src.height);
-        g.save(); g.translate(360, 0); g.scale(-1, 1);
-        g.drawImage(src, (src.width - s) / 2, (src.height - s) / 2, s, s, 0, 0, 360, 360);
-        g.restore();
-      }
-      await frame();
-    }
-  })();
-  requestAnimationFrame(() => wrap.classList.add("on"));
-  await sleep(1400);
-  // a ripple, and when it settles there's someone standing behind you
-  wrap.querySelector(".tp-ripple").classList.add("go");
-  ctx.sfx?.boop(0.6);
-  await sleep(700);
-  if (fig && feed) {
-    feed.setFigureImage(ctx.director.prepareFigureImage());
-    feed.setFigure(fig);
-  }
-  await sleep(3200);
-  feed?.setFigure(null);
-  say(v, fillName(LINES.teaDrink, player));
-  v.controls.innerHTML = `<button type="button" class="btn-primary tp-drink">${LINES.teaDrinkBtn}</button>`;
-  await new Promise((resolve) => {
-    v.controls.querySelector("button").addEventListener("click", resolve, { once: true });
-    wrap.addEventListener("click", resolve, { once: true });
-    setTimeout(resolve, 14000);
-  });
-  v.controls.innerHTML = "";
-  // gulp, gulp, gulp
-  wrap.classList.add("drink");
-  for (let i = 0; i < 3; i++) { ctx.sfx?.nom(); await sleep(330); }
-  live = false;
-  player.tea = { ...(player.tea || {}), drank: true };
-  await sleep(500);
-  wrap.remove();
-  await talk(v, ctx, [LINES.teaTaste, LINES.teaMade], 2000);
 }
 
 // ================================================================ pass the parcel

@@ -108,11 +108,11 @@ are older acts parked in the slot they'll be replaced in.
    own"), blacked out with a red rim of light; nobody can see them properly.
    Pour everyone tea (hold, let go at the line); it's rosehip, and very red.
    Each guest whispers something when they get theirs, and for a frame you see
-   one as it is. Then one for you: look into it and there's your face, with
-   someone standing behind you. "drink up ♡". Then pass the parcel to what's
-   left of her song; the parcel waits for you to pass it on; the last layer is
-   yours: scissors, "for later ♡". The close-your-eyes task is still in this
-   act (`src/segments/MochiTea.js`).
+   one as it is. Then one for you, and while you watch the line, they turn to
+   look at you, one by one; the moment your cup is done they're facing front
+   again. Then pass the parcel to what's left of her song; the parcel waits
+   for you to pass it on; the last layer is yours: scissors, "for later ♡"
+   (`src/segments/MochiTea.js`).
 9. **IX. RESULTS** (for now: the old interview) → **unzip**, then the ending.
 
 Each stage has an `act` (its place in the story) and a `look` (how far gone

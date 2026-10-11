@@ -226,10 +226,10 @@ export const STAGES = [
     subtitle: "",
     // Black and dark red. The birthday table again, and this time everyone
     // came: the friends the player invited, sat in the chairs, that nobody
-    // can see properly. Pour them tea; they whisper. Your reflection in your
-    // cup has someone behind it. Pass the parcel to her broken song; the
-    // last layer is yours: scissors, "for later". The presence features come
-    // on after the tea, and the close-your-eyes task is still here.
+    // can see properly. Pour them tea; they whisper. While you pour your
+    // own, they all turn to look at you. Pass the parcel to her broken
+    // song; the last layer is yours: scissors, "for later". The presence
+    // features come on after the tea.
     features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, beats: true, voice: true, scriptedGlitch: true, smileClip: true, darkness: true, figure: true },
     steps: [
       { type: "talk", lines: "teaHello", mood: "off", flicker: "/mochi/wounds-eyes.webp" },
@@ -240,7 +240,6 @@ export const STAGES = [
       "t2", "q17",
       { type: "play", kind: "parcel" },
       "t3", "q18",
-      { type: "task", task: "closeEyes" },
       "q19",
       { type: "talk", lines: "teaBye", mood: "off" }
     ]
