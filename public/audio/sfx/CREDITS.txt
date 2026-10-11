@@ -19,3 +19,4 @@ required, but here's where each came from:
 "Blood_Drips_Tomato.wav" by melissapons, https://freesound.org/people/melissapons/sounds/178156/ -> drip-1, drip-2, drip-3, drip-4, drip-5, drip-6
 "48-Blood.wav" by lauracarolina09, https://freesound.org/people/lauracarolina09/sounds/445884/ -> drip-7
 "Blood Gush / Spray" by clif_creates, https://freesound.org/people/clif_creates/sounds/345985/ -> gush-1
+"Jumpscare Scream" by Breviceps, https://freesound.org/people/Breviceps/sounds/587354/ -> screech-1

@@ -60,15 +60,16 @@ class GigglePlayer {
     return true;
   }
 
-  play() {
-    const ctx = this.ctx, c = this.creep;
+  /** Giggle now. `creep` overrides the story's level for this one; `gain` scales it. */
+  play({ creep, gain = 1, wait = 0 } = {}) {
+    const ctx = this.ctx, c = creep ?? this.creep;
     if (!ctx || !this.buffers.length) return;
     this._last = performance.now();
     let i = Math.floor(Math.random() * this.buffers.length);
     if (i === this._lastIndex) i = (i + 1) % this.buffers.length;
     this._lastIndex = i;
     const buf = this.buffers[i];
-    const t0 = ctx.currentTime + 0.02;
+    const t0 = ctx.currentTime + 0.02 + wait;
 
     // slower and lower, gradually
     const rate = (1.03 - 0.24 * c) * (1 + (Math.random() - 0.5) * 0.03);
@@ -113,7 +114,9 @@ class GigglePlayer {
     lp.connect(delay);
     delay.connect(fb).connect(delay);
     delay.connect(wet).connect(pan);
-    pan.connect(this.dest);
+    const out = ctx.createGain();
+    out.gain.value = gain;
+    pan.connect(out).connect(this.dest);
 
     // underneath, later on: the same giggle, backwards
     let back = null;
@@ -135,7 +138,7 @@ class GigglePlayer {
     lfo.stop(t0 + dur + tail);
     back?.stop(t0 + 0.12 + dur / 0.86);
     // let the echo ring out, then let go of the nodes
-    setTimeout(() => { try { pan.disconnect(); delay.disconnect(); } catch { /* already gone */ } }, (dur + tail + 0.5) * 1000);
+    setTimeout(() => { try { out.disconnect(); delay.disconnect(); } catch { /* already gone */ } }, (dur + tail + wait + 0.5) * 1000);
   }
 }
 

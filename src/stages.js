@@ -150,7 +150,7 @@ export const STAGES = [
     steps: [
       { type: "pause", ms: 4200 },
       { type: "round", title: "round si\u0335x ♡", sub: "where were we?", glitch: true },
-      { type: "talk", lines: "whereWereWe", mood: "off", flicker: "/mochi/stitches.webp" },
+      { type: "talk", lines: "whereWereWe", mood: "off", flicker: "/mochi/stitches-local.webp" },
       "b3", "b4",
       { type: "play", kind: "memory" },
       { type: "round", title: "a proper test ♡", sub: "mochi wants to know the real you" },
@@ -158,7 +158,7 @@ export const STAGES = [
       { type: "play", kind: "results" },
       "b6",
       { type: "play", kind: "simon" },
-      { type: "talk", lines: "cantHear", mood: "off", flicker: "/mochi/stitches.webp" },
+      { type: "talk", lines: "cantHear", mood: "off", flicker: "/mochi/stitches-local.webp" },
       { type: "mochi", scene: "ears" }
     ]
   },
@@ -173,7 +173,7 @@ export const STAGES = [
     // (the director wakes up, then the dark) -> eyes
     features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, beats: true, voice: true, scriptedGlitch: true, smileClip: true },
     steps: [
-      { type: "talk", lines: "lightsHello", mood: "off", flicker: "/mochi/ears.webp" },
+      { type: "talk", lines: "lightsHello", mood: "off", flicker: "/mochi/wounds-ears.webp" },
       "q6", "q7", "q8",
       "q9", "q10",
       { type: "features", set: { darkness: true } },
