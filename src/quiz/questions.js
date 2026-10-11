@@ -583,6 +583,43 @@ const PHOTO_QUESTIONS = [
   }
 ];
 
+// Act VIII's tea questions (t1..t3), asked with the guests at the table.
+const TEA_QUESTIONS = [
+  {
+    id: "t1",
+    callbackId: "sugar",
+    principle: "rapport (tea round)",
+    prompt: "One lump or two?",
+    options: [
+      { text: "One.", expressionHint: "any", dark: "sweet ♡" },
+      { text: "Two.", expressionHint: "smile", dark: "sweeter ♡" },
+      { text: "None, thanks.", expressionHint: "neutral", dark: "mochi already put some in ♡" }
+    ]
+  },
+  {
+    id: "t2",
+    callbackId: "place_set",
+    principle: "callback: the empty birthday chairs",
+    prompt: "Have you ever set a place for someone who wasn't coming?",
+    options: [
+      { text: "No.", expressionHint: "neutral", dark: "mochi does ♡ every day" },
+      { text: "Once.", expressionHint: "neutral", dark: "did they come in the end? ♡" },
+      { text: "I don't understand the question.", expressionHint: "surprise", dark: "you will ♡" }
+    ]
+  },
+  {
+    id: "t3",
+    callbackId: "know_the_guests",
+    principle: "presence, made literal",
+    prompt: "Is everyone at this table someone you know?",
+    options: [
+      { text: "Yes.", expressionHint: "any", dark: "...♡" },
+      { text: "No.", expressionHint: "frown", dark: "they know you ♡" },
+      { text: "I can't see them properly.", expressionHint: "surprise", dark: "it's the candles ♡" }
+    ]
+  }
+];
+
 export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
   ...DESSERT_QUESTIONS,
@@ -592,6 +629,7 @@ export const QUESTIONS = [
   ...BONUS_QUESTIONS,
   ...NIGHT_QUESTIONS,
   ...PHOTO_QUESTIONS,
+  ...TEA_QUESTIONS,
   // Round three of Act I ("the deep questions~"): deep the way a magazine
   // quiz is deep. Still sweet, nothing pointed; the creepy versions of these
   // themes (the dark, being alone, being watched) wait for the later acts.

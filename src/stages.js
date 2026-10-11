@@ -5,7 +5,7 @@
 // `act` is the act's place in the story (I..IX). `look` is how far gone the
 // world is, and it's what the colour script (body[data-act]), the music, the
 // webcam filter and Mochi's AI voice all key off:
-//   1 pink and honest   2 pink, quietly draining   3 dusty rose   4 1-bit black and white
+//   1 pink and honest   2 pink, quietly draining   3 dusty rose   4 1-bit black and white   5 black + dark red
 //   5 black + dark red  6 black + blood red
 // Several acts can share a look; the slow acts early on do.
 //
@@ -18,7 +18,7 @@
 //   ★ V    WHERE WERE WE   memory (one pair never matches), a test she misquotes, your results, mochi says -> ears
 //   ★ VI   LIGHTS OUT      a sleepover in your room: flashlight (she moves closer), a midnight catch -> eyes
 //   ★ VII  PHOTO BOOTH     1-bit. a four-frame strip with something behind you, then stickers that won't stick to it
-//     VIII TEA PARTY       (old presence act for now)
+//   ★ VIII TEA PARTY       everyone came: pour tea for the guests you invited; pass the parcel -> scissors
 //     IX   RESULTS         (old interview for now) -> unzip -> ending
 //
 // `songDrift` (optional): how far her song has slowed/flattened by the end of
@@ -218,14 +218,31 @@ export const STAGES = [
     ]
   },
   {
-    id: "presence",
+    id: "tea",
     act: 8,
     look: 5,
-    card: "stage",
-    title: "VIII. PRESENCE",
-    subtitle: "you are not the only thing in this room.",
-    features: { beats: true, darkness: true, unblink: true, creep: true, figure: true, room: true, voice: true, playerVoice: true, smileClip: true, faceGore: true },
-    steps: ["q13", "q14", "q15", { type: "task", task: "closeEyes" }, "q16", "q17", "q18", "q19"]
+    card: "none",
+    title: "VIII. TEA PARTY",
+    subtitle: "",
+    // Black and dark red. The birthday table again, and this time everyone
+    // came: the friends the player invited, sat in the chairs, that nobody
+    // can see properly. Pour them tea; they whisper. While you pour your
+    // own, they all turn to look at you. Pass the parcel to her broken
+    // song; the last layer is yours: scissors, "for later". The presence
+    // features come on after the tea.
+    features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, beats: true, voice: true, scriptedGlitch: true, smileClip: true, darkness: true, figure: true },
+    steps: [
+      { type: "talk", lines: "teaHello", mood: "off", flicker: "/mochi/wounds-eyes.webp" },
+      { type: "round", title: "tea party ♡", sub: "one lump or two?" },
+      "t1", "q14",
+      { type: "play", kind: "tea" },
+      { type: "features", set: { room: true, playerVoice: true, faceGore: true } },
+      "t2", "q17",
+      { type: "play", kind: "parcel" },
+      "t3", "q18",
+      "q19",
+      { type: "talk", lines: "teaBye", mood: "off" }
+    ]
   },
   {
     id: "interview",

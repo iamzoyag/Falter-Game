@@ -34,6 +34,7 @@ import { woundsNow, woundsNext } from "./mochi/wounds.js";
 import { runMemory, runResults, runSimon } from "./segments/MochiFaded.js";
 import { runFlashlight, runNightCatch } from "./segments/MochiDark.js";
 import { runBooth, runStickers } from "./segments/MochiBooth.js";
+import { runTea, runParcel } from "./segments/MochiTea.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
@@ -88,8 +89,8 @@ const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
 const faceGore = new FaceGore(document.getElementById("face-gore"));
 // What the player tells Mochi in Act I. It all comes back later.
 // outfit, caught and dessert come from Act II; room, friend and cornerFound from Act III;
-// frosting, guests and blewOut from Act IV; night from Act VI; booth from Act VII
-const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null, frosting: null, guests: null, blewOut: null, night: null, booth: null };
+// frosting, guests and blewOut from Act IV; night from Act VI; booth from Act VII; tea from Act VIII
+const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null, frosting: null, guests: null, blewOut: null, night: null, booth: null, tea: null };
 
 const reduceFlashBox = document.getElementById("reduce-flash-checkbox");
 reduceFlashBox.checked = settings.reduceFlashing;
@@ -345,7 +346,7 @@ async function runGame() {
         lastEntry = await quiz.ask(q, qIndex, TOTAL_QUESTIONS, stage);
         qIndex++;
         const previous = step.type === "repeat" ? quiz.getDossier().find((d) => d.questionId === base.id) : null;
-        if (act <= 4) await mochiReacts(q, lastEntry, act, ctx, previous);
+        if (act <= 5) await mochiReacts(q, lastEntry, act, ctx, previous);
         if (lateBaseline && qIndex === 2) {
           lateBaseline = false;
           faceTracker.finishBaselineCapture();
@@ -404,6 +405,8 @@ async function runGame() {
         else if (step.kind === "nightcatch") await runNightCatch(ctx);
         else if (step.kind === "booth") await runBooth(ctx);
         else if (step.kind === "stickers") await runStickers(ctx);
+        else if (step.kind === "tea") await runTea(ctx);
+        else if (step.kind === "parcel") await runParcel(ctx);
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");
