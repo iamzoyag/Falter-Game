@@ -448,6 +448,82 @@ const BONUS_QUESTIONS = [
   }
 ];
 
+// Act VI's bedtime questions (n1..n6), asked at the sleepover. Cute on the
+// surface; each one is about the dark. Her reaction is `dark` (look 3 has no
+// other per-answer lines).
+const NIGHT_QUESTIONS = [
+  {
+    id: "n1",
+    callbackId: "nightlight",
+    principle: "rapport (sleepover round), fear of the dark",
+    prompt: "Do you sleep with a light on?",
+    options: [
+      { text: "No, I like it pitch dark.", expressionHint: "any", dark: "brave!! mochi doesn't ♡" },
+      { text: "A little nightlight.", expressionHint: "smile", dark: "mochi too!! a pink one ♡" },
+      { text: "Yes. I don't like the dark.", expressionHint: "neutral", dark: "mochi will stay with you ♡ in the dark" },
+      { text: "Depends on the night.", expressionHint: "neutral", dark: "the bad nights ♡ mochi knows" }
+    ]
+  },
+  {
+    id: "n2",
+    callbackId: "cant_sleep",
+    principle: "rapport (sleepover round), night habits",
+    prompt: "What do you do when you can't sleep?",
+    options: [
+      { text: "Scroll on my phone.", expressionHint: "smile", dark: "mochi likes it when you're on your screen ♡" },
+      { text: "Lie there and think.", expressionHint: "neutral", dark: "about what? ♡ ...about mochi?" },
+      { text: "Get up and walk around.", expressionHint: "any", dark: "mochi hears you, you know ♡" },
+      { text: "I fall asleep fast.", expressionHint: "any", dark: "lucky ♡ mochi doesn't sleep" }
+    ]
+  },
+  {
+    id: "n3",
+    callbackId: "sleep_facing",
+    principle: "callback: she faced the wall in hide-and-seek",
+    prompt: "Which way do you face when you sleep?",
+    options: [
+      { text: "Towards the wall.", expressionHint: "any", dark: "mochi faces the wall too ♡" },
+      { text: "Towards the door.", expressionHint: "any", dark: "so you can see who comes in ♡" },
+      { text: "On my back, at the ceiling.", expressionHint: "any", dark: "like you're waiting for something ♡" },
+      { text: "Every way. I toss and turn.", expressionHint: "any", dark: "mochi will hold you still ♡" }
+    ]
+  },
+  {
+    id: "n4",
+    callbackId: "under_bed",
+    principle: "childhood fear, made present",
+    prompt: "Do you still check under the bed?",
+    options: [
+      { text: "Never.", expressionHint: "any", dark: "mochi checked for you ♡" },
+      { text: "When I was little.", expressionHint: "smile", dark: "and now? ♡" },
+      { text: "Sometimes. Still.", expressionHint: "neutral", dark: "mochi's not under there ♡ mochi's here" }
+    ]
+  },
+  {
+    id: "n5",
+    callbackId: "name_in_dark",
+    principle: "auditory presence, set up for the voice beats",
+    prompt: "If you heard someone say your name in the dark, would you answer?",
+    options: [
+      { text: "Yes.", expressionHint: "any", dark: "okay ♡ mochi will remember that" },
+      { text: "No.", expressionHint: "neutral", dark: "not even if it was mochi? ♡" },
+      { text: "Depends whose voice it was.", expressionHint: "neutral", dark: "what if it was yours? ♡" }
+    ]
+  },
+  {
+    id: "n6",
+    callbackId: "eyes_closed",
+    principle: "foreshadowing the eyes",
+    prompt: "When you close your eyes, what do you see?",
+    options: [
+      { text: "Nothing. Just dark.", expressionHint: "any", dark: "mochi will see that soon too ♡" },
+      { text: "Colours and shapes.", expressionHint: "any", dark: "pretty ♡ mochi wants to see" },
+      { text: "Whatever I looked at last.", expressionHint: "any", dark: "mochi, then ♡" },
+      { text: "Faces.", expressionHint: "frown", dark: "is one of them mochi? ♡" }
+    ]
+  }
+];
+
 export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
   ...DESSERT_QUESTIONS,
@@ -455,6 +531,7 @@ export const QUESTIONS = [
   ...PARTY_QUESTIONS,
   ...TEST_QUESTIONS,
   ...BONUS_QUESTIONS,
+  ...NIGHT_QUESTIONS,
   // Round three of Act I ("the deep questions~"): deep the way a magazine
   // quiz is deep. Still sweet, nothing pointed; the creepy versions of these
   // themes (the dark, being alone, being watched) wait for the later acts.
