@@ -157,6 +157,7 @@ export async function runGreet(ctx) {
   v.controls.innerHTML = "";
   bounce(v);
   ctx.sfx?.sparkle();
+  giggle.happy(0.9);
   const r = v.wrap.getBoundingClientRect();
   for (let i = 0; i < 6; i++) setTimeout(() => heart(v, r.left + r.width * (0.3 + Math.random() * 0.4), r.top + r.height * 0.3), i * 90);
   await sayPersonal(v, ctx, "greet", fillName(pick(LINES.greetName), ctx.player));
@@ -259,6 +260,7 @@ export async function runPet(ctx) {
   if (petted) {
     bounce(v);
     ctx.sfx?.chirp();
+    giggle.happy(0.85);
     await sayPersonal(v, ctx, "pet", fillName(pick(LINES.petDone), ctx.player));
   } else {
     ctx.sfx?.sad();
@@ -307,6 +309,7 @@ export async function runFeed(ctx) {
   });
   await sleep(650);
   fly.remove();
+  giggle.happy(0.7, { wait: 0.4 });
   for (let i = 0; i < 3; i++) {
     bounce(v, "nom");
     ctx.sfx?.nom();
@@ -433,6 +436,7 @@ export async function runDressUp(ctx) {
   v.controls.innerHTML = "";
   bounce(v, "wiggle");
   ctx.sfx?.sparkle();
+  giggle.happy(0.9);
   const r = v.mochi.getBoundingClientRect();
   for (let i = 0; i < 8; i++) setTimeout(() => heart(v, r.left + r.width * (0.2 + Math.random() * 0.6), r.top + r.height * 0.4), i * 80);
   await sayPersonal(v, ctx, "dressup", fillName(pick(LINES.dressDone), ctx.player),
@@ -518,6 +522,7 @@ export async function runCatch(ctx) {
           scoreEl.textContent = Math.min(caught, CATCH_GOAL);
           ctx.sfx?.boop(1 + Math.min(caught, CATCH_GOAL) * 0.03);
           heart(v, it.x, by - 20, it.star ? "✦" : "♡");
+          if (it.star) giggle.happy(0.5);
           basket.classList.remove("got");
           void basket.offsetWidth;
           basket.classList.add("got");
@@ -545,6 +550,7 @@ export async function runCatch(ctx) {
   field.remove();
   bounce(v);
   ctx.sfx?.chirp();
+  if (caught >= CATCH_GOAL) giggle.happy(0.9);
   const local = caught >= CATCH_GOAL ? fillName(pick(LINES.catchWin), ctx.player) : fillName(LINES.catchSome, ctx.player).replace("{n}", String(caught));
   await sayPersonal(v, ctx, "catch", local, { answer: `caught ${ctx.player.caught} of ${CATCH_GOAL} strawberries` });
   await sleep(2600);

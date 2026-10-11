@@ -30,7 +30,13 @@ const CUT_BLACK_MS = 1300;
  *          mochiAudio: import('../mochi/MochiAudio').MochiAudio, getFace: () => object,
  *          ui: object, director: object, voice?: object}} ctx
  */
-export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, ui, director, voice, player, aiClient, aiEnabled, samples }) {
+export async function runMochiEvent(opts) {
+  // no stray cute giggles during an injury scene; she gets exactly two: one cute, one not
+  giggle.hush(true);
+  try { return await mochiEvent(opts); } finally { giggle.hush(false); }
+}
+
+async function mochiEvent({ scene, act, engine, mochiAudio, getFace, ui, director, voice, player, aiClient, aiEnabled, samples }) {
   const ok = await engine.load();
   if (!ok) return { skipped: true };
   engine.calm = settings.reduceFlashing;
@@ -45,7 +51,8 @@ export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, u
   aiMochiLine(aiClient, aiEnabled, "event-before", { act, scene, name: player?.name, snack: player?.snack, localFallbackText: before, dossier }, 1500)
     .then((t) => { if (t && document.getElementById("mochi-event-bubble")?.textContent === before) ui.setMochiBubble(t); });
 
-  // ---- 1. pre-roll: cute. (just let it be cute.)
+  // ---- 1. pre-roll: cute. (just let it be cute.) she giggles, the way she always does.
+  setTimeout(() => giggle.play({ creep: giggle.cuteCreep, gain: 0.9, bright: 1.06 }), 700);
   const preEnd = performance.now() + PREROLL_MS;
   while (performance.now() < preEnd) {
     const now = await nextFrame();
@@ -112,7 +119,8 @@ export async function runMochiEvent({ scene, act, engine, mochiAudio, getFace, u
 /**
  * After each injury scene: for under a second, Mochi with ALL of her
  * injuries (stitches, ears, eyes, belly) lunges at the screen. A screech,
- * and her giggle underneath. Then the usual cut to black.
+ * and her giggle underneath, the one you've heard all game, gone wrong
+ * (Giggle.evil). Then the usual cut to black.
  */
 const FLASH_MS = 850;
 export async function allWoundsFlash({ samples, player }) {
@@ -126,7 +134,7 @@ export async function allWoundsFlash({ samples, player }) {
   const img = el.querySelector("img");
   if (!img.complete) await Promise.race([new Promise((r) => (img.onload = r)), sleep(400)]);
   samples?.play("screech", { gain: 0.9, jitter: 0.03 });
-  giggle.play({ creep: Math.max(giggle.creep, 0.8), gain: 0.9, wait: 0.12 });
+  giggle.evil({ gain: 1, wait: 0.12 }); // the same giggle as always. not cute anymore.
   void el.offsetWidth;
   el.classList.add("go");
   // wait for the lunge itself to finish (a busy machine may start it late), but never hang

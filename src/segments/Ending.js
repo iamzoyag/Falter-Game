@@ -2,6 +2,7 @@
 // (or, if they never flinched, their calibration smile) — pushed as far as it
 // goes. Then the report, with that frame kept as "the moment you flinched".
 
+import { giggle } from "../mochi/Giggle.js";
 import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
 
 export async function runEnding({ feed, audio, ui, director, aiClient, aiEnabled, imageFlash, player, faceGore, samples }) {
@@ -41,6 +42,7 @@ export async function runEnding({ feed, audio, ui, director, aiClient, aiEnabled
     feed.freezeLastOpen(performance.now() + 1400, warp);
   }
   audio.playStinger("jumpscare", { x: 0, y: 0, z: -0.3 });
+  giggle.evil({ gain: 0.9, wait: 0.2 }); // and her, one last time
   ui.flashScreen(0.6);
   ui.shakeScreen();
   await sleep(250);

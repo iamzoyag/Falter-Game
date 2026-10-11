@@ -13,6 +13,7 @@
 // Saved: player.selfies (the two face cards, for later), player.simon.
 
 import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
+import { giggle } from "../mochi/Giggle.js";
 import { LINES, fillName } from "../mochi/MochiLines.js";
 import { build, show, hide, say, bounce, heart, sleep, pick, DESSERTS } from "./MochiPlay.js";
 import { headItem } from "../mochi/outfit.js";
@@ -146,6 +147,7 @@ export async function runMemory(ctx) {
         ctx.sfx?.chirp();
         const r = els[b].getBoundingClientRect();
         heart(v, r.left + r.width / 2, r.top + r.height / 3);
+        giggle.happy(0.45);
         say(v, fillName(A.you ? LINES.memYou : pick(LINES.memMatch), player));
       } else {
         await sleep(450);
