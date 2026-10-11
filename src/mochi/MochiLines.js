@@ -245,6 +245,48 @@ export const LINES = {
     "don't look behind you ♡ it's rude in pictures",
     "mochi will remember your face forever ♡"
   ],
+  // Act VIII: the tea party. everyone came this time
+  teaCame: "everyone came this time ♡ see? mochi told you they would",
+  teaHers: "you didn't invite anyone... so mochi invited some friends of her own ♡",
+  teaAsk: "pour everyone some tea!! fill it to the line ♡",
+  teaHint: "hold to pour (mouse, touch or space), let go at the line ♡",
+  teaFor: ["this one's for {guest} ♡", "now {guest}'s ♡", "{guest} next!! ♡"],
+  teaNoName: "mochi's friend",
+  teaYou: "and one for you, {name} ♡",
+  teaMore: "a little more ♡",
+  teaPerfect: ["perfect!! ♡", "just right ♡", "so neat ♡"],
+  teaBrim: "right to the top ♡ careful",
+  teaSpill: "oopsie ♡ it's okay. it doesn't stain",
+  teaThanks: "{guest} says thank you ♡",
+  guestWhisper: ["we came for you, {name}.", "you're not the only thing in this room.", "it's rude to stare.", "we've been here the whole time.", "thank you. it's warm."],
+  teaLook: "it's rosehip!! mochi's favourite ♡ look, you can see yourself in it",
+  teaDrink: "drink up, {name} ♡",
+  teaDrinkBtn: "drink ♡",
+  teaTaste: "...how does it taste? ♡",
+  teaMade: "mochi made it herself ♡",
+  parcelAsk: "party game!! pass the parcel ♡",
+  parcelRules: "pass it round while the music plays. when it stops, you unwrap a layer ♡",
+  parcelGo: "go go go!! ♡",
+  parcelAgain: ["again!! ♡", "keep passing ♡", "round and round ♡"],
+  parcelPassBtn: "pass it ♡",
+  parcelYours: "pass it on, {name}!! quick ♡",
+  parcelStop: "the music stopped!! {guest} gets to open a layer ♡",
+  parcelGot: "{guest} got a {prize} ♡",
+  parcelMochi: "ooh!! mochi's turn ♡",
+  parcelMochiGot: "a ribbon!! mochi will wear it forever ♡",
+  parcelYourTurn: "it stopped on you, {name}!! the last layer is yours ♡",
+  parcelOpenHint: "tap the parcel to unwrap it ♡",
+  parcelTag: "for later ♡",
+  parcelScissors: "scissors!! the best prize ♡",
+  parcelLater: "keep them safe for mochi. she'll need them later ♡",
+  hostAct8: [
+    "everyone's watching you answer ♡",
+    "more tea, {name}? ♡",
+    "mochi can't see the guests either ♡ it's the candles",
+    "don't be rude ♡ say hello to them",
+    "they like you, {name} ♡",
+    "nobody leaves a tea party early ♡"
+  ],
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
   // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
   hostAct3: [
@@ -272,6 +314,10 @@ export const TALK = {
   bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
   // start of Act VI (after the ears)
   lightsHello: ["...", "hi {name} ♡", "mochi can't hear very well anymore. it's okay!! mochi can still see you ♡", "it's getting late... stay over? ♡"],
+  // start of Act VIII (tea party)
+  teaHello: ["tea party!! ♡", "mochi set the table just like her birthday", "and this time everyone came ♡"],
+  // end of Act VIII, into the results
+  teaBye: ["that was the best party ever ♡", "now... mochi has your results, {name}. all of them ♡", "everything you told mochi. and everything you didn't ♡"],
   // start of Act VII (photo booth), after the eyes
   photoHello: ["...", "{name}? is that you? ♡", "mochi can't see anymore ♡ it's okay!!", "take pictures for mochi? then she'll always have your face ♡"],
   // end of Act VII, into the tea party
@@ -400,14 +446,14 @@ export function answerReaction(question, optionIndex, act, player) {
   return fill(opt?.mochi || pick(LINES.answerGeneric), player);
 }
 
-/** What she says while a question is up (looks 3-4: she pretends nothing happened; Acts VI and VII have their own). */
+/** What she says while a question is up (looks 3-5: she pretends nothing happened; Acts VI-VIII have their own). */
 export function hostLine(act, player, storyAct = act) {
-  if (act !== 3 && act !== 4) return "";
+  if (act < 3 || act > 5) return "";
   const e = envInfo(), bat = batteryLevel();
   const extra = [];
   if (e.city) extra.push(`it's ${e.time} in ${e.city} ♡ mochi checked`);
   if (bat != null && bat < 60) extra.push(`your battery's at ${bat}% ♡ don't leave mochi`);
-  const own = { 6: LINES.hostAct6, 7: LINES.hostAct7 }[storyAct] || LINES.hostAct3;
+  const own = { 6: LINES.hostAct6, 7: LINES.hostAct7, 8: LINES.hostAct8 }[storyAct] || LINES.hostAct3;
   const pool = [...own, ...extra];
   return fill(pick(pool), player);
 }

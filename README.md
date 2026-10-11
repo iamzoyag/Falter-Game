@@ -102,7 +102,17 @@ are older acts parked in the slot they'll be replaced in.
    which won't stick to the thing behind you, and she puts it on the fridge
    next to your Act I polaroid, where, faintly, it was behind you too
    (`src/segments/MochiBooth.js`).
-8. **VIII. TEA PARTY** (for now: the old presence act, with **ears** at its start).
+8. ★ **VIII. TEA PARTY** black and dark red. The birthday table again, by
+   candlelight, and this time everyone came: the friends you invited in Act
+   IV are in the chairs (or, if you invited nobody, "friends of mochi's
+   own"), blacked out with a red rim of light; nobody can see them properly.
+   Pour everyone tea (hold, let go at the line); it's rosehip, and very red.
+   Each guest whispers something when they get theirs, and for a frame you see
+   one as it is. Then one for you: look into it and there's your face, with
+   someone standing behind you. "drink up ♡". Then pass the parcel to what's
+   left of her song; the parcel waits for you to pass it on; the last layer is
+   yours: scissors, "for later ♡". The close-your-eyes task is still in this
+   act (`src/segments/MochiTea.js`).
 9. **IX. RESULTS** (for now: the old interview) → **unzip**, then the ending.
 
 Each stage has an `act` (its place in the story) and a `look` (how far gone
