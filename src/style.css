@@ -1526,3 +1526,148 @@ body[data-act="3"] .mochi-acc { filter: saturate(0.55) drop-shadow(0 2px 2px rgb
 .rig-lid { opacity: 0; }
 .mp-mochi-wrap.sad .rig-part { filter: grayscale(0.35); }
 .mr-mochi .rig-part { filter: none; }
+
+/* ======================================================================
+   Act VI: lights out (src/segments/MochiDark.js). Mochi's room at night,
+   full screen. .ld-dark is the night: a radial hole where the light is
+   (.ld-hole moves with the light; --lr is its radius). Things that glow in the dark (the
+   stars, eyeshines, the falling things' dim shapes) sit above it.
+   ====================================================================== */
+.mochi-play.lights .mr-room > :is(.mr-ceiling, .mr-back, .mr-left, .mr-right, .mr-floor, .mr-lines, .mr-things) {
+  filter: saturate(0.5) brightness(0.9);
+}
+.mochi-play.lights .mr-item { cursor: default; }
+.mochi-play.lights.dark .mr-room > :is(.mr-ceiling, .mr-back, .mr-left, .mr-right, .mr-floor, .mr-lines, .mr-things) { filter: saturate(0.6) brightness(0.78); }
+.mochi-play.lights.torch, .mochi-play.lights.torch * { cursor: none !important; }
+.ld-dark { position: absolute; inset: 0; z-index: 700; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 0.18s; }
+.mochi-play.lights.dark .ld-dark { opacity: 1; }
+.ld-hole, .ld-hole::after {
+  position: absolute; left: 0; top: 0; width: var(--D, 4000px); height: var(--D, 4000px);
+}
+.ld-hole {
+  will-change: transform;
+  background: radial-gradient(circle var(--lr, 200px) at 50% 50%,
+    rgba(10, 4, 7, 0) 0%, rgba(10, 4, 7, 0.06) 38%, rgba(10, 4, 7, 0.66) 74%, rgba(6, 2, 4, 0.955) 100%);
+}
+.ld-hole::after { /* a little warmth in the beam */
+  content: ""; opacity: 0; transition: opacity 0.2s;
+  background: radial-gradient(circle var(--lr, 200px) at 50% 50%, rgba(255, 214, 160, 0.13) 0%, rgba(255, 214, 160, 0.05) 45%, transparent 80%);
+}
+.mochi-play.lights.torch .ld-hole::after { opacity: 1; }
+.ld-black { position: absolute; inset: 0; background: rgb(6, 2, 4); opacity: 0; }
+.mochi-play.lights.dark .mr-bubble { background: #1c1215; color: #ecd2dc; border-color: #4a2a36; box-shadow: none; transition: background 0.3s, color 0.3s; }
+.ld-mochi { transition: none !important; }
+.ld-twin { transition: none; }
+.ld-twin .mp-mochi-body { animation: none; }
+
+/* glow-in-the-dark stars */
+.ld-stars { position: absolute; inset: 0; z-index: 720; pointer-events: none; }
+.ld-star {
+  position: absolute; width: 7.5cqh; aspect-ratio: 1; translate: -50% -50%; opacity: 0;
+  transition: left 1.2s cubic-bezier(.4,1.25,.5,1), top 1.2s cubic-bezier(.4,1.25,.5,1), width 1.2s, opacity 0.12s;
+  filter: drop-shadow(0 0 0.8cqh rgba(226, 255, 170, 0.75));
+}
+.ld-star svg { width: 100%; height: 100%; display: block; }
+.ld-star path { fill: #f1ffc6; stroke: #c9e27e; stroke-width: 4; stroke-linejoin: round; }
+.ld-star.faint { opacity: 0.12; }
+.ld-star.up { width: 4.6cqh; opacity: 1 !important; filter: drop-shadow(0 0 1.4cqh rgba(226, 255, 170, 0.95)); animation: ld-twinkle 2.6s ease-in-out 1.2s infinite; }
+@keyframes ld-twinkle { 50% { filter: drop-shadow(0 0 0.6cqh rgba(226, 255, 170, 0.6)); scale: 0.92; } }
+
+/* the counter */
+.ld-hud {
+  position: absolute; top: 2.4cqh; right: 2.6cqh; z-index: 810;
+  display: flex; align-items: center; gap: 0.35em; padding: 0.3em 0.8em;
+  font: 600 3.4cqh 'Fredoka', system-ui, sans-serif; color: #f4e6ec;
+  background: rgba(28, 16, 21, 0.72); border: 0.3cqh solid #4a2a36; border-radius: 99px;
+  opacity: 0; transition: opacity 0.4s;
+}
+.ld-hud.on { opacity: 1; }
+.ld-hud-star { width: 1em; height: 1em; display: inline-block; }
+.ld-hud-star svg { width: 100%; height: 100%; }
+.ld-hud-star path { fill: #f1ffc6; stroke: #c9e27e; stroke-width: 6; }
+.ld-hud-pop { animation: mp-hop 0.45s cubic-bezier(.3,1.6,.5,1); }
+
+/* two small eyeshines in the dark */
+.ld-shine, .ld-eyes {
+  position: absolute; z-index: 715; translate: -50% -50%; display: flex; gap: 2.2cqh; pointer-events: none;
+}
+.ld-shine { opacity: 0; transition: opacity 0.06s; }
+.ld-shine.on { opacity: 0.85; animation: ld-shine-blink 3.4s steps(1) infinite; }
+@keyframes ld-shine-blink { 0%, 92% { scale: 1 1; } 93%, 97% { scale: 1 0.1; } }
+.ld-shine i, .ld-eyes i {
+  width: 1.2cqh; height: 0.9cqh; border-radius: 50%; background: #ffd8e8;
+  box-shadow: 0 0 1.2cqh 0.3cqh rgba(255, 140, 190, 0.7);
+}
+
+/* the midnight catch: only her eyes, up high */
+.ld-eyes { top: 17%; left: 50%; gap: 3cqh; transition: opacity 0.6s; }
+.ld-eyes i { width: 1.8cqh; height: 1.3cqh; transition: scale 0.08s; }
+.ld-eyes.blink i { scale: 1 0.1; }
+.ld-eyes.gone { opacity: 0; }
+.nc-field { position: absolute; inset: 0; z-index: 711; pointer-events: none; }
+.nc-item {
+  position: absolute; left: 0; top: 0; font-size: 10.5cqh; line-height: 1; will-change: transform;
+  filter: brightness(calc((0.1 + 0.9 * var(--lit, 0)) * var(--tone, 1))) saturate(calc(0.25 + 0.75 * var(--lit, 0)))
+    drop-shadow(0 0 0.5cqh rgba(255, 196, 222, 0.4));
+}
+.nc-item.wet { --tone: 0.62; }
+.nc-drip, .nc-in.wet .nc-drip {
+  position: absolute; left: 44%; top: 72%; width: 0.9cqh; height: 2.4cqh; background: #8a0612;
+  border-radius: 40% 40% 50% 50% / 30% 30% 70% 70%; transform-origin: top; animation: nc-drip 1.1s ease-in infinite;
+}
+@keyframes nc-drip { 0% { scale: 1 0.3; } 70% { scale: 1 1; opacity: 1; } 100% { scale: 1 1.3; opacity: 0; } }
+.nc-item svg, .nc-in svg { display: block; }
+.nc-item.button svg { width: 9cqh; height: 9cqh; }
+.nc-item.thread svg { width: 8.5cqh; height: 10.2cqh; }
+.nc-item.ear img { height: 21cqh; display: block; }
+.nc-item.eye img { height: 15cqh; display: block; }
+.button .b1 { fill: #ffb3d6; stroke: #c76a8e; stroke-width: 3; }
+.button .b2 { fill: #ffc9e0; }
+.button circle:not(.b1):not(.b2) { fill: #8a4a62; }
+.button .th { stroke: #fff2f7; stroke-width: 3; }
+.thread .w { fill: #e8d2b0; }
+.thread .t { fill: #ff8cc2; }
+.thread .tl { stroke: #e0609d; stroke-width: 2; }
+.thread .loose { stroke: #ff8cc2; stroke-width: 3; fill: none; }
+.thread .needle { stroke: #d8dde3; stroke-width: 3; stroke-linecap: round; }
+
+/* the basket, with a little nightlight */
+.nc-basket {
+  position: absolute; top: 90%; left: 50%; z-index: 713; translate: -50% -55%;
+  font-size: 17cqh; line-height: 1; pointer-events: none;
+  transition: top 0.7s cubic-bezier(.4,1.2,.5,1), scale 0.7s cubic-bezier(.4,1.2,.5,1), left 0.7s cubic-bezier(.4,1.2,.5,1);
+}
+.nc-basket::before {
+  content: ""; position: absolute; left: 50%; top: 10%; width: 2.2cqh; height: 2.2cqh; translate: -50% 0; border-radius: 50%;
+  background: #fff4d8; box-shadow: 0 0 2cqh 1cqh rgba(255, 220, 160, 0.6); z-index: 3;
+}
+.nc-tub { position: relative; z-index: 2; display: block; }
+.nc-load { position: absolute; left: 50%; bottom: 52%; width: 0; height: 0; z-index: 1; }
+.nc-in { position: absolute; left: var(--x, 0); bottom: 0; translate: -50% 20%; rotate: var(--r, 0deg); font-size: 5cqh; }
+.nc-in.ear img { height: 10cqh; display: block; }
+.nc-in.eye img { height: 6.5cqh; display: block; }
+.nc-in.button svg { width: 4cqh; height: 4cqh; }
+.nc-in.thread svg { width: 4cqh; height: 4.8cqh; }
+.nc-basket.got { animation: nc-got 0.3s ease-out; }
+@keyframes nc-got { 40% { translate: -50% -48%; } }
+.nc-basket.show-off { top: 80%; scale: 1.25; }
+.nc-show {
+  position: absolute; left: 50%; top: 52%; translate: -50% -50%; z-index: 714;
+  display: flex; align-items: center; justify-content: center; gap: 3cqh; pointer-events: none;
+}
+.nc-out { animation: mr-pop 0.5s cubic-bezier(.3,1.6,.5,1) both; filter: drop-shadow(0 1cqh 1cqh rgba(0, 0, 0, 0.45)); font-size: 9cqh; }
+.nc-out svg { display: block; width: 10cqh; height: 10cqh; }
+.nc-out.thread svg { height: 12cqh; }
+.nc-out.ear img { height: 24cqh; display: block; }
+.nc-out.ear + .nc-out.ear img { margin-left: -2cqh; }
+.nc-out.eye img { height: 19cqh; display: block; translate: var(--ex, 0) var(--ey, 0); transition: translate 0.25s ease-out; }
+.nc-basket:not(.show-off) { transition: top 0.7s, scale 0.7s; } /* left follows the pointer every frame */
+
+/* lights out: the question screen stays dark for the rest of the act */
+body[data-act="3"].lights-off {
+  --bg: #140c0f;
+  --bg-panel: #1a1014;
+  background: radial-gradient(ellipse at 50% 38%, #26171c 0%, #0b0607 72%);
+  transition: background 1.2s;
+}
+body[data-act="3"].lights-off .mochi-play { background: radial-gradient(ellipse at center, #2c1f24 0%, #0d0709 75%); }

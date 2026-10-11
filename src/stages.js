@@ -16,7 +16,7 @@
 //   ★ III  MOCHI'S ROOM    decorate, "what kind of friend are you?", hide-and-seek. wrong in a way you can't name
 //   ★ IV   BIRTHDAY        cake + candles, invites (nobody comes), pin the bow, a sewing kit -> stitches
 //   ★ V    WHERE WERE WE   memory (one pair never matches), a test she misquotes, your results, mochi says -> ears
-//     VI   LIGHTS OUT      (rest of the old act III for now) flashlight, falling things -> eyes
+//   ★ VI   LIGHTS OUT      a sleepover in your room: flashlight (she moves closer), a midnight catch -> eyes
 //     VII  PHOTO BOOTH     (to build) 1-bit; the strip prints wrong
 //     VIII TEA PARTY       (old presence act for now)
 //     IX   RESULTS         (old interview for now) -> unzip -> ending
@@ -28,7 +28,7 @@
 // full screen; { type: "round" } a bubbly round card; { type: "play", kind }
 // a moment with Mochi (src/segments/MochiPlay.js); { type: "repeat", of } asks
 // an earlier question again; { type: "features", set } changes director
-// features mid-act; { type: "mochi", scene } a Mochi event
+// features mid-act; { type: "dim", on } keeps the question screen dark (lights out); { type: "mochi", scene } a Mochi event
 // (src/segments/MochiSegment.js); plus task / interrogate.
 // `card`: "stage" shows the act's title card first, "none" lets Mochi carry the transition.
 
@@ -169,15 +169,25 @@ export const STAGES = [
     card: "none",
     title: "VI. LIGHTS OUT",
     subtitle: "",
-    // placeholder until Lights Out is built: the rest of the old act III
-    // (the director wakes up, then the dark) -> eyes
-    features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, beats: true, voice: true, scriptedGlitch: true, smileClip: true },
+    // A sleepover in the room the player decorated. She's cute again (her
+    // ears only show in flickers, and when you blink). The flashlight game:
+    // she moves closer whenever the light leaves her, and once there's a
+    // second her in the corner. When the lights go out for good (after it),
+    // the question screen stays dark and the director wakes up: whispers,
+    // voice, the feed glitch. Then a midnight snack: the strawberry catch,
+    // in the dark, and what falls isn't strawberries. -> eyes
+    features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, smileClip: true },
     steps: [
       { type: "talk", lines: "lightsHello", mood: "off", flicker: "/mochi/wounds-ears.webp" },
-      "q6", "q7", "q8",
-      "q9", "q10",
+      { type: "round", title: "sleepover round ♡", sub: "bedtime questions!" },
+      "n1", "n2", "n3",
+      { type: "play", kind: "flashlight" },
+      { type: "dim", on: true },
+      { type: "features", set: { beats: true, voice: true, scriptedGlitch: true } },
+      "n4", "q10", "n5",
       { type: "features", set: { darkness: true } },
-      "q11", "q12",
+      { type: "play", kind: "nightcatch" },
+      "n6",
       { type: "talk", lines: "cantSee", mood: "dark" },
       { type: "mochi", scene: "eyes" }
     ]

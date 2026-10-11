@@ -620,3 +620,6 @@ async function wrongRound(v, ctx, spots) {
   await sleep(3000);
   corner.remove();
 }
+
+// Lights Out (Act VI, src/segments/MochiDark.js) builds the same room at night.
+export { setup as roomSetup, putInSlot, mochiInRoom, placeMochi, setFacing, retrigger, ITEM, SLOT, CORNER, DEFAULT_ROOM };

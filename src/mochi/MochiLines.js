@@ -176,6 +176,47 @@ export const LINES = {
   simonLouder: "hm? mochi can't hear you...",
   simonQuiet: "say it, {name}... mochi can't hear you",
   simonLouderCmd: "louder ♡",
+  // Act VI: lights out. a sleepover, in the room you made
+  lightsAsk: "it's a sleepover!! in mochi's room ♡ the one you made",
+  lightsSleepover: "pyjamas on!! teeth brushed!! ♡",
+  lightsOut: "lights out!! ♡",
+  lightsStars: "oh no... mochi's glow-in-the-dark stars fell off the ceiling ♡",
+  lightsTorch: "here, take mochi's flashlight ♡ find them for her? mochi's right here",
+  lightsFound: ["one!! ♡", "two!! you're so good at this ♡", "three ♡ mochi's right here, {name}", "four!! one more ♡"],
+  lightsFoundAny: ["found one!! ♡"],
+  lightsPoke: ["hehe!! that's just mochi ♡", "not mochi, silly!! the stars ♡", "boo ♡ hehe"],
+  lightsTwin: "what are you looking at, {name}? ♡",
+  lightsRest: "mochi found the rest!! ♡",
+  lightsAll: "all of them!! mochi's ceiling is so pretty again ♡",
+  lightsOn: ["see? ♡ nothing to be scared of", "mochi stayed right next to you ♡"],
+  lightsOnMoved: ["see? ♡ nothing to be scared of", "mochi didn't move. mochi was right here the whole time ♡"],
+  nightAsk: "mochi's tummy is rumbling ♡ midnight snack!!",
+  nightRules: "mochi's up high. catch what she drops? ♡ don't turn the big light on. you'll wake everyone",
+  nightGo: "here they come ♡",
+  nightSee: {
+    wet: "that one's a little wet ♡ mochi washed it",
+    button: "mochi's buttons!! from her sewing kit ♡",
+    thread: "careful, there's a needle ♡",
+    earL: "ooh!! that's mochi's ♡ catch it, {name}!!",
+    earR: "the other one!! ♡",
+    eye: "...careful with that one ♡"
+  },
+  nightGotEar: "you caught it!! ♡ mochi doesn't need it anymore. but it's nice to keep",
+  nightDropEar: "you dropped mochi's ear ♡ that's okay",
+  nightLook: "let's see what you caught!! ♡",
+  nightEarsBoth: "both of mochi's ears ♡ you kept them safe",
+  nightEarsOne: "one of mochi's ears ♡ just one",
+  nightEyeKept: ["and you caught that one ♡", "keep it safe for mochi. she can't see very well tonight ♡"],
+  nightEyeDropped: ["you dropped the last one ♡", "that's okay. mochi still has two ♡"],
+  nightBye: "...mochi isn't hungry anymore ♡",
+  hostAct6: [
+    "it's a sleepover ♡ nobody leaves a sleepover",
+    "mochi can't hear you very well ♡ that's okay",
+    "mochi can still see you ♡",
+    "is it dark where you are, {name}? ♡",
+    "don't look at mochi's ears ♡",
+    "shh. everyone's asleep ♡"
+  ],
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
   // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
   hostAct3: [
@@ -202,7 +243,7 @@ export const TALK = {
   // end of Act II (the bonus round): nothing's wrong, she just wants to keep playing
   bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
   // start of Act VI (after the ears)
-  lightsHello: ["...", "hi {name} ♡", "mochi can't hear very well anymore. it's okay!! mochi can still see you ♡"],
+  lightsHello: ["...", "hi {name} ♡", "mochi can't hear very well anymore. it's okay!! mochi can still see you ♡", "it's getting late... stay over? ♡"],
   // end of Act V, before the ears
   cantHear: ["{name}?", "mochi can't hear you...", "why can't mochi hear you? ♡"],
   // start of Act IV, the birthday
@@ -322,18 +363,19 @@ export function eventAfter(scene, player, dossier, { lookAways = 0, flinch = 0 }
 export function answerReaction(question, optionIndex, act, player) {
   const opt = question?.options?.[optionIndex];
   if (opt?.misquote) return fill(opt.misquote, player); // Act V's test: she gets it slightly wrong
+  if (opt?.dark) return fill(opt.dark, player); // Act VI's bedtime questions have their own
   if (act >= 3) return fill(pick(LINES.answerAct3), player);
   return fill(opt?.mochi || pick(LINES.answerGeneric), player);
 }
 
-/** What she says while a question is up (Act III only: she pretends nothing happened). */
-export function hostLine(act, player) {
+/** What she says while a question is up (look 3 only: she pretends nothing happened; Act VI has its own bedtime ones). */
+export function hostLine(act, player, storyAct = act) {
   if (act !== 3) return "";
   const e = envInfo(), bat = batteryLevel();
   const extra = [];
   if (e.city) extra.push(`it's ${e.time} in ${e.city} ♡ mochi checked`);
   if (bat != null && bat < 60) extra.push(`your battery's at ${bat}% ♡ don't leave mochi`);
-  const pool = [...LINES.hostAct3, ...extra];
+  const pool = [...(storyAct === 6 ? LINES.hostAct6 : LINES.hostAct3), ...extra];
   return fill(pick(pool), player);
 }
 

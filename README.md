@@ -78,8 +78,19 @@ are older acts parked in the slot they'll be replaced in.
    slightly wrong ("so you're lonely ♡"), then your results. Mochi says, with
    your face: when you close your eyes she has her stitches and comes closer.
    At the end she asks you to say something, and she can't hear you → **ears**.
-6. **VI. LIGHTS OUT** (to build; for now the rest of the old act III: the
-   director wakes up, then the dark) → **eyes**.
+6. ★ **VI. LIGHTS OUT** a sleepover in the room you decorated. Bedtime
+   questions ("which way do you face when you sleep?"), then lights out: her
+   glow-in-the-dark stars fell off the ceiling, and you find them with a
+   flashlight (the cursor). Every time the light leaves her she's somewhere
+   else, closer; sometimes, the moment the light finds her, she has no ears;
+   once there's a second her in the corner, facing the wall. When the lights
+   come back on she's exactly where she started. After that the question
+   screen stays dark and the director wakes up (whispers, voice). A midnight
+   snack: the strawberry catch again, in the dark, by the light of a
+   nightlight on the basket, so you only see what's falling when it's nearly
+   caught: strawberries, wet ones, buttons and thread from her sewing kit, her
+   ears, and last an eye (`src/segments/MochiDark.js`; the ears and eye are
+   built from her art by `tools/make_dark_items.py`) → **eyes**.
 7. **VII. PHOTO BOOTH** (to build; replaces the mirror).
 8. **VIII. TEA PARTY** (for now: the old presence act, with **ears** at its start).
 9. **IX. RESULTS** (for now: the old interview) → **unzip**, then the ending.

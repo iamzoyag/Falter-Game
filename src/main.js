@@ -32,6 +32,7 @@ import { runCake, runInvite, runPinBow, runGift } from "./segments/MochiParty.js
 import { giggle } from "./mochi/Giggle.js";
 import { woundsNow, woundsNext } from "./mochi/wounds.js";
 import { runMemory, runResults, runSimon } from "./segments/MochiFaded.js";
+import { runFlashlight, runNightCatch } from "./segments/MochiDark.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
@@ -86,8 +87,8 @@ const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
 const faceGore = new FaceGore(document.getElementById("face-gore"));
 // What the player tells Mochi in Act I. It all comes back later.
 // outfit, caught and dessert come from Act II; room, friend and cornerFound from Act III;
-// frosting, guests and blewOut from Act IV
-const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null, frosting: null, guests: null, blewOut: null };
+// frosting, guests and blewOut from Act IV; night from Act VI
+const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null, frosting: null, guests: null, blewOut: null, night: null };
 
 const reduceFlashBox = document.getElementById("reduce-flash-checkbox");
 reduceFlashBox.checked = settings.reduceFlashing;
@@ -295,7 +296,7 @@ async function runGame() {
   playing = true;
   const ctx = {
     feed, director, ui, audio, voice, playerVoice, recorder, transcriber, aiClient, aiEnabled, faceTracker, imageFlash,
-    engine: mochi, mochiAudio, player, faceGore, samples, sfx: cuteSfx,
+    engine: mochi, mochiAudio, player, faceGore, samples, sfx: cuteSfx, theme: cuteTheme,
     getVideo: () => videoHidden,
     room: roomScanner,
     getFace: () => latestFace,
@@ -312,6 +313,7 @@ async function runGame() {
   for (const stage of STAGES) {
     if ((stage.act ?? 1) < startAct) continue;
     currentStage = stage;
+    document.body.classList.remove("lights-off");
     // `look` (how far gone the world is) drives colour, music, filter and Mochi's voice;
     // `act` is only the act's place in the story.
     const act = stage.look ?? stage.act ?? 1;
@@ -336,7 +338,7 @@ async function runGame() {
 
       if (typeof step === "string" || step.type === "repeat") {
         currentQuestionIndex = qIndex;
-        ui.setMochiHostLine(hostLine(act, player));
+        ui.setMochiHostLine(hostLine(act, player, stage.act));
         const base = QMAP[typeof step === "string" ? step : step.of];
         const q = typeof step === "string" ? base : { ...base, id: `${base.id}-again`, callbackId: `${base.callbackId}_again` };
         lastEntry = await quiz.ask(q, qIndex, TOTAL_QUESTIONS, stage);
@@ -366,6 +368,8 @@ async function runGame() {
         await sleep(2400);
         ui.blackout(step.ms - 2400);
         await sleep(step.ms - 2400);
+      } else if (step.type === "dim") {
+        document.body.classList.toggle("lights-off", step.on !== false);
       } else if (step.type === "features") {
         director.setFeatures(step.set);
       } else if (step.type === "mirror") {
@@ -395,6 +399,8 @@ async function runGame() {
         else if (step.kind === "memory") await runMemory(ctx);
         else if (step.kind === "results") await runResults(ctx, quiz.getDossier(), QUESTIONS);
         else if (step.kind === "simon") await runSimon(ctx);
+        else if (step.kind === "flashlight") await runFlashlight(ctx);
+        else if (step.kind === "nightcatch") await runNightCatch(ctx);
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");
