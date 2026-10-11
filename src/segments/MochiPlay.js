@@ -194,9 +194,12 @@ export async function runRoundCard(ctx, title, sub, { glitch = false, ms = 2400 
 
 /**
  * The fake ending after Act I: "thanks for playing ♡", the song resolves,
- * a play-again button that doesn't matter. The player relaxes. Then Mochi
- * bursts back in (Act II starts with "wait wait wait!!").
+ * a play-again button that doesn't matter. The player relaxes. Two seconds
+ * later Mochi bursts back in (Act II starts with "wait wait wait!!"). If they
+ * press play again first, she bursts in straight away, and Act II opens with
+ * her stopping them (player.pressedAgain).
  */
+const FAKE_END_MS = 2000;
 export async function runFakeEnd(ctx) {
   const v = build(ctx);
   v.root.classList.add("round", "fake-end");
@@ -211,9 +214,9 @@ export async function runFakeEnd(ctx) {
   bounce(v, "wiggle");
   ctx.sfx?.chirp();
   const again = v.controls.querySelector(".mp-again");
-  await new Promise((resolve) => {
-    again.addEventListener("click", resolve, { once: true });
-    setTimeout(resolve, 7000);
+  ctx.player.pressedAgain = await new Promise((resolve) => {
+    again.addEventListener("click", () => { again.disabled = true; resolve(true); }, { once: true });
+    setTimeout(() => resolve(false), FAKE_END_MS);
   });
   ctx.sfx?.pop();
   await hide(v);

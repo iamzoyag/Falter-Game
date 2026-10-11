@@ -197,6 +197,8 @@ export const TALK = {
   goodbye: ["that's all the rounds!! you did sooo good, {name} ♡", "thank you for playing with mochi ♡ bye bye!"],
   // start of Act II, after the fake ending
   bonus: ["wait wait wait!!", "don't go yet, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
+  // ...or, if they pressed "play again" on the fake ending
+  bonusAgain: ["wait wait wait!!", "no need to start over, {name}!! ♡", "mochi has a bonus round. just for you ♡"],
   // end of Act II (the bonus round): nothing's wrong, she just wants to keep playing
   bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
   // start of Act VI (after the ears)

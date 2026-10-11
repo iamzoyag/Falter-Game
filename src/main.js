@@ -351,12 +351,14 @@ async function runGame() {
         ui.setMochiHostLine("");
         if (step.lines === "bonus") cuteTheme?.play({ fade: 0.4, fromTop: true }); // she bursts back in, song and all
         player.friend = tally(quiz.getDossier(), "friend", player.friend);
-        await runTalk(ctx, TALK[step.lines] || [], { mood: step.mood || "cute", flicker: step.flicker || null });
+        // pressed "play again" on the fake ending? she stops them first
+        const talkKey = step.lines === "bonus" && player.pressedAgain ? "bonusAgain" : step.lines;
+        await runTalk(ctx, TALK[talkKey] || [], { mood: step.mood || "cute", flicker: step.flicker || null });
         director.suspend(false);
       } else if (step.type === "fakeEnd") {
         cuteTheme?.stop({ fade: 2.5 }); // the song ends. it's over.
         await runFakeEnd(ctx);
-        await sleep(900);
+        await sleep(player.pressedAgain ? 100 : 300);
       } else if (step.type === "pause") {
         // let the last whisper sit in the faded room, then black
         await sleep(2400);
