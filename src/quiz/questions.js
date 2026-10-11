@@ -14,7 +14,10 @@
 // quiz, later ones get progressively closer to the game's actual premise —
 // that it's reading you in real time.
 
-// Act I "Mochi's quiz" questions (m1..m8). Genuinely cute, to let the player
+// Act I "Mochi's quiz" questions (m1..m8). Every Act I answer (these and
+// q1..q5) is tagged `bun` with the bunny type it counts towards; the fake
+// ending shows the result ("what kind of bunny are you?", MochiPlay).
+// Genuinely cute, to let the player
 // relax and get attached. `mochi` holds her reaction to each option (shown
 // in her speech bubble after they answer; the AI can personalise it).
 // m1-m4 claim nothing about feelings ("any"); m5-m8 quietly start the
@@ -28,10 +31,10 @@ const MOCHI_QUESTIONS = [
     principle: "rapport (cute round)",
     prompt: "First things first!! What's your favourite season?",
     options: [
-      { text: "Spring. Everything's blooming.", expressionHint: "any", mochi: "cherry blossoms!! mochi loves those too ♡" },
-      { text: "Summer. Sunshine forever.", expressionHint: "any", mochi: "ooh, ice cream weather ♡" },
-      { text: "Autumn. Cosy sweaters.", expressionHint: "any", mochi: "crunchy leaves!! good choice ♡" },
-      { text: "Winter. Everything's quiet.", expressionHint: "any", mochi: "mochi likes the quiet too. shhh ♡" }
+      { text: "Spring. Everything's blooming.", bun: "clover", expressionHint: "any", mochi: "cherry blossoms!! mochi loves those too ♡" },
+      { text: "Summer. Sunshine forever.", bun: "sunshine", expressionHint: "any", mochi: "ooh, ice cream weather ♡" },
+      { text: "Autumn. Cosy sweaters.", bun: "cloud", expressionHint: "any", mochi: "crunchy leaves!! good choice ♡" },
+      { text: "Winter. Everything's quiet.", bun: "moon", expressionHint: "any", mochi: "mochi likes the quiet too. shhh ♡" }
     ]
   },
   {
@@ -40,9 +43,9 @@ const MOCHI_QUESTIONS = [
     principle: "rapport (cute round)",
     prompt: "Sweet or salty?",
     options: [
-      { text: "Sweet, obviously.", expressionHint: "any", mochi: "a sweet person who likes sweet things ♡" },
-      { text: "Salty, always.", expressionHint: "any", mochi: "hehe, mochi will remember that ♡" },
-      { text: "Both. At the same time.", expressionHint: "any", mochi: "chaotic!! mochi likes you ♡" }
+      { text: "Sweet, obviously.", bun: "clover", expressionHint: "any", mochi: "a sweet person who likes sweet things ♡" },
+      { text: "Salty, always.", bun: "moon", expressionHint: "any", mochi: "hehe, mochi will remember that ♡" },
+      { text: "Both. At the same time.", bun: "sunshine", expressionHint: "any", mochi: "chaotic!! mochi likes you ♡" }
     ]
   },
   {
@@ -51,9 +54,9 @@ const MOCHI_QUESTIONS = [
     principle: "rapport (cute round)",
     prompt: "If you could adopt any pet today, which one?",
     options: [
-      { text: "A cat.", expressionHint: "any", mochi: "cats are nice. mochi is nicer though ♡" },
-      { text: "A dog.", expressionHint: "any", mochi: "a loyal friend!! just like mochi ♡" },
-      { text: "A bunny, obviously.", expressionHint: "smile", mochi: "!!! mochi is blushing ♡♡♡" }
+      { text: "A cat.", bun: "moon", expressionHint: "any", mochi: "cats are nice. mochi is nicer though ♡" },
+      { text: "A dog.", bun: "sunshine", expressionHint: "any", mochi: "a loyal friend!! just like mochi ♡" },
+      { text: "A bunny, obviously.", bun: "clover", expressionHint: "smile", mochi: "!!! mochi is blushing ♡♡♡" }
     ]
   },
   {
@@ -62,9 +65,9 @@ const MOCHI_QUESTIONS = [
     principle: "rapport (cute round)",
     prompt: "What does your perfect Saturday look like?",
     options: [
-      { text: "Sleeping in. No alarms.", expressionHint: "any", mochi: "cosy!! mochi will be very quiet ♡" },
-      { text: "Out with my friends.", expressionHint: "any", mochi: "mochi wants to come too!! ♡" },
-      { text: "A book and a blanket.", expressionHint: "any", mochi: "mochi will sit in your lap ♡" }
+      { text: "Sleeping in. No alarms.", bun: "cloud", expressionHint: "any", mochi: "cosy!! mochi will be very quiet ♡" },
+      { text: "Out with my friends.", bun: "sunshine", expressionHint: "any", mochi: "mochi wants to come too!! ♡" },
+      { text: "A book and a blanket.", bun: "moon", expressionHint: "any", mochi: "mochi will sit in your lap ♡" }
     ]
   },
   {
@@ -73,9 +76,9 @@ const MOCHI_QUESTIONS = [
     principle: "rapport (pure small talk; nothing to read into yet)",
     prompt: "Are you a morning person or a night owl?",
     options: [
-      { text: "Morning. Up with the sun.", expressionHint: "neutral", mochi: "early bunny gets the carrot ♡" },
-      { text: "Night owl, definitely.", expressionHint: "neutral", mochi: "midnight snacks are the best snacks ♡" },
-      { text: "Neither, I'm always sleepy.", expressionHint: "smile", mochi: "same!! naps are mochi's favourite hobby ♡" }
+      { text: "Morning. Up with the sun.", bun: "sunshine", expressionHint: "neutral", mochi: "early bunny gets the carrot ♡" },
+      { text: "Night owl, definitely.", bun: "moon", expressionHint: "neutral", mochi: "midnight snacks are the best snacks ♡" },
+      { text: "Neither, I'm always sleepy.", bun: "cloud", expressionHint: "smile", mochi: "same!! naps are mochi's favourite hobby ♡" }
     ]
   },
   {
@@ -84,9 +87,9 @@ const MOCHI_QUESTIONS = [
     principle: "rapport / comfort",
     prompt: "What do you cuddle when you sleep?",
     options: [
-      { text: "A big soft plushie.", expressionHint: "smile", mochi: "a plushie!! mochi is basically a plushie ♡" },
-      { text: "My pillow, all squished up.", expressionHint: "neutral", mochi: "squish squish ♡ very cosy" },
-      { text: "Nothing. I sleep like a starfish.", expressionHint: "smile", mochi: "a starfish!! hehe, mochi can picture it ♡" }
+      { text: "A big soft plushie.", bun: "clover", expressionHint: "smile", mochi: "a plushie!! mochi is basically a plushie ♡" },
+      { text: "My pillow, all squished up.", bun: "cloud", expressionHint: "neutral", mochi: "squish squish ♡ very cosy" },
+      { text: "Nothing. I sleep like a starfish.", bun: "sunshine", expressionHint: "smile", mochi: "a starfish!! hehe, mochi can picture it ♡" }
     ]
   },
   {
@@ -95,9 +98,9 @@ const MOCHI_QUESTIONS = [
     principle: "attachment / later: betrayal",
     prompt: "Who do you tell first when something good happens?",
     options: [
-      { text: "My family.", expressionHint: "neutral", mochi: "that's so sweet ♡ mochi loves a happy family" },
-      { text: "My best friend.", expressionHint: "smile", mochi: "mochi can be your best friend too!! ♡" },
-      { text: "Everyone, I can't keep it in.", expressionHint: "smile", mochi: "hehe, mochi would tell everyone too ♡" }
+      { text: "My family.", bun: "cloud", expressionHint: "neutral", mochi: "that's so sweet ♡ mochi loves a happy family" },
+      { text: "My best friend.", bun: "clover", expressionHint: "smile", mochi: "mochi can be your best friend too!! ♡" },
+      { text: "Everyone, I can't keep it in.", bun: "sunshine", expressionHint: "smile", mochi: "hehe, mochi would tell everyone too ♡" }
     ]
   },
   {
@@ -106,9 +109,9 @@ const MOCHI_QUESTIONS = [
     principle: "empathy / later: Mochi gets hurt",
     prompt: "What always makes you a little teary in a movie?",
     options: [
-      { text: "Anything with an animal in it.", expressionHint: "smile", mochi: "soft heart!! mochi is an animal too, you know ♡" },
-      { text: "A happy reunion at the end.", expressionHint: "smile", mochi: "the big hug at the end!! mochi cries too ♡" },
-      { text: "Nothing. I don't cry at movies.", expressionHint: "neutral", mochi: "so tough!! ♡" }
+      { text: "Anything with an animal in it.", bun: "clover", expressionHint: "smile", mochi: "soft heart!! mochi is an animal too, you know ♡" },
+      { text: "A happy reunion at the end.", bun: "cloud", expressionHint: "smile", mochi: "the big hug at the end!! mochi cries too ♡" },
+      { text: "Nothing. I don't cry at movies.", bun: "moon", expressionHint: "neutral", mochi: "so tough!! ♡" }
     ]
   }
 ];
@@ -461,9 +464,9 @@ export const QUESTIONS = [
     principle: "baseline / rapport (option 0 = 'never scared'; Act V's results use it)",
     prompt: "When you were little, did you sleep with a nightlight?",
     options: [
-      { text: "No, never needed one.", expressionHint: "neutral", mochi: "so brave, even when you were tiny!! ♡" },
-      { text: "For a while, then I grew out of it.", expressionHint: "smile", mochi: "aww, mini you with a little nightlight ♡" },
-      { text: "Yes, and honestly I still would.", expressionHint: "smile", mochi: "nightlights are cosy!! mochi approves ♡" }
+      { text: "No, never needed one.", bun: "moon", expressionHint: "neutral", mochi: "so brave, even when you were tiny!! ♡" },
+      { text: "For a while, then I grew out of it.", bun: "sunshine", expressionHint: "smile", mochi: "aww, mini you with a little nightlight ♡" },
+      { text: "Yes, and honestly I still would.", bun: "cloud", expressionHint: "smile", mochi: "nightlights are cosy!! mochi approves ♡" }
     ]
   },
   {
@@ -472,9 +475,9 @@ export const QUESTIONS = [
     principle: "rapport / later: isolation",
     prompt: "What's your idea of a perfect evening?",
     options: [
-      { text: "Curled up on my own with a good show.", expressionHint: "smile", mochi: "blanket, snacks, a show ♡ perfect" },
-      { text: "Out with my friends.", expressionHint: "smile", mochi: "fun!! mochi wants to come too ♡" },
-      { text: "Somewhere in between.", expressionHint: "neutral", mochi: "the best of both ♡ very wise" }
+      { text: "Curled up on my own with a good show.", bun: "cloud", expressionHint: "smile", mochi: "blanket, snacks, a show ♡ perfect" },
+      { text: "Out with my friends.", bun: "sunshine", expressionHint: "smile", mochi: "fun!! mochi wants to come too ♡" },
+      { text: "Somewhere in between.", bun: "clover", expressionHint: "neutral", mochi: "the best of both ♡ very wise" }
     ]
   },
   {
@@ -483,9 +486,9 @@ export const QUESTIONS = [
     principle: "social evaluation / later: trust",
     prompt: "Do you trust people easily?",
     options: [
-      { text: "Yes, I give everyone a chance.", expressionHint: "smile", mochi: "such a kind heart ♡" },
-      { text: "It takes me a little while.", expressionHint: "neutral", mochi: "that's okay!! mochi is very patient ♡" },
-      { text: "Only once they've earned it.", expressionHint: "neutral", mochi: "mochi will earn it, you'll see ♡" }
+      { text: "Yes, I give everyone a chance.", bun: "clover", expressionHint: "smile", mochi: "such a kind heart ♡" },
+      { text: "It takes me a little while.", bun: "cloud", expressionHint: "neutral", mochi: "that's okay!! mochi is very patient ♡" },
+      { text: "Only once they've earned it.", bun: "moon", expressionHint: "neutral", mochi: "mochi will earn it, you'll see ♡" }
     ]
   },
   {
@@ -494,9 +497,9 @@ export const QUESTIONS = [
     principle: "self-report of nerves / later: the game reads them on your face",
     prompt: "When you get nervous, what do you do?",
     options: [
-      { text: "Talk a lot.", expressionHint: "smile", mochi: "chatty!! mochi does that too ♡" },
-      { text: "Go very quiet.", expressionHint: "neutral", mochi: "mochi will be quiet with you ♡" },
-      { text: "Laugh it off.", expressionHint: "smile", mochi: "hehe, giggling helps everything ♡" }
+      { text: "Talk a lot.", bun: "sunshine", expressionHint: "smile", mochi: "chatty!! mochi does that too ♡" },
+      { text: "Go very quiet.", bun: "moon", expressionHint: "neutral", mochi: "mochi will be quiet with you ♡" },
+      { text: "Laugh it off.", bun: "clover", expressionHint: "smile", mochi: "hehe, giggling helps everything ♡" }
     ]
   },
   {
@@ -505,9 +508,9 @@ export const QUESTIONS = [
     principle: "self-referential / later: the face-vs-answer reading",
     prompt: "Are you good at hiding how you feel?",
     options: [
-      { text: "Yes, I have a good poker face.", expressionHint: "neutral", mochi: "ooh, mysterious ♡" },
-      { text: "Not really, it shows on my face.", expressionHint: "smile", mochi: "that just means you're honest ♡" },
-      { text: "Depends on the feeling.", expressionHint: "neutral", mochi: "very fair ♡ mochi's the same" }
+      { text: "Yes, I have a good poker face.", bun: "moon", expressionHint: "neutral", mochi: "ooh, mysterious ♡" },
+      { text: "Not really, it shows on my face.", bun: "clover", expressionHint: "smile", mochi: "that just means you're honest ♡" },
+      { text: "Depends on the feeling.", bun: "cloud", expressionHint: "neutral", mochi: "very fair ♡ mochi's the same" }
     ]
   },
   {

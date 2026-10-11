@@ -26,6 +26,7 @@ import { runEnding } from "./segments/Ending.js";
 import { runMochiEvent } from "./segments/MochiSegment.js";
 import { runGreet, runRoundCard, runPet, runFeed, runPolaroid, runTalk, runFakeEnd, runDressUp, runCatch, runDessertResult, tally } from "./segments/MochiPlay.js";
 import { runDecorate, runHideAndSeek } from "./segments/MochiRoom.js";
+import { setFaceSource as rigFaceSource } from "./mochi/MochiRig.js";
 import { outfitParts } from "./mochi/outfit.js";
 import { runCake, runInvite, runPinBow, runGift } from "./segments/MochiParty.js";
 import { giggle } from "./mochi/Giggle.js";
@@ -173,6 +174,7 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
   cuteSfx = new CuteSfx(audio.ctx, audio.master);
   giggle.init(audio.ctx, audio.master); // her giggle: cute all game (barely drifting), wrong only in the jumpscares
   giggle.startAmbient(); // and now and then, for no reason, off to the side
+  rigFaceSource(() => latestFace); // Mochi leans toward you, smiles back, blinks after you
   samples = new SampleBank(audio.ctx, audio.master);
   samples.load(); // recorded gore sfx, in the background (synth fallback until they arrive)
   mochiAudio = new MochiAudio(audio.ctx, audio.master, cuteTheme, samples);
@@ -357,7 +359,7 @@ async function runGame() {
         director.suspend(false);
       } else if (step.type === "fakeEnd") {
         cuteTheme?.stop({ fade: 2.5 }); // the song ends. it's over.
-        await runFakeEnd(ctx);
+        await runFakeEnd(ctx, quiz.getDossier());
         await sleep(player.pressedAgain ? 100 : 300);
       } else if (step.type === "pause") {
         // let the last whisper sit in the faded room, then black

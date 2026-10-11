@@ -17,6 +17,7 @@
 
 import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
 import { giggle } from "../mochi/Giggle.js";
+import { rigMochi } from "../mochi/MochiRig.js";
 import { LINES, fillName } from "../mochi/MochiLines.js";
 import { outfitParts, accessoryHtml, headItem } from "../mochi/outfit.js";
 import { build, show, hide, say, sayPersonal, heart, sleep, pick } from "./MochiPlay.js";
@@ -164,6 +165,7 @@ function mochiInRoom(v, player, { x, y, h, back = false, cls = "" }) {
   </div>`;
   placeMochi(el, { x, y, h });
   v.things.appendChild(el);
+  rigMochi(el.querySelector(".mp-mochi"), { lean: 0 }); // blinks and ears only: she has to stay put behind things
   return el;
 }
 
