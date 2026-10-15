@@ -282,6 +282,34 @@ export const LINES = {
     "they like you, {name} ♡",
     "nobody leaves a tea party early ♡"
   ],
+  // Act IX: results. the last result knows things you never typed
+  scratchAsk: "your results are ready!! ♡ mochi made them into scratch cards",
+  scratchRules: "scratch them off ♡ one at a time, or all at once",
+  scratchDessert: "mochi knew it ♡",
+  scratchFriend: "the best kind ♡",
+  scratchBunny: "so cute ♡ just like mochi said",
+  scratchFace: "mochi kept this one ♡",
+  scratchNow: "mochi checked ♡",
+  scratchBehind: "your room ♡ mochi likes it",
+  scratchNudge: "keep scratching ♡ there's more",
+  scratchLocked: "the last result is inside mochi ♡",
+  scratchLast: "and the last one... the real you ♡",
+  scratchInside: "mochi saved it for you. it's inside ♡",
+  openKept: "you kept the scissors, right? from the party ♡ mochi said they were for later",
+  openNoScissors: "mochi brought scissors ♡ just in case",
+  openAsk: "it's later now ♡",
+  openHint: "cut along the line ♡ (drag down it, or tap along it)",
+  openGood: "that's it ♡ keep going",
+  openHerself: "it's okay ♡ mochi will do it herself",
+  openThanks: "thank you, {name} ♡",
+  hostAct9: [
+    "almost done, {name} ♡",
+    "mochi's adding it all up ♡",
+    "don't change your answers now ♡",
+    "mochi knows the real you ♡",
+    "it's okay. mochi still likes you ♡",
+    "you can't leave before your results ♡"
+  ],
   answerGeneric: ["ooh, interesting~ ♡", "mochi wrote that down ♡", "hmm hmm! ♡", "mochi had a feeling you'd say that ♡", "noted!! ♡"],
   // Act III: she's back, cute, and pretends nothing happened. Slightly wrong.
   hostAct3: [
@@ -309,6 +337,8 @@ export const TALK = {
   bonusDone: ["that was the best bonus round ever!! ♡", "ooh, ooh!! mochi wants to show you something ♡", "come see!! ♡"],
   // start of Act VI (after the ears)
   lightsHello: ["...", "hi {name} ♡", "mochi can't hear very well anymore. it's okay!! mochi can still see you ♡", "it's getting late... stay over? ♡"],
+  // start of Act IX (results), after the tea party
+  resultsHello: ["...", "okay!! last round ♡", "then your results. mochi's been saving them ♡"],
   // start of Act VIII (tea party)
   teaHello: ["tea party!! ♡", "mochi set the table just like her birthday", "and this time everyone came ♡"],
   // end of Act VIII, into the results
@@ -441,14 +471,14 @@ export function answerReaction(question, optionIndex, act, player) {
   return fill(opt?.mochi || pick(LINES.answerGeneric), player);
 }
 
-/** What she says while a question is up (looks 3-5: she pretends nothing happened; Acts VI-VIII have their own). */
+/** What she says while a question is up (looks 3-6: she pretends nothing happened; Acts VI-IX have their own). */
 export function hostLine(act, player, storyAct = act) {
-  if (act < 3 || act > 5) return "";
+  if (act < 3 || act > 6) return "";
   const e = envInfo(), bat = batteryLevel();
   const extra = [];
   if (e.city) extra.push(`it's ${e.time} in ${e.city} ♡ mochi checked`);
   if (bat != null && bat < 60) extra.push(`your battery's at ${bat}% ♡ don't leave mochi`);
-  const own = { 6: LINES.hostAct6, 7: LINES.hostAct7, 8: LINES.hostAct8 }[storyAct] || LINES.hostAct3;
+  const own = { 6: LINES.hostAct6, 7: LINES.hostAct7, 8: LINES.hostAct8, 9: LINES.hostAct9 }[storyAct] || LINES.hostAct3;
   const pool = [...own, ...extra];
   return fill(pick(pool), player);
 }

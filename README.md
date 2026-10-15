@@ -113,7 +113,18 @@ are older acts parked in the slot they'll be replaced in.
    again. Then pass the parcel to what's left of her song; the parcel waits
    for you to pass it on; the last layer is yours: scissors, "for later ♡"
    (`src/segments/MochiTea.js`).
-9. **IX. RESULTS** (for now: the old interview) → **unzip**, then the ending.
+9. ★ **IX. RESULTS** blood red. A last round of questions, then your
+   results as six scratch cards, scratched off with the cursor. The first
+   three are sweet (your dessert, your friend type, your bunny); the last
+   three know things you never typed: your face (kept from the memory game)
+   and how many times you looked away, the real time on your clock against the
+   bedtime you told her, and your room behind you, live, with what the room
+   scan found in it (and, faintly, someone in it). The real result is locked:
+   "the last result is inside mochi ♡". You kept the scissors from the tea
+   party; there's a dotted "cut here ♡" line on her tummy, and you make the
+   cut yourself (or she does it for you) → **unzip**, then the ending
+   (`src/segments/MochiResults.js`). The old interview act and its out-loud
+   questions are gone.
 
 Each stage has an `act` (its place in the story) and a `look` (how far gone
 the world is: 1 pink … 6 blood red). Colour, music, webcam filter, the
