@@ -117,9 +117,11 @@ are older acts parked in the slot they'll be replaced in.
    results as six scratch cards, scratched off with the cursor. The first
    three are sweet (your dessert, your friend type, your bunny); the last
    three know things you never typed: your face (kept from the memory game)
-   and how many times you looked away, the real time on your clock against the
-   bedtime you told her, and your room behind you, live, with what the room
-   scan found in it (and, faintly, someone in it). The real result is locked:
+   and how many times you looked away; the real time and where you are ("at
+   kanakia paris", from the browser's location and OpenStreetMap, if you
+   allowed it) against the bedtime you told her; and behind you: your room
+   with you taken out of it (from the camera's person mask, so a plain wall
+   works too), and, slowly, someone sitting where you were. The real result is locked:
    "the last result is inside mochi ♡". You kept the scissors from the tea
    party; there's a dotted "cut here ♡" line on her tummy, and you make the
    cut yourself (or she does it for you) → **unzip**, then the ending

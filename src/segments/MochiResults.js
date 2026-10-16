@@ -6,9 +6,10 @@
 //            cursor. The first three are sweet (your dessert, your friend type,
 //            your bunny). Then: your face (one of the memory-game selfies, and
 //            how many times you looked away), right now (the real time on your
-//            clock, against the bedtime you told her), and behind you (your
-//            room, live, and what the room scan found in it). One more card is
-//            locked: "the last result is inside mochi ♡".
+//            clock and where you are, against the bedtime you told her), and
+//            behind you: your room with you taken out of it (works against a
+//            plain wall too), and, slowly, someone where you were sitting.
+//            One more card is locked: "the last result is inside mochi ♡".
 //   open     you kept the scissors from the tea party. A dotted line on her
 //            tummy, "cut here ♡". You make the cut yourself; then the unzip
 //            scene plays (the stage's next step).
@@ -19,9 +20,11 @@ import { MOCHI_CUTE_URL } from "../mochi/MochiEngine.js";
 import { giggle } from "../mochi/Giggle.js";
 import { LINES, fillName, FRIEND_LABELS, envInfo, batteryLevel } from "../mochi/MochiLines.js";
 import { woundsNow } from "../mochi/wounds.js";
+import { MASK_SIZE } from "../vision/Segmenter.js";
 import { build, show, hide, say, bounce, heart, sleep, pick, DESSERTS, BUNNIES, bunnyFromDossier } from "./MochiPlay.js";
 
 const CW = 320, CH = 240;     // scratch canvas resolution (CSS scales it)
+const MS = MASK_SIZE;
 const BRUSH = 30;             // scratch radius, in canvas px
 const DONE_AT = 0.52;         // how much has to be scratched before it reveals
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -86,15 +89,14 @@ function cards(ctx, dossier, summary) {
 
   // right now: the real clock, and what they told her about bedtime
   const env = envInfo(), bat = batteryLevel();
-  const now = [`it's ${env.time}${env.city ? ` in ${env.city.toLowerCase()}` : ""}.`];
+  const now = [`it's ${env.time}${env.where ? ` ${env.where}` : ""}.`];
   if (env.late && said("b2") === "Before midnight.") now.push("you said you go to bed before midnight.");
   else if (env.late) now.push("you should be asleep.");
   else now.push("you're still here.");
   if (bat != null && bat < 50) now.push(`your battery's at ${bat}%.`);
 
-  // behind you: the room scan
-  const objs = (ctx.room?.objects || []).slice(0, 2);
-  const behind = objs.length ? objs.map((o) => `a ${o.label}, ${o.where}.`) : ["mochi can see your room ♡"];
+  // behind you: your room, with you taken out of it (needs the person mask)
+  const masked = !!ctx.getMask?.();
 
   return [
     { key: "dessert", title: "your dessert", html: `<b class="rs-glyph">${dessert.glyph}</b><span>${esc(dessert.name)}</span>`, line: LINES.scratchDessert },
@@ -102,8 +104,143 @@ function cards(ctx, dossier, summary) {
     { key: "bunny", title: "your bunny", html: `<b class="rs-glyph">${bunny.glyph}</b><span>${esc(bunny.name)}</span>`, line: LINES.scratchBunny },
     { key: "face", title: "your face", html: `${face ? `<img class="rs-photo" src="${face}" alt="" />` : `<b class="rs-glyph">🙂</b>`}<span>${away ? `you looked away ${away} time${away === 1 ? "" : "s"} ♡ mochi counted` : "you never looked away ♡"}</span>`, line: LINES.scratchFace },
     { key: "now", title: "right now", html: `<span class="rs-text">${now.map(esc).join("<br>")}</span>`, line: LINES.scratchNow },
-    { key: "behind", title: "behind you", html: `<canvas class="rs-live" width="320" height="240"></canvas><span>${behind.map(esc).join(" ")}</span>`, line: LINES.scratchBehind, live: true }
+    { key: "behind", title: "behind you", html: `<canvas class="rs-live" width="${CW}" height="${CH}"></canvas><span>${masked ? LINES.scratchBehindCap : LINES.scratchBehindCapPlain}</span>`, line: masked ? LINES.scratchBehind : LINES.scratchBehindPlain, live: true }
   ];
+}
+
+/**
+ * Your room without you in it, from the camera and the person mask
+ * (Segmenter: 128x128, 255 = person). Every frame, the pixels that are room
+ * are copied onto a plate. Wherever you've been the whole time, each row is
+ * filled in from the nearest room on either side of it (rows you cover
+ * edge to edge copy the nearest row above), so a plain wall just becomes more
+ * wall. The figure is drawn where you were sitting. Camera space
+ * (unmirrored); the card mirrors it with CSS, like the feed.
+ */
+class EmptyRoom {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.frame = Object.assign(document.createElement("canvas"), { width: CW, height: CH });
+    this.plate = Object.assign(document.createElement("canvas"), { width: CW, height: CH });
+    this.fg = this.frame.getContext("2d", { willReadFrequently: true });
+    this.out = this.plate.getContext("2d").createImageData(CW, CH);
+    this.room = new Uint8ClampedArray(CW * CH * 4); // last seen colour of each room pixel
+    this.seen = new Uint8Array(CW * CH);
+    this.person = new Uint8Array(CW * CH);          // 1 = you (grown a little), this mask
+    this.you = null;                                // where you sit: { cx, top }, fractions of the picture
+    this.hasMask = false;
+    this._n = 0;
+  }
+
+  update() {
+    const src = this.ctx.getVideo?.();
+    if (!(src?.videoWidth || src?.width)) return;
+    if (++this._n % 2) return; // every other frame is plenty
+    this.fg.drawImage(src, 0, 0, CW, CH);
+    const px = this.fg.getImageData(0, 0, CW, CH).data;
+    const m = this.ctx.getMask?.();
+    if (m && m !== this._lastMask) this._buildMask(m);
+    this.hasMask = !!m;
+    const room = this.room, seen = this.seen, person = this.person, out = this.out.data;
+    for (let i = 0, j = 0; i < CW * CH; i++, j += 4) {
+      if (!this.hasMask || !person[i]) {
+        room[j] = px[j]; room[j + 1] = px[j + 1]; room[j + 2] = px[j + 2];
+        seen[i] = 1;
+      }
+    }
+    // fill what's never been seen, row by row
+    let lastRow = -1;
+    for (let y = 0; y < CH; y++) {
+      const r0 = y * CW;
+      let left = -1, any = false;
+      for (let x = 0; x <= CW; x++) {
+        const isSeen = x < CW && seen[r0 + x];
+        if (isSeen) {
+          const j = (r0 + x) * 4;
+          out[j] = room[j]; out[j + 1] = room[j + 1]; out[j + 2] = room[j + 2]; out[j + 3] = 255;
+          any = true;
+          left = x;
+          continue;
+        }
+        if (x < CW && x + 1 <= CW) {
+          // find the end of this gap
+          let right = x;
+          while (right < CW && !seen[r0 + right]) right++;
+          const L = left >= 0 ? (r0 + left) * 4 : -1, R = right < CW ? (r0 + right) * 4 : -1;
+          for (let k = x; k < right; k++) {
+            const j = (r0 + k) * 4;
+            if (L >= 0 && R >= 0) {
+              const f = (k - left) / (right - left);
+              out[j] = room[L] + (room[R] - room[L]) * f;
+              out[j + 1] = room[L + 1] + (room[R + 1] - room[L + 1]) * f;
+              out[j + 2] = room[L + 2] + (room[R + 2] - room[L + 2]) * f;
+            } else if (L >= 0 || R >= 0) {
+              const S = L >= 0 ? L : R;
+              out[j] = room[S]; out[j + 1] = room[S + 1]; out[j + 2] = room[S + 2];
+            } else if (lastRow >= 0) {
+              const S = (lastRow * CW + k) * 4; // a row you cover edge to edge: copy the last good one
+              out[j] = out[S]; out[j + 1] = out[S + 1]; out[j + 2] = out[S + 2];
+            } else {
+              out[j] = out[j + 1] = out[j + 2] = 110;
+            }
+            out[j + 3] = 255;
+          }
+          x = right - 1;
+        }
+      }
+      if (any) lastRow = y;
+    }
+    this.plate.getContext("2d").putImageData(this.out, 0, 0);
+  }
+
+  _buildMask(m) {
+    this._lastMask = m;
+    // you, grown by three cells (hair, edges, and the mask lagging the picture a little)
+    const grown = new Uint8Array(MS * MS);
+    let n = 0, sx = 0, top = MS;
+    for (let y = 0; y < MS; y++) {
+      for (let x = 0; x < MS; x++) {
+        if (m[y * MS + x] <= 100) continue;
+        n++; sx += x; if (y < top) top = y;
+        for (let dy = -3; dy <= 3; dy++) {
+          const yy = y + dy;
+          if (yy < 0 || yy >= MS) continue;
+          for (let dx = -3; dx <= 3; dx++) {
+            const xx = x + dx;
+            if (xx >= 0 && xx < MS) grown[yy * MS + xx] = 1;
+          }
+        }
+      }
+    }
+    for (let y = 0; y < CH; y++) {
+      const my = Math.floor((y / CH) * MS) * MS;
+      for (let x = 0; x < CW; x++) this.person[y * CW + x] = grown[my + Math.floor((x / CW) * MS)];
+    }
+    if (n > 60) {
+      const you = { cx: sx / n / MS, top: top / MS };
+      this.you = this.you ? { cx: this.you.cx * 0.8 + you.cx * 0.2, top: this.you.top * 0.8 + you.top * 0.2 } : you;
+    }
+  }
+
+  /** The empty room into `g`, the figure where you were at `alpha`, all in blood-red monochrome. */
+  draw(g, figure, alpha) {
+    g.save();
+    g.filter = "grayscale(1) contrast(1.2) brightness(0.9)";
+    g.drawImage(this.plate, 0, 0);
+    if (figure && alpha > 0.002 && this.you && this.hasMask) {
+      const h = (1 - this.you.top) * CH * 1.12;
+      const w = h * ((figure.width || 1) / (figure.height || 1));
+      g.globalAlpha = alpha;
+      g.filter = "grayscale(1) brightness(0.5) contrast(1.3) blur(0.6px)";
+      g.drawImage(figure, this.you.cx * CW - w / 2, this.you.top * CH - h * 0.06, w, h);
+    }
+    g.restore();
+    g.save();
+    g.globalCompositeOperation = "multiply";
+    g.fillStyle = "#e0303a";
+    g.fillRect(0, 0, CW, CH);
+    g.restore();
+  }
 }
 
 /** Silver scratch-off coating, with little hearts on it. */
@@ -157,18 +294,22 @@ export async function runScratch(ctx, dossier = [], summary = null) {
   bounce(v);
   await talk(v, ctx, [LINES.scratchAsk, LINES.scratchRules], 1900);
 
-  // the live card: your room, right now (only drawn once it's uncovered)
-  let live = true, figAt = 0;
+  // the "behind you" card: the empty room builds up from the start of the
+  // scene (so it's ready by the time they get to it), drawn once uncovered
+  let live = true, revealedAt = 0;
   const liveCanvas = v.root.querySelector(".rs-live");
   const behindState = state.find((s) => s.card.live);
+  const room = new EmptyRoom(ctx);
+  const figure = ctx.director?.prepareFigureImage?.() || null;
   (async () => {
     const lg = liveCanvas?.getContext("2d");
     while (live && lg) {
-      const src = ctx.feed?.canvas;
-      if (behindState.done && src?.width) {
-        lg.save(); lg.translate(320, 0); lg.scale(-1, 1);
-        lg.drawImage(src, 0, 0, 320, 240);
-        lg.restore();
+      room.update();
+      if (behindState.done) {
+        if (!revealedAt) revealedAt = performance.now();
+        // nothing for a few seconds; then, very slowly, someone where you were
+        const t = (performance.now() - revealedAt) / 1000;
+        room.draw(lg, figure, clamp((t - 4) / 10) * 0.36);
       }
       await new Promise((r) => requestAnimationFrame(r));
     }
@@ -185,14 +326,6 @@ export async function runScratch(ctx, dossier = [], summary = null) {
     const r = s.el.getBoundingClientRect();
     if (revealedCount <= 3) { heart(v, r.left + r.width / 2, r.top + r.height * 0.3, "♡"); giggle.happy(0.5); }
     say(v, fillName(s.card.line, player));
-    if (s.card.live && ctx.director?.prepareFigureImage?.()) {
-      // faintly, after a moment, someone in your room. only on this card.
-      figAt = setTimeout(() => {
-        ctx.feed?.setFigureImage(ctx.director.prepareFigureImage());
-        const f = ctx.director.figureAt(3, ctx.getFace?.());
-        if (f) ctx.feed?.setFigure({ ...f, opacity: 0.32 });
-      }, 2600);
-    }
   };
   const scratchAt = (s, e) => {
     const r = s.canvas.getBoundingClientRect();
@@ -249,8 +382,6 @@ export async function runScratch(ctx, dossier = [], summary = null) {
   await sleep(3200);
 
   // the last one is locked
-  clearTimeout(figAt);
-  ctx.feed?.setFigure(null);
   v.root.classList.add("final");
   ctx.sfx?.tick();
   await sleep(900);

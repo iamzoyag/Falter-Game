@@ -13,6 +13,8 @@ export const FRIEND_LABELS = {
   wanderer: "the free-spirit friend"
 };
 
+import { placePhrase } from "../core/Whereabouts.js";
+
 const fill = (text, player) => text
   .replace(/\{name\}/g, player?.name || "friend")
   .replace(/\{friend\}/g, FRIEND_LABELS[player?.friend] || "the best kind of friend");
@@ -290,7 +292,10 @@ export const LINES = {
   scratchBunny: "so cute ♡ just like mochi said",
   scratchFace: "mochi kept this one ♡",
   scratchNow: "mochi checked ♡",
-  scratchBehind: "your room ♡ mochi likes it",
+  scratchBehind: "it's so empty without you ♡",
+  scratchBehindCap: "mochi took you out ♡ so you can see what's behind you",
+  scratchBehindPlain: "your room ♡ mochi likes it",
+  scratchBehindCapPlain: "your room ♡ right now",
   scratchNudge: "keep scratching ♡ there's more",
   scratchLocked: "the last result is inside mochi ♡",
   scratchLast: "and the last one... the real you ♡",
@@ -366,12 +371,9 @@ export function envInfo() {
   const now = new Date();
   const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).toLowerCase();
   const hour = now.getHours();
-  let city = "";
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    city = (tz.split("/")[1] || "").replace(/_/g, " ");
-  } catch { /* fine */ }
-  return { time, hour, city, late: hour >= 22 || hour < 5 };
+  // where they are, if the browser told us (src/core/Whereabouts.js): "at kanakia paris",
+  // "in bandra east"... never the timezone's city, which is often the wrong one
+  return { time, hour, where: placePhrase(), late: hour >= 22 || hour < 5 };
 }
 
 let _battery = null;
@@ -476,7 +478,7 @@ export function hostLine(act, player, storyAct = act) {
   if (act < 3 || act > 6) return "";
   const e = envInfo(), bat = batteryLevel();
   const extra = [];
-  if (e.city) extra.push(`it's ${e.time} in ${e.city} ♡ mochi checked`);
+  if (e.where) extra.push(`it's ${e.time} ${e.where} ♡ mochi checked`);
   if (bat != null && bat < 60) extra.push(`your battery's at ${bat}% ♡ don't leave mochi`);
   const own = { 6: LINES.hostAct6, 7: LINES.hostAct7, 8: LINES.hostAct8, 9: LINES.hostAct9 }[storyAct] || LINES.hostAct3;
   const pool = [...own, ...extra];

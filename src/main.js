@@ -19,6 +19,7 @@ import { MicRecorder } from "./core/MicRecorder.js";
 import { Transcriber } from "./core/Transcriber.js";
 import { AI_BACKEND_URL, MEDIAPIPE_WASM_URL } from "./config.js";
 import { on } from "./core/EventBus.js";
+import { requestWhereabouts } from "./core/Whereabouts.js";
 import { runMirror } from "./segments/MirrorSegment.js";
 import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
 import { runInterrogation } from "./segments/Interrogator.js";
@@ -146,6 +147,7 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
       video: { width: 640, height: 480, facingMode: "user" },
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     });
+    requestWhereabouts(); // in the background; it asks the browser for location (src/core/Whereabouts.js)
     videoHidden.srcObject = stream;
     videoRaw.srcObject = stream;
     await Promise.all([videoHidden.play(), videoRaw.play()]);
@@ -303,7 +305,8 @@ async function runGame() {
     getVideo: () => videoHidden,
     room: roomScanner,
     getFace: () => latestFace,
-    getMic: () => latestMic
+    getMic: () => latestMic,
+    getMask: () => latestMask
   };
 
   let qIndex = 0;
