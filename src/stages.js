@@ -5,7 +5,7 @@
 // `act` is the act's place in the story (I..IX). `look` is how far gone the
 // world is, and it's what the colour script (body[data-act]), the music, the
 // webcam filter and Mochi's AI voice all key off:
-//   1 pink and honest   2 pink, quietly draining   3 dusty rose   4 1-bit black and white   5 black + dark red
+//   1 pink and honest   2 pink, quietly draining   3 dusty rose   4 1-bit black and white   5 black + dark red   6 blood red
 //   5 black + dark red  6 black + blood red
 // Several acts can share a look; the slow acts early on do.
 //
@@ -19,7 +19,7 @@
 //   ★ VI   LIGHTS OUT      a sleepover in your room: flashlight (she moves closer), a midnight catch -> eyes
 //   ★ VII  PHOTO BOOTH     1-bit. a four-frame strip with something behind you, then stickers that won't stick to it
 //   ★ VIII TEA PARTY       everyone came: pour tea for the guests you invited; pass the parcel -> scissors
-//     IX   RESULTS         (old interview for now) -> unzip -> ending
+//   ★ IX   RESULTS         scratch-card results that know things you never typed; cut her open -> unzip -> ending
 //
 // `songDrift` (optional): how far her song has slowed/flattened by the end of
 // the act; it gets there gradually, step by step. Nothing else changes.
@@ -245,20 +245,26 @@ export const STAGES = [
     ]
   },
   {
-    id: "interview",
+    id: "results",
     act: 9,
     look: 6,
-    card: "stage",
-    title: "IX. INTERVIEW",
-    subtitle: "answer out loud.",
-    features: { beats: true, darkness: true, unblink: true, creep: true, figure: true, room: true, voice: true, playerVoice: true, smileClip: true, faceGore: true },
+    card: "none",
+    title: "IX. RESULTS",
+    subtitle: "",
+    // Blood red. The last round, then your results as scratch cards: sweet
+    // first (dessert, friend type, bunny), then things you never typed (your
+    // face and how often you looked away, the real time against the bedtime
+    // you told her, your room behind you, live). The real result is locked
+    // inside mochi; you kept the scissors from the party; cut along the
+    // line -> unzip -> the ending (src/segments/Ending.js).
+    features: { ...CALM, unblink: true, creep: true, subliminal: 2, hostHurt: true, beats: true, voice: true, smileClip: true, darkness: true, figure: true, room: true, playerVoice: true, faceGore: true },
     steps: [
-      { type: "interrogate", prompt: "Out loud, please. Tell me about a time you were certain something was in the room with you." },
-      "q20", "q21",
-      { type: "task", task: "staySilent" },
-      "q22", "q23",
-      { type: "interrogate", prompt: "Look at the room behind you, in your feed. What's the one thing back there you'd least like to see move? Say it." },
-      "q24", "q25", "q26",
+      { type: "talk", lines: "resultsHello", mood: "off", flicker: "/mochi/wounds-eyes.webp" },
+      { type: "round", title: "last round ♡", sub: "almost done!" },
+      "r1", "r2", "r3",
+      { type: "play", kind: "scratch" },
+      "q26",
+      { type: "play", kind: "open" },
       { type: "mochi", scene: "unzip" }
     ]
   }

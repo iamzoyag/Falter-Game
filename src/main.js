@@ -19,6 +19,7 @@ import { MicRecorder } from "./core/MicRecorder.js";
 import { Transcriber } from "./core/Transcriber.js";
 import { AI_BACKEND_URL, MEDIAPIPE_WASM_URL } from "./config.js";
 import { on } from "./core/EventBus.js";
+import { requestWhereabouts } from "./core/Whereabouts.js";
 import { runMirror } from "./segments/MirrorSegment.js";
 import { taskCloseEyes, taskStaySilent } from "./segments/Tasks.js";
 import { runInterrogation } from "./segments/Interrogator.js";
@@ -35,6 +36,7 @@ import { runMemory, runResults, runSimon } from "./segments/MochiFaded.js";
 import { runFlashlight, runNightCatch } from "./segments/MochiDark.js";
 import { runBooth, runStickers } from "./segments/MochiBooth.js";
 import { runTea, runParcel } from "./segments/MochiTea.js";
+import { runScratch, runOpen } from "./segments/MochiResults.js";
 import { answerReaction, hostLine, aiMochiLine, specialReaction, repeatReaction, TALK } from "./mochi/MochiLines.js";
 import { CuteSfx } from "./core/CuteSfx.js";
 import { SampleBank } from "./core/SampleBank.js";
@@ -89,8 +91,8 @@ const mochi = new MochiEngine(document.getElementById("mochi-canvas"));
 const faceGore = new FaceGore(document.getElementById("face-gore"));
 // What the player tells Mochi in Act I. It all comes back later.
 // outfit, caught and dessert come from Act II; room, friend and cornerFound from Act III;
-// frosting, guests and blewOut from Act IV; night from Act VI; booth from Act VII; tea from Act VIII
-const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null, frosting: null, guests: null, blewOut: null, night: null, booth: null, tea: null };
+// frosting, guests and blewOut from Act IV; night from Act VI; booth from Act VII; tea from Act VIII; results from Act IX
+const player = { name: "", snack: null, petted: null, polaroid: null, outfit: null, caught: null, dessert: null, room: null, friend: null, cornerFound: null, frosting: null, guests: null, blewOut: null, night: null, booth: null, tea: null, results: null };
 
 const reduceFlashBox = document.getElementById("reduce-flash-checkbox");
 reduceFlashBox.checked = settings.reduceFlashing;
@@ -145,6 +147,7 @@ document.getElementById("btn-consent").addEventListener("click", async () => {
       video: { width: 640, height: 480, facingMode: "user" },
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
     });
+    requestWhereabouts(); // in the background; it asks the browser for location (src/core/Whereabouts.js)
     videoHidden.srcObject = stream;
     videoRaw.srcObject = stream;
     await Promise.all([videoHidden.play(), videoRaw.play()]);
@@ -302,7 +305,8 @@ async function runGame() {
     getVideo: () => videoHidden,
     room: roomScanner,
     getFace: () => latestFace,
-    getMic: () => latestMic
+    getMic: () => latestMic,
+    getMask: () => latestMask
   };
 
   let qIndex = 0;
@@ -346,7 +350,7 @@ async function runGame() {
         lastEntry = await quiz.ask(q, qIndex, TOTAL_QUESTIONS, stage);
         qIndex++;
         const previous = step.type === "repeat" ? quiz.getDossier().find((d) => d.questionId === base.id) : null;
-        if (act <= 5) await mochiReacts(q, lastEntry, act, ctx, previous);
+        if (act <= 6) await mochiReacts(q, lastEntry, act, ctx, previous);
         if (lateBaseline && qIndex === 2) {
           lateBaseline = false;
           faceTracker.finishBaselineCapture();
@@ -407,6 +411,8 @@ async function runGame() {
         else if (step.kind === "stickers") await runStickers(ctx);
         else if (step.kind === "tea") await runTea(ctx);
         else if (step.kind === "parcel") await runParcel(ctx);
+        else if (step.kind === "scratch") await runScratch(ctx, quiz.getDossier(), director.getSummary());
+        else if (step.kind === "open") await runOpen(ctx);
         director.suspend(false);
       } else if (step.type === "round") {
         ui.setMochiHostLine("");

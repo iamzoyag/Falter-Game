@@ -620,6 +620,43 @@ const TEA_QUESTIONS = [
   }
 ];
 
+// Act IX's last round (r1..r3), before the results.
+const RESULT_QUESTIONS = [
+  {
+    id: "r1",
+    callbackId: "know_yourself",
+    principle: "setup for the results: who knows you better",
+    prompt: "Do you think you know yourself well?",
+    options: [
+      { text: "Yes.", expressionHint: "any", dark: "mochi knows you better ♡" },
+      { text: "Mostly.", expressionHint: "neutral", dark: "mochi knows the rest ♡" },
+      { text: "Not really.", expressionHint: "neutral", dark: "that's okay ♡ mochi does" }
+    ]
+  },
+  {
+    id: "r2",
+    callbackId: "what_they_think",
+    principle: "setup for the results: wanting to be known",
+    prompt: "Would you want to know what someone really thought of you?",
+    options: [
+      { text: "Yes.", expressionHint: "any", dark: "okay ♡ soon" },
+      { text: "No.", expressionHint: "neutral", dark: "too late ♡ mochi already wrote it down" },
+      { text: "Depends who.", expressionHint: "neutral", dark: "it's mochi ♡" }
+    ]
+  },
+  {
+    id: "r3",
+    callbackId: "relieved_to_end",
+    principle: "the end, almost",
+    prompt: "If this ended right now, would you be relieved?",
+    options: [
+      { text: "Yes.", expressionHint: "any", dark: "mochi would miss you ♡" },
+      { text: "A little.", expressionHint: "any", dark: "just a little more ♡ almost done" },
+      { text: "No. I want to see the end.", expressionHint: "any", dark: "you will ♡" }
+    ]
+  }
+];
+
 export const QUESTIONS = [
   ...MOCHI_QUESTIONS,
   ...DESSERT_QUESTIONS,
@@ -630,6 +667,7 @@ export const QUESTIONS = [
   ...NIGHT_QUESTIONS,
   ...PHOTO_QUESTIONS,
   ...TEA_QUESTIONS,
+  ...RESULT_QUESTIONS,
   // Round three of Act I ("the deep questions~"): deep the way a magazine
   // quiz is deep. Still sweet, nothing pointed; the creepy versions of these
   // themes (the dark, being alone, being watched) wait for the later acts.
@@ -914,9 +952,9 @@ export const QUESTIONS = [
     principle: "self-referential threat, closing the loop the game opened early",
     prompt: "Last one. Has every answer you've given so far been true?",
     options: [
-      { text: "Yes, all of it.", expressionHint: "neutral" },
-      { text: "Mostly.", expressionHint: "neutral" },
-      { text: "No.", expressionHint: "any" }
+      { text: "Yes, all of it.", expressionHint: "neutral", dark: "mochi knows ♡ she checked" },
+      { text: "Mostly.", expressionHint: "neutral", dark: "mochi knows which ones ♡" },
+      { text: "No.", expressionHint: "any", dark: "mochi knows ♡ she still likes you" }
     ]
   }
 ];
